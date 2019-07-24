@@ -6,7 +6,7 @@ const fsp = require("fs").promises;
 const path = require("path");
 
 const fm_file_path = file_name => {  
-  return path.join(__dirname, "..", "fm", "file", file_name + ".fm");
+  return path.join(__dirname, "..", "fm", file_name + ".fm");
 };
 
 
