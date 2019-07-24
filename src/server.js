@@ -1,8 +1,7 @@
 const express = require("express")
 const app = express()
-const port = 8000;
+const port = process.argv[2] || 80;
 const fs = require("fs");
-const fm = require("./../../Formality-JavaScript/FM-Core");
 const fsp = require("fs").promises;
 const path = require("path");
 
@@ -17,11 +16,6 @@ const fm_save_file = (async function save(file_name, file_code, version = 0) {
     return save(file_name, file_code, version + 1);
   } else {
     try {
-      //var defs = fm.lang.parse(file_code);
-      //for (var term_name in defs) {
-        //var term_path = fm_term_path(file_name + "@" + version + "." + term_name);
-        //await fsp.writeFile(term_path, file_name + "@" + version);
-      //}
       await fsp.writeFile(file_path, file_code);
       return file_name + "@" + version;
     } catch (e) {
