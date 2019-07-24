@@ -1,0 +1,4 @@
+
+foo kkk(aaa, bbb, depC@0.bar)
+aaa 101
+bbb f(aaa, aaa)

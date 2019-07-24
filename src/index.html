@@ -1,0 +1,35 @@
+<!doctype html>
+<html>
+  <style>
+    @font-face {
+      font-family: 'Gotham Book';
+      font-style: normal;
+      font-weight: normal;
+      src: local('Gotham Book'), url('GOTHAMBOOK.woff') format('woff');
+    }
+    body {
+    }
+    #background {
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      left: 0;
+      right: 0;
+      z-index: -1;
+      display: block;
+      background: url(math_wallpaper.jpg);
+      background-size: 300px;
+      opacity: 0.25;
+    }
+    * {
+      box-sizing: border-box;
+      padding: 0px;
+      margin: 0px;
+    }
+  </style>
+  <body>
+    <script src="index.js"></script>
+    <div id="background"></div>
+    <div id="main"></div>
+  </body>
+</html>

@@ -1,0 +1,3 @@
+
+foo {f} => f(depB@0.foo, depC@0.foo, bar)
+bar 500
