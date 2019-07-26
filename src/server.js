@@ -18,7 +18,7 @@ const fm_save_file = (async function save(file_name, file_code, version = 0) {
   } else {
     try {
       if (version > 0) {
-        var last_file_code = await fsp.loadFile(last_file_path, "utf8");
+        var last_file_code = await fsp.readFile(last_file_path, "utf8");
         if (file_code === last_file_code) {
           return file_name + "@" + (version - 1);
         }
