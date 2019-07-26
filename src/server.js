@@ -12,10 +12,17 @@ const fm_file_path = file_name => {
 
 const fm_save_file = (async function save(file_name, file_code, version = 0) {
   var file_path = fm_file_path(file_name + "@" + version);
+  var last_file_path = version > 0 ? fm_file_path(file_name + "@" + (version - 1)) : null;
   if (fs.existsSync(file_path)) {
     return save(file_name, file_code, version + 1);
   } else {
     try {
+      if (version > 0) {
+        var last_file_code = await fsp.loadFile(last_file_path, "utf8");
+        if (file_code === last_file_code) {
+          return file_name + "@" + (version - 1);
+        }
+      }
       await fsp.writeFile(file_path, file_code);
       return file_name + "@" + version;
     } catch (e) {
