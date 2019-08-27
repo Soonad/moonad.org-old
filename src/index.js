@@ -4,29 +4,25 @@ const fm = require("./../../Formality-JavaScript");
 
 const code = `import Base@0 open
 
-T Bool
-| true
-| false
+// Proof that 'true != false'
+true_not_false : {e : true == false} -> Empty
+  unit :: rewrite x
+    in case/Bool x
+       | true  => Unit
+       | false => Empty
+       : Type
+    with e
 
-// ::::::::::::::::::::::
-// :: Simple functions ::
-// ::::::::::::::::::::::
+// Proof that 'false != true'
+false_not_true : {e : false == true} -> Empty
+  true_not_false(sym(~e))
 
-copy : {case b : Bool} -> [:Bool, Bool]
-| true  => [true, true]
-| false => [false, false]
-
-not : {case b : Bool} -> Bool
-| true  => false
-| false => true
-
-and : {case a : Bool, b : Bool} -> Bool
-| true  => b
-| false => false
-
-or : {case a : Bool, b : Bool} -> Bool
-| true  => true
-| false => b
+// The requested program receives a Bool, x
+// If 'x == true', it returns 'false' and proves 'true != false'
+// If 'x == false', it returns 'true' and proves 'false != true'
+main : {case x : Bool} -> [y : Bool, ~Not(x == y)]
+| true  => [false, ~true_not_false]
+| false => [true , ~false_not_true]
 `;
 
 class Code extends Component {
@@ -34,12 +30,14 @@ class Code extends Component {
     super(props);
     this.parse(props.code);
   }
+  async load_file(file) {
+    this.parse(await fm.lang.load_file(file));
+  }
   parse(code) {
     this.code = code;
     this.defs = null;
     this.tokens = null;
     fm.lang.parse("test_file", this.code, true).then(({defs, tokens}) => {
-      console.log("parsed", defs, tokens);
       this.defs = defs;
       this.tokens = tokens;
       this.forceUpdate();
@@ -49,8 +47,9 @@ class Code extends Component {
     this.parse(props.code);
   }
   typecheck(name) {
+    console.log("->", this.defs);
     try {
-      var type = fm.lang.show(fm.lang.norm(this.state.defs[name], this.state.defs, "TYPE", {}));
+      var type = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "TYPE", {}));
       var good = true;
     } catch (e) {
       var type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
@@ -66,7 +65,7 @@ class Code extends Component {
   }
   normalize(name) {
     try {
-      var norm = fm.lang.show(fm.lang.norm(this.state.defs[name], this.state.defs, "DEBUG", {}));
+      var norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
     } catch (e) {
       var norm = "<unable_to_normalize>";
     };
@@ -76,12 +75,16 @@ class Code extends Component {
   }
   render() {
     if (this.tokens) {
-      const onClickDef = name => (e) => {
+      const onClickDef = path => (e) => {
         if (!e.shiftKey) {
-          return this.typecheck(name);
+          return this.typecheck(path);
         } else {
-          return this.normalize(name);
+          return this.normalize(path);
         }
+      };
+      const onClickRef = path => e => {
+        console.log("...", path);
+        this.load_file(path.slice(0, path.indexOf("/")));
       };
       var line_num = 0;
       var add_line_nums = str => {
@@ -107,8 +110,8 @@ class Code extends Component {
             case "cmm" : return {style: {"color": "#A2A8D3"}};
             case "num" : return {style: {"color": "green"}};
             case "var" : return {style: {"color": "black"}};
-            case "ref" : return {style: {"color": "#38598B", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}};
-            case "def" : return {style: {"color": "#4384e6", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: onClickDef(this.tokens[i][1])}; 
+            case "ref" : return {style: {"color": "#38598B", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: onClickRef(this.tokens[i][2])};
+            case "def" : return {style: {"color": "#4384e6", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: onClickDef(this.tokens[i][2])}; 
             default    : return {};
           }
         })();
@@ -126,7 +129,7 @@ class Code extends Component {
         }},
         h("pre", {}, elems));
     } else {
-      return h("div", {}, "...");
+      return h("div", {}, "Loading libs...");
     }
   }
 }
