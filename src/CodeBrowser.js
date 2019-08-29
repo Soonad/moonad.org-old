@@ -20,8 +20,11 @@ class Code extends Component {
 
   // Loads a file (ex: "Data.Bool@0")
   async load_file(file) {
+    console.log("... loadinig", file);
     await this.load_code(await fm.lang.load_file(file));
+    console.log("done");
     this.file = file;
+    this.forceUpdate();
   }
 
   // Loads a code
@@ -85,7 +88,6 @@ class Code extends Component {
   // Event when user clicks a reference
   onClickRef(path) {
     return e => {
-      console.log("...", path);
       this.load_file(path.slice(0, path.indexOf("/")));
     }
   }
@@ -113,7 +115,37 @@ class Code extends Component {
       code_chunks.push(h("span", attrs, (this.tokens[i][1])));
     }
 
-    return h("code", {}, h("pre", {}, code_chunks));
+    return h("div", {
+      style: {
+        "font-family": "monospace",
+        "font-size": "12px"
+      }}, [
+      h("code", {}, [
+        h("pre", {}, [
+          h("div", {
+            onClick: e => {
+              var file = prompt("File to load:");
+              if (file) {
+                if (file.slice(-3) === ".fm") {
+                  file = file.slice(0, -3);
+                }
+                if (file.indexOf("@") === -1) {
+                  file = file + "@0";
+                }
+                this.load_file(file);
+              }
+            },
+            style: {
+              "font-weight": "bold",
+              "text-decoration": "underline",
+              "cursor": "pointer"
+            }},
+            (this.file || "unnamed") + ".fm"),
+          h("div", {style: {visibility: "hidden"}}, "---"),
+          code_chunks
+        ])
+      ])
+    ]);
   }
 
 }
