@@ -20,7 +20,15 @@ class Code extends Component {
 
   // Loads a file (ex: "Data.Bool@0")
   async load_file(file) {
-    console.log("... loadinig", file);
+
+    console.log("... load", file);
+    if (file.slice(-3) === ".fm") {
+      file = file.slice(0, -3);
+    }
+    if (file.indexOf("@") === -1) {
+      file = file + "@0";
+    }
+    console.log("... load", file);
     await this.load_code(await fm.lang.load_file(file));
     console.log("done");
     this.file = file;
@@ -92,6 +100,13 @@ class Code extends Component {
     }
   }
 
+  // Event when user clicks an import
+  onClickImp(file) {
+    return e => {
+      this.load_file(file);
+    }
+  }
+
   // Renders the interface
   render() {
     if (!this.tokens) {
@@ -107,6 +122,7 @@ class Code extends Component {
           case "cmm" : return {style: {"color": "#A2A8D3"}};
           case "num" : return {style: {"color": "green"}};
           case "var" : return {style: {"color": "black"}};
+          case "imp" : return {style: {"color": "black", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickImp(this.tokens[i][1])};
           case "ref" : return {style: {"color": "#38598B", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickRef(this.tokens[i][2])};
           case "def" : return {style: {"color": "#4384e6", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickDef(this.tokens[i][2])}; 
           default    : return {};
@@ -126,12 +142,6 @@ class Code extends Component {
             onClick: e => {
               var file = prompt("File to load:");
               if (file) {
-                if (file.slice(-3) === ".fm") {
-                  file = file.slice(0, -3);
-                }
-                if (file.indexOf("@") === -1) {
-                  file = file + "@0";
-                }
                 this.load_file(file);
               }
             },
