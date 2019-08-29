@@ -2,7 +2,7 @@
 
 const {Component, render} = require("inferno");
 const h = require("inferno-hyperscript").h;
-const fm = require("./../../Formality-JavaScript");
+const fm = require("formality-lang");
 
 class Code extends Component {
 
