@@ -20,7 +20,6 @@ class Code extends Component {
 
   // Loads a file (ex: "Data.Bool@0")
   async load_file(file) {
-
     console.log("... load", file);
     if (file.slice(-3) === ".fm") {
       file = file.slice(0, -3);
@@ -122,9 +121,9 @@ class Code extends Component {
           case "cmm" : return {style: {"color": "#A2A8D3"}};
           case "num" : return {style: {"color": "green"}};
           case "var" : return {style: {"color": "black"}};
-          case "imp" : return {style: {"color": "black", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickImp(this.tokens[i][1])};
-          case "ref" : return {style: {"color": "#38598B", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickRef(this.tokens[i][2])};
-          case "def" : return {style: {"color": "#4384e6", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickDef(this.tokens[i][2])}; 
+          case "imp" : return {style: {"color": "black", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickImp(this.tokens[i][1])}; // Ex: ["imp", "Data.Bool@0"]
+          case "ref" : return {style: {"color": "#38598B", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickRef(this.tokens[i][2])}; // Ex: ["ref", "true", "Data.Bool@0/true"]
+          case "def" : return {style: {"color": "#4384e6", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickDef(this.tokens[i][2])};  // Ex: ["def", "true", "Data.Bool@0/true"]
           default    : return {};
         }
       })();
