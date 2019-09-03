@@ -11,6 +11,11 @@ class Main extends Component {
     this.elems = [];
   }
 
+  set_file(file) {
+    this.file = file;
+    this.forceUpdate();
+  }
+
   render() {
 
     // Complete site
@@ -93,7 +98,7 @@ class Main extends Component {
             "background": "rgba(255,255,255,1)",
             "border-radius": "6px",
             "box-shadow": "0px 0px 6px 0px rgba(0,0,0,0.5)"
-          }}, h(CodeBrowser, {file: this.file})),
+          }}, h(CodeBrowser, {file: this.file, set_file: file => this.set_file(file)})),
 
           // Right area
           //h("div", {style:

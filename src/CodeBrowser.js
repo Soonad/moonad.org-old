@@ -15,6 +15,8 @@ class Code extends Component {
     this.parents = null; // [String]         -- FPM files that imported the loaded file
     this.tokens = null;  // [[String, Info]] -- chunks of code with syntax highlight info
 
+    this.set_file = props.set_file;
+
     if (props.code) this.load_code(props.code);
     if (props.file) this.load_file(props.file);
   }
@@ -22,7 +24,7 @@ class Code extends Component {
   componentDidMount() {
     window.onpopstate = e => {
       if (e && e.state) {
-        this.load_file(e.state, false);
+        this.set_file(e.state, false);
       }
     };
   }
@@ -117,14 +119,14 @@ class Code extends Component {
   // Event when user clicks a reference
   onClickRef(path) {
     return e => {
-      this.load_file(path.slice(0, path.indexOf("/")));
+      this.set_file(path.slice(0, path.indexOf("/")));
     }
   }
 
   // Event when user clicks an import
   onClickImp(file) {
     return e => {
-      this.load_file(file);
+      this.set_file(file);
     }
   }
 
@@ -162,7 +164,7 @@ class Code extends Component {
         let parent_file = this.parents[i];
         parents.push(h("div", {
           "onClick": e => {
-            this.load_file(parent_file);
+            this.set_file(parent_file);
           },
           "style":
             { "cursor": "pointer"
