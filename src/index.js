@@ -106,6 +106,10 @@ class Main extends Component {
 }
 
 window.onload = () => {
+  if (window.localStorage.getItem("fm_version") !== fm.lang.version) {
+    window.localStorage.clear();
+    window.localStorage.setItem("fm_version", fm.lang.version);
+  }
   var file = window.location.pathname.slice(1) || "Welcome@0";
   render(h(Main, {file}), document.getElementById("main"));
 };
