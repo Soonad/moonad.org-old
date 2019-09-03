@@ -217,12 +217,23 @@ class Code extends Component {
       }, [
         h("code", {"style": {"padding": "8px", "overflow": "scroll", "flex-grow": 1}}, [h("pre", {}, [code_chunks])]),
         h("div", {"style": {"padding": "8px", "border-left": "1px dashed gray", "background-color": "rgb(240,240,240)", "overflow-bottom": "scroll"}}, [
-          h("div", {"style": {"font-weight": "bold"}}, "Cited by:"),
+          h("div", {"style": {"font-weight": "bold", "min-width": "160px"}}, "Cited by:"),
           parents
         ])
       ]);
   }
 
 }
+
+// Cached load_file_parents. TODO: remove if FM-Lang starts caching it.
+//const load_file_parents = (() => {
+  //var cache = {};
+  //return file => {
+    //if (!cache[file]) {
+      //cache[file] = fm.lang.load_file_parents(file);
+    //}
+    //return cache[file];
+  //};
+//})();
 
 module.exports = Code;

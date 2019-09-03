@@ -2,12 +2,16 @@ const {Component, render} = require("inferno");
 const h = require("inferno-hyperscript").h;
 const fm = require("formality-lang");
 const CodeBrowser = require("./CodeBrowser.js");
+const Write = require("./Write.js");
 
 class Main extends Component {
   constructor(props) {
     super(props)
-    this.state = {defs: null};
-    this.elems = [];
+    this.state = {
+      defs: null,
+      writing: false,
+      file: ""
+    };
     this.set_file(props.file || "Welcome@0");
   }
 
@@ -15,7 +19,7 @@ class Main extends Component {
     if (push_state) {
       window.history.pushState(file, null, file);
     }
-    this.file = file;
+    this.state.file = file;
     this.forceUpdate();
   }
 
@@ -71,7 +75,7 @@ class Main extends Component {
               , "text-decoration": "underline"
               , "cursor": "pointer"
               }},
-            this.file),
+            this.state.file),
         ]),
 
       // Site body
@@ -91,20 +95,33 @@ class Main extends Component {
           // Main area
           h("div", {style: {
             "width": "calc(100% - 16px)",
-            "max-height": "calc(100vh - 44px - 16px)",  // TODO: can this be improved? Using 100% fails. https://stackoverflow.com/questions/14262938/child-with-max-height-100-overflows-parent
-            //"padding": "8px",
+            "max-height": // TODO: improve. 100% fails. https://stackoverflow.com/questions/14262938/child-with-max-height-100-overflows-parent
+              this.state.writing
+              ? "calc((100vh - 44px) * 0.5 - 16px)"
+              : "calc(100vh - 44px - 16px)",
             "margin": "8px",
             "background": "rgba(255,255,255,1)",
             "border-radius": "6px",
             "box-shadow": "0px 0px 6px 0px rgba(0,0,0,0.5)"
-          }}, h(CodeBrowser, {file: this.file, set_file: (file, push_state) => this.set_file(file, push_state)})),
+          }}, h(CodeBrowser,
+            { file: this.state.file
+            , set_file: (file, push_state) => this.set_file(file, push_state)
+            })),
 
           // Right area
           //h("div", {style:
             //{ "width": "220px"
             //, "height": "100%"
           //}}, ".")
-        ])
+        ]),
+
+      // Writer
+      h(Write,
+        { writing: this.state.writing
+        , file: this.state.file
+        , set_file: (file, push_state) => this.set_file(file, push_state)
+        , toggle_writing: () => this.setState({writing: !this.state.writing})
+        })
     ]);
   }
 }
