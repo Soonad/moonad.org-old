@@ -96,7 +96,7 @@ class Main extends Component {
           // Main area
           h("div", {style: {
             "width": "calc(100% - 16px)",
-            "height": "calc(100% - 16px)",
+            "max-height": "calc(100vh - 44px - 16px)",  // TODO: can this be improved? Using 100% fails. https://stackoverflow.com/questions/14262938/child-with-max-height-100-overflows-parent
             //"padding": "8px",
             "margin": "8px",
             "background": "rgba(255,255,255,1)",
