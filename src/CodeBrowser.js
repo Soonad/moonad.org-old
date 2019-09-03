@@ -45,6 +45,7 @@ class Code extends Component {
     if (file.indexOf("@") === -1) {
       file = file + "@0";
     }
+    this.file = file;
     //console.log("... load", file);
     try {
       this.parents = [];
@@ -54,15 +55,13 @@ class Code extends Component {
       this.code = "<error>";
     }
     //console.log("done");
-    this.file = file;
     this.forceUpdate();
   }
 
   // Loads a code
   async load_code(code) {
-    this.file = null;
     this.code = code;
-    var {defs, tokens} = await fm.lang.parse("test_file", this.code, true);
+    var {defs, tokens} = await fm.lang.parse(this.file, this.code, true);
     this.defs = defs;
     this.tokens = tokens;
     this.forceUpdate();
@@ -115,6 +114,8 @@ class Code extends Component {
   // Event when user clicks a reference
   onClickRef(path) {
     return e => {
+      console.log("path is", path);
+      console.log("setting file to", path.slice(0, path.indexOf("/")));
       this.set_file(path.slice(0, path.indexOf("/")));
     }
   }
