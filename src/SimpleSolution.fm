@@ -1,0 +1,12 @@
+import SimpleBounty@0
+
+// The solution is simply the `not` function!
+simple_solution : {case x : Bool} -> [y : Bool, ~Not(x == y)]
+| true  => [false, ~true_not_false] // if x == false, returns true, plus a proof that `true != false`
+| false => [true , ~false_not_true] // if x == true, returns false, plus a proof that `false != true`
+
+// Unlocks the crypto payment
+main : SimpleBounty
+  simple_solution
+
+// Author: 0x0000000000000000000000000000000000000000

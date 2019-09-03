@@ -29,16 +29,30 @@ class Main extends Component {
         , "align-items": "center"
         , "height": "44px"
         }}, [
-          h("img", {style:
-            { "width": "42px"
-            , "margin-left": "2px"
-            }, src: "assets/fm-logo.png"}),
-          h("span", {style:
-            { "padding-top": "6px"
-            , "font-size": "16px"
-            , "font-weight": "bold"
-            , "font-family": "Gotham Book"
-            }}, "Provit/"),
+          h("img", {
+            onClick: () => {
+              this.file = "Welcome@0";
+              this.forceUpdate();
+            },
+            style:
+              { "width": "42px"
+              , "cursor": "pointer"
+              , "margin-left": "2px"
+              },
+            src: "assets/fm-logo.png"}),
+          h("span", {
+            onClick: () => {
+              this.file = "Welcome@0";
+              this.forceUpdate();
+            },
+            style:
+              { "padding-top": "6px"
+                , "cursor": "pointer"
+              , "font-size": "16px"
+              , "font-weight": "bold"
+              , "font-family": "Gotham Book"
+              }},
+            "Provit/"),
           h("span", {
             onClick: () => {
               var file = prompt("File to load:");
@@ -92,6 +106,6 @@ class Main extends Component {
 }
 
 window.onload = () => {
-  var file = window.location.pathname.slice(1) || "SimpleProofExample@0";
+  var file = window.location.pathname.slice(1) || "Welcome@0";
   render(h(Main, {file}), document.getElementById("main"));
 };

@@ -40,21 +40,22 @@ class Code extends Component {
       window.history.pushState(file, null, file);
     }
 
-    console.log("... load", file);
+    //console.log("... load", file);
     if (file.slice(-3) === ".fm") {
       file = file.slice(0, -3);
     }
     if (file.indexOf("@") === -1) {
       file = file + "@0";
     }
-    console.log("... load", file);
+    //console.log("... load", file);
     try {
+      this.parents = [];
       await this.load_code(await fm.lang.load_file(file));
       this.parents = await fm.lang.load_file_parents(file);
     } catch (e) {
       this.code = "<error>";
     }
-    console.log("done");
+    //console.log("done");
     this.file = file;
     this.forceUpdate();
   }
@@ -78,12 +79,17 @@ class Code extends Component {
       var type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
       var good = false;
     }
-    var text = "";
+    var text = ":: Type ::\n";
     if (good) {
-      text += "✓ " + name + " : " + type + "\n\nTerm checked successfully!";
+      text += "✓ " +  type;
     } else {
-      text += "✗ " + name + "\n\n" + type;
+      text += "✗ " + type;
     }
+    try {
+      var norm = fm.lang.norm(this.defs[name], this.defs, "DEBUG", {erased: true, unbox: true, logging: true});
+      text += "\n\n:: Output ::\n";
+      text += fm.lang.show(norm, [], {full_refs: false});
+    } catch (e) {};
     alert(text);
   }
 
@@ -170,17 +176,15 @@ class Code extends Component {
     return h("div", {
       style:
         { "font-family": "monospace"
-        , "font-size": "12px" 
+        , "font-size": "14px" 
         , "display": "flex"
         , "flex-flow": "row nowrap"}
       }, [
         h("code", {"style": {"padding": "8px", "flex-grow": 1}}, [h("pre", {}, [code_chunks])]),
-        parents.length > 0
-          ?  h("div", {"style": {"padding": "8px", "border-left": "1px dashed gray", "background-color": "rgb(240,240,240)", "overflow-bottom": "scroll"}}, [
-              h("div", {"style": {"font-weight": "bold"}}, "Cited by:"),
-              parents
-            ])
-          : null
+          h("div", {"style": {"padding": "8px", "border-left": "1px dashed gray", "background-color": "rgb(240,240,240)", "overflow-bottom": "scroll"}}, [
+            h("div", {"style": {"font-weight": "bold"}}, "Cited by:"),
+            parents
+          ])
       ]);
   }
 

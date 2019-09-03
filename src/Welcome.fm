@@ -1,0 +1,40 @@
+import Base@0         // check our base libraries!
+import SimpleBounty@0 // a bounty example!
+
+main : Output
+  print("Welcome to provit!")
+
+// Welcome to Provit,
+// a place where you can post and work on Formality bounties!
+//
+// Since Formality is a proof language, it can verify the correctness
+// of submissions mechanically, allowing the whole platform to operate
+// autonomously! Click in one of the imports above to get started.
+// 
+//                _,.+-----__,._
+//               /  /    ,'     `.
+//      ,+._   ./...\_  /   ,..   \
+//      | `.`+'       `-' .' ,.|  |
+//      |  |( ,    ,.`,   |  `-',,........_       __......_
+//       \ |..`/,-'  '"""' `""'"  _,.---"-,  .-+-'      _.-""`--._
+//        ."|       /"\`.      ,-'       / .','      ,-'          \
+//       .'-'      |`-'  |    `./       / / /       /   ,.-'       |
+//      j`v+"      `----"       ,'    ,'./ .'      /   |        ___|
+//      |                      |   _,','j  |      /    L   _.-"'    `--.
+//       \                     `.-'  j  |  L     F      \-'             \
+//        \ .-.               ,'     |  L   .    /    ,'       __..      `
+//         \ `.|            _/_      '   \  |   /   ,'       ,"    `.     '
+//          `.             '   `-.    `.__| |  /  ,'         |            |
+//            `"-,.               `----'   `-.' .'   _,.--"""'" --.      ,'
+//               |          ,.                `.  ,-'              `.  _'
+//              /|         /                    \'          __.._    \'
+//    _...--...' +,..-----'                      \-----._,-'     \    |
+//  ,'    |     /        \                        \      |       j    |
+// /| /   |    j  ,      |                         ,._   `.    -'    /
+// \\'   _`.__ | |      _L      |-----\            `. \    `._    _,'
+//  ""`"'     "`"---'""`._`-._,-'      `.              `.     `--'
+//                        "`--.......____:.         _  / \
+//                                `-----.. `>-.....`,-'   \
+//                                       `|"    `.  ` . \ |
+//                                         `._`..'    `-"'
+//                                            "' mh
