@@ -37,11 +37,7 @@ class Code extends Component {
 
 
   // Loads a file (ex: "Data.Bool@0")
-  async load_file(file, push_state = true) {
-    if (push_state) {
-      window.history.pushState(file, null, file);
-    }
-
+  async load_file(file) {
     //console.log("... load", file);
     if (file.slice(-3) === ".fm") {
       file = file.slice(0, -3);

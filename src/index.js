@@ -11,7 +11,10 @@ class Main extends Component {
     this.elems = [];
   }
 
-  set_file(file) {
+  set_file(file, push_state = true) {
+    if (push_state) {
+      window.history.pushState(file, null, file);
+    }
     this.file = file;
     this.forceUpdate();
   }
@@ -98,7 +101,7 @@ class Main extends Component {
             "background": "rgba(255,255,255,1)",
             "border-radius": "6px",
             "box-shadow": "0px 0px 6px 0px rgba(0,0,0,0.5)"
-          }}, h(CodeBrowser, {file: this.file, set_file: file => this.set_file(file)})),
+          }}, h(CodeBrowser, {file: this.file, set_file: (file, push_state) => this.set_file(file, push_state)})),
 
           // Right area
           //h("div", {style:
