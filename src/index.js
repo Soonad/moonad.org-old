@@ -6,9 +6,9 @@ const CodeBrowser = require("./CodeBrowser.js");
 class Main extends Component {
   constructor(props) {
     super(props)
-    this.file = props.file;
     this.state = {defs: null};
     this.elems = [];
+    this.set_file(props.file || "Welcome@0");
   }
 
   set_file(file, push_state = true) {
@@ -118,6 +118,6 @@ window.onload = () => {
     window.localStorage.clear();
     window.localStorage.setItem("fm_version", fm.lang.version);
   }
-  var file = window.location.pathname.slice(1) || "Welcome@0";
+  var file = window.location.pathname.slice(1);
   render(h(Main, {file}), document.getElementById("main"));
 };

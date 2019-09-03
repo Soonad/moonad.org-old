@@ -23,9 +23,7 @@ class Code extends Component {
 
   componentDidMount() {
     window.onpopstate = e => {
-      if (e && e.state) {
-        this.set_file(e.state, false);
-      }
+      this.set_file(e.state || "", false);
     };
   }
 
@@ -114,8 +112,8 @@ class Code extends Component {
   // Event when user clicks a reference
   onClickRef(path) {
     return e => {
-      console.log("path is", path);
-      console.log("setting file to", path.slice(0, path.indexOf("/")));
+      //console.log("path is", path);
+      //console.log("setting file to", path.slice(0, path.indexOf("/")));
       this.set_file(path.slice(0, path.indexOf("/")));
     }
   }
@@ -138,21 +136,58 @@ class Code extends Component {
     }
 
     var code_chunks = [];
-    for (var i = 0; i < this.tokens.length; ++i) {
-      var attrs = (() => {
+    for (let i = 0; i < this.tokens.length; ++i) {
+      let child = this.tokens[i][1];
+      let elem = (() => {
         switch (this.tokens[i][0]) {
-          case "txt" : return {style: {"color": "black"}};
-          case "sym" : return {style: {"color": "#15568f"}};
-          case "cmm" : return {style: {"color": "#A2A8D3"}};
-          case "num" : return {style: {"color": "green"}};
-          case "var" : return {style: {"color": "black"}};
-          case "imp" : return {style: {"color": "black", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickImp(this.tokens[i][1])}; // Ex: ["imp", "Data.Bool@0"]
-          case "ref" : return {style: {"color": "#38598B", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickRef(this.tokens[i][2])}; // Ex: ["ref", "true", "Data.Bool@0/true"]
-          case "def" : return {style: {"color": "#4384e6", "text-decoration": "underline", "font-weight": "bold", "cursor": "pointer"}, onClick: this.onClickDef(this.tokens[i][2])};  // Ex: ["def", "true", "Data.Bool@0/true"]
-          default    : return {};
+          case "txt":
+            return h("span", {style: {"color": "black"}}, child);
+          case "sym":
+            return h("span", {style: {"color": "#15568f"}}, child);
+          case "cmm":
+            return h("span", {style: {"color": "#A2A8D3"}}, child);
+          case "num":
+            return h("span", {style: {"color": "green"}}, child);
+          case "var":
+            return h("span", {style: {"color": "black"}}, child);
+          case "imp":
+            return h("a", {
+              href: window.location.origin + "/" + this.tokens[i][1],
+              style:
+                { "color": "black"
+                , "text-decoration": "underline"
+                , "font-weight": "bold"
+                , "cursor": "pointer"},
+              onClick: e => {
+                this.onClickImp(this.tokens[i][1])(e);
+                e.preventDefault();
+              }}, child);
+          case "ref":
+            return h("a", {
+              href: window.location.origin + "/" + this.tokens[i][2].replace(new RegExp("/.*$"), ""),
+              style:
+                { "color": "#38598B"
+                , "text-decoration": "underline"
+                , "font-weight": "bold"
+                , "cursor": "pointer"},
+              onClick: e => {
+                this.onClickRef(this.tokens[i][2])(e);
+                e.preventDefault();
+              }}, child);
+          case "def":
+            return h("span", {
+              style:
+                { "color": "#4384e6"
+                , "text-decoration": "underline"
+                , "font-weight": "bold"
+                , "cursor": "pointer"},
+              onClick: this.onClickDef(this.tokens[i][2])
+            }, child);
+          default:
+            return h("span", {}, child);
         }
       })();
-      code_chunks.push(h("span", attrs, (this.tokens[i][1])));
+      code_chunks.push(elem);
     }
 
     var parents = [];
