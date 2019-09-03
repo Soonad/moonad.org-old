@@ -95,7 +95,7 @@ class Main extends Component {
 
           // Main area
           h("div", {style: {
-            "width": "calc(100%)",
+            "width": "calc(100% - 16px)",
             //"padding": "8px",
             "margin": "8px",
             "background": "rgba(255,255,255,1)",

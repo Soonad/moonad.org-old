@@ -179,11 +179,11 @@ class Code extends Component {
         , "display": "flex"
         , "flex-flow": "row nowrap"}
       }, [
-        h("code", {"style": {"padding": "8px", "flex-grow": 1}}, [h("pre", {}, [code_chunks])]),
-          h("div", {"style": {"padding": "8px", "border-left": "1px dashed gray", "background-color": "rgb(240,240,240)", "overflow-bottom": "scroll"}}, [
-            h("div", {"style": {"font-weight": "bold"}}, "Cited by:"),
-            parents
-          ])
+        h("code", {"style": {"padding": "8px", "overflow": "scroll", "flex-grow": 1}}, [h("pre", {}, [code_chunks])]),
+        h("div", {"style": {"padding": "8px", "border-left": "1px dashed gray", "background-color": "rgb(240,240,240)", "overflow-bottom": "scroll"}}, [
+          h("div", {"style": {"font-weight": "bold"}}, "Cited by:"),
+          parents
+        ])
       ]);
   }
 
