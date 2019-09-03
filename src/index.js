@@ -6,42 +6,92 @@ const CodeBrowser = require("./CodeBrowser.js");
 class Main extends Component {
   constructor(props) {
     super(props)
+    this.file = props.file;
     this.state = {defs: null};
     this.elems = [];
   }
 
   render() {
-    return h("div", {style: {"font-family": "Gotham Book"}}, [
+
+    // Complete site
+    return h("div",
+      {style:
+        { "font-family": "Gotham Book"
+        , "height": "100%"}}, [
+
+      // Top menu
+      h("div", {style:
+        { "background": "rgb(255,255,255)"
+        , "border-bottom": "1px solid rgb(20,16,26)"
+        //, "box-shadow": "inset 0px -6px 2px -5px rgba(69,57,91,1)"
+        , "display": "flex"
+        , "flex-flow": "row nowrap"
+        , "align-items": "center"
+        , "height": "44px"
+        }}, [
+          h("img", {style:
+            { "width": "42px"
+            , "margin-left": "2px"
+            }, src: "assets/fm-logo.png"}),
+          h("span", {style:
+            { "padding-top": "6px"
+            , "font-size": "16px"
+            , "font-weight": "bold"
+            , "font-family": "Gotham Book"
+            }}, "Provit/"),
+          h("span", {
+            onClick: () => {
+              var file = prompt("File to load:");
+              if (file) {
+                this.file = file;
+                this.forceUpdate();
+              }
+            },
+            style:
+              { "padding-top": "6px"
+              , "font-size": "16px"
+              , "font-family": "Gotham Book"
+              , "text-decoration": "underline"
+              , "cursor": "pointer"
+              }},
+            this.file),
+        ]),
+
+      // Site body
       h("div", {style: {
-        "background": "white",
-        "margin-bottom": "24px",
-        "border-bottom": "1px solid gray",
         "display": "flex",
         "flex-flow": "row nowrap",
-        "align-items": "center",
-        "height": "44px"
+        "align-items": "flex-start",
+        "height": "calc(100% - 44px)"
         }}, [
-          h("img", {style: {"width": "42px"}, src: "assets/fm-logo.png"}),
-          h("span", {style: {
-            "padding-top": "6px",
-            "font-family": "Gotham Book"}},
-            "Provit!")
-        ]),
-      h("div", {style: {
-        "display": "flex",
-        "flex-flow": "column nowrap",
-        "align-items": "center",
-        }}, [
+
+          // Left area
+          //h("div", {style:
+            //{ "width": "220px"
+            //, "height": "100%"}},
+            //"."),
+
+          // Main area
           h("div", {style: {
-            "background": "white",
-            "padding": "8px",
+            "width": "calc(100%)",
+            //"padding": "8px",
+            "margin": "8px",
+            "background": "rgba(255,255,255,1)",
             "border-radius": "6px",
             "box-shadow": "0px 0px 6px 0px rgba(0,0,0,0.5)"
-          }}, h(CodeBrowser, {file: "SimpleProofExample@0"}))])
+          }}, h(CodeBrowser, {file: this.file})),
+
+          // Right area
+          //h("div", {style:
+            //{ "width": "220px"
+            //, "height": "100%"
+          //}}, ".")
+        ])
     ]);
   }
 }
 
 window.onload = () => {
-  render(h(Main), document.getElementById("main"));
+  var file = window.location.pathname.slice(1) || "SimpleProofExample@0";
+  render(h(Main, {file}), document.getElementById("main"));
 };

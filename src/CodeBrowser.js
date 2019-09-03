@@ -9,17 +9,37 @@ class Code extends Component {
   constructor(props) {
     super(props);
 
-    this.file = null;   // String           -- name of the loaded file
-    this.code = null;   // String           -- the loaded code
-    this.defs = null;   // {[String]: Term} -- the defs inside that code
-    this.tokens = null; // [[String, Info]] -- chunks of code with syntax highlight info
+    this.file = null;    // String           -- name of the loaded file
+    this.code = null;    // String           -- the loaded code
+    this.defs = null;    // {[String]: Term} -- the defs inside that code
+    this.parents = null; // [String]         -- FPM files that imported the loaded file
+    this.tokens = null;  // [[String, Info]] -- chunks of code with syntax highlight info
 
     if (props.code) this.load_code(props.code);
     if (props.file) this.load_file(props.file);
   }
 
+  componentDidMount() {
+    window.onpopstate = e => {
+      if (e && e.state) {
+        this.load_file(e.state, false);
+      }
+    };
+  }
+
+  // Loads file/code from propps
+  componentWillReceiveProps(props) {
+    if (props.code) this.load_code(props.code);
+    if (props.file) this.load_file(props.file);
+  }
+
+
   // Loads a file (ex: "Data.Bool@0")
-  async load_file(file) {
+  async load_file(file, push_state = true) {
+    if (push_state) {
+      window.history.pushState(file, null, file);
+    }
+
     console.log("... load", file);
     if (file.slice(-3) === ".fm") {
       file = file.slice(0, -3);
@@ -28,7 +48,12 @@ class Code extends Component {
       file = file + "@0";
     }
     console.log("... load", file);
-    await this.load_code(await fm.lang.load_file(file));
+    try {
+      await this.load_code(await fm.lang.load_file(file));
+      this.parents = await fm.lang.load_file_parents(file);
+    } catch (e) {
+      this.code = "<error>";
+    }
     console.log("done");
     this.file = file;
     this.forceUpdate();
@@ -42,12 +67,6 @@ class Code extends Component {
     this.defs = defs;
     this.tokens = tokens;
     this.forceUpdate();
-  }
-
-  // Loads file/code from propps
-  componentWillReceiveProps(props) {
-    if (props.code) this.load_code(props.code);
-    if (props.file) this.load_file(props.file);
   }
 
   // Type-checks a definition 
@@ -78,9 +97,6 @@ class Code extends Component {
     alert(norm);
   }
 
-  async componentDidMount() {
-  }
-
   // Event when user clicks a definition 
   onClickDef(path) {
     return e => {
@@ -108,8 +124,12 @@ class Code extends Component {
 
   // Renders the interface
   render() {
+    if (this.code === "<error>") {
+      return h("div", {"style": {"padding": "8px"}}, "Failed to load code.");
+    }
+
     if (!this.tokens) {
-      return h("div", {}, "Loading code...");
+      return h("div", {"style": {"padding": "8px"}}, "Loading code from FPM. This may take a while...");
     }
 
     var code_chunks = [];
@@ -130,31 +150,38 @@ class Code extends Component {
       code_chunks.push(h("span", attrs, (this.tokens[i][1])));
     }
 
+    var parents = [];
+    if (this.parents) {
+      for (var i = 0; i < this.parents.length; ++i) {
+        let parent_file = this.parents[i];
+        parents.push(h("div", {
+          "onClick": e => {
+            this.load_file(parent_file);
+          },
+          "style":
+            { "cursor": "pointer"
+            , "text-decoration": "underline"
+            }
+          },
+          parent_file));
+      }
+    }
+
     return h("div", {
-      style: {
-        "font-family": "monospace",
-        "font-size": "12px"
-      }}, [
-      h("code", {}, [
-        h("pre", {}, [
-          h("div", {
-            onClick: e => {
-              var file = prompt("File to load:");
-              if (file) {
-                this.load_file(file);
-              }
-            },
-            style: {
-              "font-weight": "bold",
-              "text-decoration": "underline",
-              "cursor": "pointer"
-            }},
-            (this.file || "unnamed") + ".fm"),
-          h("div", {style: {visibility: "hidden"}}, "---"),
-          code_chunks
-        ])
-      ])
-    ]);
+      style:
+        { "font-family": "monospace"
+        , "font-size": "12px" 
+        , "display": "flex"
+        , "flex-flow": "row nowrap"}
+      }, [
+        h("code", {"style": {"padding": "8px", "flex-grow": 1}}, [h("pre", {}, [code_chunks])]),
+        parents.length > 0
+          ?  h("div", {"style": {"padding": "8px", "border-left": "1px dashed gray", "background-color": "rgb(240,240,240)", "overflow-bottom": "scroll"}}, [
+              h("div", {"style": {"font-weight": "bold"}}, "Cited by:"),
+              parents
+            ])
+          : null
+      ]);
   }
 
 }
