@@ -39,8 +39,7 @@ class Main extends Component {
         }}, [
           h("img", {
             onClick: () => {
-              this.file = "Welcome@0";
-              this.forceUpdate();
+              this.set_file("Welcome@0");
             },
             style:
               { "width": "42px"
@@ -50,8 +49,7 @@ class Main extends Component {
             src: "assets/fm-logo.png"}),
           h("span", {
             onClick: () => {
-              this.file = "Welcome@0";
-              this.forceUpdate();
+              this.set_file("Welcome@0");
             },
             style:
               { "padding-top": "6px"
@@ -64,10 +62,7 @@ class Main extends Component {
           h("span", {
             onClick: () => {
               var file = prompt("File to load:");
-              if (file) {
-                this.file = file;
-                this.forceUpdate();
-              }
+              if (file) this.set_file(file);
             },
             style:
               { "padding-top": "6px"
