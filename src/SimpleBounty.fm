@@ -3,4 +3,4 @@ import Base@0
 // Demands a function that receives a Bool, `x`,
 // and returns a Bool, `y`, such that `x != y`.
 SimpleBounty : Type
-  {x : Bool} -> [y : Bool, ~Not(x == y)]
+  {x : Bool} -> [y : Bool ~ Not(x == y)]
