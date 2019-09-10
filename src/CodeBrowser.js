@@ -50,6 +50,7 @@ class Code extends Component {
       await this.load_code(await fm.lang.load_file(file));
       this.parents = await fm.lang.load_file_parents(file);
     } catch (e) {
+      console.log(e);
       this.code = "<error>";
     }
     //console.log("done");
@@ -83,6 +84,7 @@ class Code extends Component {
     try {
       var norm = fm.lang.norm(this.defs[name], this.defs, "DEBUG", {erased: true, unbox: true, logging: true});
       text += "\n\n:: Output ::\n";
+      console.log("?", fm.lang.show(norm, [], {full_refs: false}));
       text += fm.lang.show(norm, [], {full_refs: false});
     } catch (e) {};
     alert(text);

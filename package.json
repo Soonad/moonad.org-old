@@ -18,7 +18,7 @@
   },
   "homepage": "https://gitlab.com/moonad/fm-lab#readme",
   "devDependencies": {
-    "formality-lang": "^0.3.112",
+    "formality-lang": "^0.3.115",
     "inferno": "^7.1.10",
     "inferno-hyperscript": "^7.1.10",
     "raw-loader": "^1.0.0",
