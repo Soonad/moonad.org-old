@@ -18,7 +18,7 @@ class Write extends Component {
     this.set_file = props.set_file;
     this.state = {
       file: "MyPost",
-      code: "import " + props.file + "\n\n// Enter your code here"
+      code: "import Welcome@0 // Import your citations below\n\n// Enter your code and comments here"
     }
     this.forceUpdate();
   }
