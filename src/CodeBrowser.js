@@ -71,7 +71,7 @@ class Code extends Component {
     try {
       console.log(".........name", name);
       console.log(".........term", fm.lang.show(this.defs[name]));
-      var type = fm.lang.exec(name, this.defs, "TYPE", {});
+      var type = fm.exec(name, this.defs, "TYPE", {});
       var good = true;
       console.log(".........type", type);
       console.log(".........type", fm.lang.show(type));
@@ -86,7 +86,7 @@ class Code extends Component {
       text += "✗ " + type;
     }
     try {
-      var norm = fm.lang.exec(name, this.defs, "DEBUG", {erased: true, unbox: true, logging: true});
+      var norm = fm.exec(name, this.defs, "DEBUG", {erased: true, unbox: true, logging: true});
       text += "\n\n:: Output ::\n";
       text += fm.lang.show(norm, [], {full_refs: false});
     } catch (e) {};
