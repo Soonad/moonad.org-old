@@ -18,7 +18,7 @@ class Main extends Component {
       {style:
         { "font-family": "Gotham Book"
         , "height": "100%"}}, [
-      h(CodeBrowser, {file: "Welcome@0"})
+      h(CodeBrowser, {file: "Root@0"})
     ]);
 
     // Complete site
