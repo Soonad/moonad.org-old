@@ -250,6 +250,7 @@ class Code extends Component {
         { "display": "flex"
         , "flex-flow": "column nowrap"
         , "height": "100%"
+        , "background": "rgb(253,253,254)"
         }},
       [h("div", {
         "style":
