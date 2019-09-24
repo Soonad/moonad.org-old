@@ -2,7 +2,6 @@ const {Component, render} = require("inferno");
 const h = require("inferno-hyperscript").h;
 const fm = require("formality-lang");
 const CodeBrowser = require("./CodeBrowser.js");
-const Write = require("./Write.js");
 
 class Main extends Component {
   constructor(props) {
@@ -10,17 +9,7 @@ class Main extends Component {
     this.state = {
       defs: null,
       writing: false,
-      file: ""
     };
-    this.set_file(props.file || "Welcome@0");
-  }
-
-  set_file(file, push_state = true) {
-    if (push_state) {
-      window.history.pushState(file, null, file);
-    }
-    this.state.file = file;
-    this.forceUpdate();
   }
 
   render() {
@@ -34,7 +23,7 @@ class Main extends Component {
       // Top menu
       h("div", {style:
         { "background": "rgb(255,255,255)"
-        , "border-bottom": "1px solid rgb(20,16,26)"
+        , "border-bottom": "1px solid rgb(160,160,160)"
         //, "box-shadow": "inset 0px -6px 2px -5px rgba(69,57,91,1)"
         , "display": "flex"
         , "flex-flow": "row nowrap"
@@ -42,9 +31,6 @@ class Main extends Component {
         , "height": "44px"
         }}, [
           h("img", {
-            onClick: () => {
-              this.set_file("Welcome@0");
-            },
             style:
               { "width": "42px"
               , "cursor": "pointer"
@@ -53,29 +39,15 @@ class Main extends Component {
             src: "assets/fm-logo.png"}),
           h("span", {
             onClick: () => {
-              this.set_file("Welcome@0");
             },
             style:
               { "padding-top": "6px"
-                , "cursor": "pointer"
-              , "font-size": "16px"
+              , "cursor": "pointer"
+              , "font-size": "20px"
               , "font-weight": "bold"
               , "font-family": "Gotham Book"
               }},
-            "Provit/"),
-          h("span", {
-            onClick: () => {
-              var file = prompt("File to load:");
-              if (file) this.set_file(file);
-            },
-            style:
-              { "padding-top": "6px"
-              , "font-size": "16px"
-              , "font-family": "Gotham Book"
-              , "text-decoration": "underline"
-              , "cursor": "pointer"
-              }},
-            this.state.file),
+            "Formality")
         ]),
 
       // Site body
@@ -103,25 +75,14 @@ class Main extends Component {
             "background": "rgba(255,255,255,1)",
             "border-radius": "6px",
             "box-shadow": "0px 0px 6px 0px rgba(0,0,0,0.5)"
-          }}, h(CodeBrowser,
-            { file: this.state.file
-            , set_file: (file, push_state) => this.set_file(file, push_state)
-            })),
+          }}, h(CodeBrowser, {file: "Welcome@0"})),
 
           // Right area
           //h("div", {style:
             //{ "width": "220px"
             //, "height": "100%"
           //}}, ".")
-        ]),
-
-      // Writer
-      h(Write,
-        { writing: this.state.writing
-        , file: this.state.file
-        , set_file: (file, push_state) => this.set_file(file, push_state)
-        , toggle_writing: () => this.setState({writing: !this.state.writing})
-        })
+        ])
     ]);
   }
 }
