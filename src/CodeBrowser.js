@@ -152,7 +152,7 @@ class Code extends Component {
           , "font-size": "14px" 
           , "padding": "7px"
           , "width": "100%"
-          , "height": (this.code.split("\n").length * 18) + "px"},
+          , "height": "100%"},
         }, []);
     } else {
       // Makes spans for each code chunk
@@ -233,7 +233,7 @@ class Code extends Component {
         style:
           { "font-family": "monospace"
           , "font-size": "14px" 
-          , "max-height": "inherit"
+          , "height": "100%"
           , "display": "flex"
           , "flex-flow": "row nowrap"}
         }, [
@@ -249,6 +249,7 @@ class Code extends Component {
       "style":
         { "display": "flex"
         , "flex-flow": "column nowrap"
+        , "height": "100%"
         }},
       [h("div", {
         "style":

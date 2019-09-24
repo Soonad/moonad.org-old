@@ -14,6 +14,13 @@ class Main extends Component {
 
   render() {
 
+    return h("div",
+      {style:
+        { "font-family": "Gotham Book"
+        , "height": "100%"}}, [
+      h(CodeBrowser, {file: "Welcome@0"})
+    ]);
+
     // Complete site
     return h("div",
       {style:
