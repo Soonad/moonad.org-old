@@ -18,8 +18,7 @@ class Code extends Component {
     this.history = [];    // [Strnig]         -- name of past loaded files
     this.editing = false; // 
 
-    if (props.code) this.load_code(props.code);
-    if (props.file) this.load_file(props.file);
+    this.load_file(window.location.pathname.slice(1) || "Root@0");
   }
 
   componentDidMount() {
@@ -29,6 +28,9 @@ class Code extends Component {
       window.localStorage.setItem("provit_version", this.version);
       window.localStorage.setItem("fm_version", fm.lang.version);
     }
+    window.onpopstate = function(e) {
+      console.log(e.state);
+    };
   }
 
   // Loads file/code from propps
@@ -48,6 +50,7 @@ class Code extends Component {
     }
     if (push_history) {
       this.history.push(file);
+      window.history.pushState(file, file, file);
     }
     this.editing = false;
     this.file = file;
@@ -278,6 +281,7 @@ class Code extends Component {
               if (this.file === "local" || this.history.length > 1) {
                 if (this.file !== "local") {
                   this.history.pop();
+                  window.history.back();
                 }
                 this.load_file(this.history[this.history.length - 1], false);
               }
