@@ -9,6 +9,7 @@ class Code extends Component {
   constructor(props) {
     super(props);
 
+    this.version = "0";
     this.file = null;     // String           -- name of the loaded file
     this.code = null;     // String           -- the loaded code
     this.defs = null;     // {[String]: Term} -- the defs inside that code
@@ -22,6 +23,12 @@ class Code extends Component {
   }
 
   componentDidMount() {
+    if ( window.localStorage.getItem("fm_version") !== fm.lang.version
+      || window.localStorage.getItem("provit_version") !== this.version) {
+      window.localStorage.clear();
+      window.localStorage.setItem("provit_version", this.version);
+      window.localStorage.setItem("fm_version", fm.lang.version);
+    }
   }
 
   // Loads file/code from propps
