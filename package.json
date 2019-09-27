@@ -19,8 +19,10 @@
   "homepage": "https://gitlab.com/moonad/fm-lab#readme",
   "devDependencies": {
     "formality-lang": "^0.3.133",
+    "eslint": "^6.4.0",
     "inferno": "^7.1.10",
     "inferno-hyperscript": "^7.1.10",
+    "prettier": "^1.18.2",
     "raw-loader": "^1.0.0",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3"
