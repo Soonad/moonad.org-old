@@ -33,6 +33,10 @@
     "no-empty": [
       "error",
       {"allowEmptyCatch": true}
+    ],
+    "quote-props": [
+      "error",
+      "consistent-as-needed"
     ]
   }
 }

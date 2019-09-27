@@ -1,29 +1,30 @@
 // A simple browser for Formality Code
 
-import {Component} from "inferno";
+import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
 import fm from "formality-lang";
 
 export default class Code extends Component {
-
   constructor(props) {
     super(props);
 
     this.version = "0";
-    this.file = null;     // String           -- name of the loaded file
-    this.code = null;     // String           -- the loaded code
-    this.defs = null;     // {[String]: Term} -- the defs inside that code
-    this.parents = null;  // [String]         -- FPM files that imported the loaded file
-    this.tokens = null;   // [[String, Info]] -- chunks of code with syntax highlight info
-    this.history = [];    // [Strnig]         -- name of past loaded files
+    this.file = null; // String           -- name of the loaded file
+    this.code = null; // String           -- the loaded code
+    this.defs = null; // {[String]: Term} -- the defs inside that code
+    this.parents = null; // [String]         -- FPM files that imported the loaded file
+    this.tokens = null; // [[String, Info]] -- chunks of code with syntax highlight info
+    this.history = []; // [Strnig]         -- name of past loaded files
     this.editing = false; //
 
     this.load_file(window.location.pathname.slice(1) || "Root@0");
   }
 
   componentDidMount() {
-    if ( window.localStorage.getItem("fm_version") !== fm.lang.version
-      || window.localStorage.getItem("provit_version") !== this.version) {
+    if (
+      window.localStorage.getItem("fm_version") !== fm.lang.version ||
+      window.localStorage.getItem("provit_version") !== this.version
+    ) {
       window.localStorage.clear();
       window.localStorage.setItem("provit_version", this.version);
       window.localStorage.setItem("fm_version", fm.lang.version);
@@ -67,7 +68,7 @@ export default class Code extends Component {
   // Loads a code
   async load_code(code) {
     this.code = code;
-    var {defs, tokens} = await fm.lang.parse(this.file, this.code, true);
+    var { defs, tokens } = await fm.lang.parse(this.file, this.code, true);
     this.defs = defs;
     this.tokens = tokens;
     this.forceUpdate();
@@ -84,7 +85,10 @@ export default class Code extends Component {
       console.log(".........type", type);
       console.log(".........type", fm.lang.show(type));
     } catch (e) {
-      type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
+      type = e
+        .toString()
+        .replace(/\[[0-9]m/g, "")
+        .replace(/\[[0-9][0-9]m/g, "");
       good = false;
     }
     var text = ":: Type ::\n";
@@ -94,9 +98,13 @@ export default class Code extends Component {
       text += "✗ " + type;
     }
     try {
-      var norm = fm.exec(name, this.defs, "DEBUG", {erased: true, unbox: true, logging: true});
+      var norm = fm.exec(name, this.defs, "DEBUG", {
+        erased: true,
+        unbox: true,
+        logging: true
+      });
       text += "\n\n:: Output ::\n";
-      text += fm.lang.show(norm, [], {full_refs: false});
+      text += fm.lang.show(norm, [], { full_refs: false });
     } catch (e) {}
     alert(text);
   }
@@ -105,7 +113,9 @@ export default class Code extends Component {
   normalize(name) {
     var norm;
     try {
-      norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
+      norm = fm.lang.show(
+        fm.lang.norm(this.defs[name], this.defs, "DEBUG", {})
+      );
     } catch (e) {
       norm = "<unable_to_normalize>";
     }
@@ -140,29 +150,38 @@ export default class Code extends Component {
   // Renders the interface
   render() {
     if (this.code === "<error>") {
-      return h("div", {"style": {"padding": "8px"}}, "Failed to load code.");
+      return h("div", { style: { padding: "8px" } }, "Failed to load code.");
     }
 
     if (!this.tokens) {
-      return h("div", {"style": {"padding": "8px"}}, "Loading code from FPM. This may take a while...");
+      return h(
+        "div",
+        { style: { padding: "8px" } },
+        "Loading code from FPM. This may take a while..."
+      );
     }
 
     var body;
 
     if (this.editing) {
-      body = h("textarea", {
-        "oninput": (e) => {
-          this.code = e.target.value;
-          this.forceUpdate();
+      body = h(
+        "textarea",
+        {
+          oninput: e => {
+            this.code = e.target.value;
+            this.forceUpdate();
+          },
+          value: this.code,
+          style: {
+            "font-family": "monospace",
+            "font-size": "14px",
+            "padding": "7px",
+            "width": "100%",
+            "height": "100%"
+          }
         },
-        "value": this.code,
-        "style":
-            { "font-family": "monospace"
-              , "font-size": "14px"
-              , "padding": "7px"
-              , "width": "100%"
-              , "height": "100%"},
-      }, []);
+        []
+      );
     } else {
       // Makes spans for each code chunk
       var code_chunks = [];
@@ -171,48 +190,68 @@ export default class Code extends Component {
         let elem = (() => {
           switch (this.tokens[i][0]) {
           case "txt":
-            return h("span", {style: {"color": "black"}}, child);
+            return h("span", { style: { color: "black" } }, child);
           case "sym":
-            return h("span", {style: {"color": "#15568f"}}, child);
+            return h("span", { style: { color: "#15568f" } }, child);
           case "cmm":
-            return h("span", {style: {"color": "#A2A8D3"}}, child);
+            return h("span", { style: { color: "#A2A8D3" } }, child);
           case "num":
-            return h("span", {style: {"color": "green"}}, child);
+            return h("span", { style: { color: "green" } }, child);
           case "var":
-            return h("span", {style: {"color": "black"}}, child);
+            return h("span", { style: { color: "black" } }, child);
           case "imp":
-            return h("a", {
-              href: window.location.origin + "/" + this.tokens[i][1],
-              style:
-                  { "color": "black"
-                    , "text-decoration": "underline"
-                    , "font-weight": "bold"
-                    , "cursor": "pointer"},
-              onClick: e => {
-                this.onClickImp(this.tokens[i][1])(e);
-                e.preventDefault();
-              }}, child);
+            return h(
+              "a",
+              {
+                href: window.location.origin + "/" + this.tokens[i][1],
+                style: {
+                  "color": "black",
+                  "text-decoration": "underline",
+                  "font-weight": "bold",
+                  "cursor": "pointer"
+                },
+                onClick: e => {
+                  this.onClickImp(this.tokens[i][1])(e);
+                  e.preventDefault();
+                }
+              },
+              child
+            );
           case "ref":
-            return h("a", {
-              href: window.location.origin + "/" + this.tokens[i][2].replace(new RegExp("/.*$"), ""),
-              style:
-                  { "color": "#38598B"
-                    , "text-decoration": "underline"
-                    , "font-weight": "bold"
-                    , "cursor": "pointer"},
-              onClick: e => {
-                this.onClickRef(this.tokens[i][2])(e);
-                e.preventDefault();
-              }}, child);
+            return h(
+              "a",
+              {
+                href:
+                    window.location.origin +
+                    "/" +
+                    this.tokens[i][2].replace(new RegExp("/.*$"), ""),
+                style: {
+                  "color": "#38598B",
+                  "text-decoration": "underline",
+                  "font-weight": "bold",
+                  "cursor": "pointer"
+                },
+                onClick: e => {
+                  this.onClickRef(this.tokens[i][2])(e);
+                  e.preventDefault();
+                }
+              },
+              child
+            );
           case "def":
-            return h("span", {
-              style:
-                  { "color": "#4384e6"
-                    , "text-decoration": "underline"
-                    , "font-weight": "bold"
-                    , "cursor": "pointer"},
-              onClick: this.onClickDef(this.tokens[i][2])
-            }, child);
+            return h(
+              "span",
+              {
+                style: {
+                  "color": "#4384e6",
+                  "text-decoration": "underline",
+                  "font-weight": "bold",
+                  "cursor": "pointer"
+                },
+                onClick: this.onClickDef(this.tokens[i][2])
+              },
+              child
+            );
           default:
             return h("span", {}, child);
           }
@@ -225,118 +264,176 @@ export default class Code extends Component {
       if (this.parents) {
         for (var i = 0; i < this.parents.length; ++i) {
           let parent_file = this.parents[i];
-          parents.push(h("div", {
-            "onClick": () => {
-              this.load_file(parent_file);
-            },
-            "style":
-              { "cursor": "pointer"
-                , "text-decoration": "underline"
-              }
-          },
-          parent_file));
+          parents.push(
+            h(
+              "div",
+              {
+                onClick: () => {
+                  this.load_file(parent_file);
+                },
+                style: { "cursor": "pointer", "text-decoration": "underline" }
+              },
+              parent_file
+            )
+          );
         }
       }
 
-      body = h("div", {
-        style:
-          { "font-family": "monospace"
-            , "font-size": "14px"
-            , "height": "100%"
-            , "display": "flex"
-            , "flex-flow": "row nowrap"}
-      }, [
-        h("code", {"style": {"padding": "8px", "overflow": "scroll", "flex-grow": 1}}, [h("pre", {}, [code_chunks])]),
-        h("div", {"style": {"padding": "8px", "border-left": "1px dashed gray", "background-color": "rgb(240,240,240)", "overflow-bottom": "scroll"}}, [
-          h("div", {"style": {"font-weight": "bold", "min-width": "160px"}}, "Cited by:"),
-          parents
-        ]),
-      ]);
+      body = h(
+        "div",
+        {
+          style: {
+            "font-family": "monospace",
+            "font-size": "14px",
+            "height": "100%",
+            "display": "flex",
+            "flex-flow": "row nowrap"
+          }
+        },
+        [
+          h(
+            "code",
+            { style: { "padding": "8px", "overflow": "scroll", "flex-grow": 1 } },
+            [h("pre", {}, [code_chunks])]
+          ),
+          h(
+            "div",
+            {
+              style: {
+                "padding": "8px",
+                "border-left": "1px dashed gray",
+                "background-color": "rgb(240,240,240)",
+                "overflow-bottom": "scroll"
+              }
+            },
+            [
+              h(
+                "div",
+                { style: { "font-weight": "bold", "min-width": "160px" } },
+                "Cited by:"
+              ),
+              parents
+            ]
+          )
+        ]
+      );
     }
 
-    return h("div", {
-      "style":
-        { "display": "flex"
-          , "flex-flow": "column nowrap"
-          , "height": "100%"
-          , "background": "rgb(253,253,254)"
-        }},
-    [h("div", {
-      "style":
-          { "background": "rgb(240,240,240)"
-            , "height": "26px"
-            , "font-family": "monospace"
-            , "font-size": "16px"
-            , "display": "flex"
-            , "user-select": "none"
-            , "flex-flow": "row nowrap"
-            , "justify-content": "flex-begin"
-            , "align-items": "center"
-            , "border-bottom": "1px solid rgb(180,180,180)"
-          }},
-    [
-      h("span", {
-        "onClick": () => {
-          if (this.file === "local" || this.history.length > 1) {
-            if (this.file !== "local") {
-              this.history.pop();
-              window.history.back();
+    return h(
+      "div",
+      {
+        style: {
+          "display": "flex",
+          "flex-flow": "column nowrap",
+          "height": "100%",
+          "background": "rgb(253,253,254)"
+        }
+      },
+      [
+        h(
+          "div",
+          {
+            style: {
+              "background": "rgb(240,240,240)",
+              "height": "26px",
+              "font-family": "monospace",
+              "font-size": "16px",
+              "display": "flex",
+              "user-select": "none",
+              "flex-flow": "row nowrap",
+              "justify-content": "flex-begin",
+              "align-items": "center",
+              "border-bottom": "1px solid rgb(180,180,180)"
             }
-            this.load_file(this.history[this.history.length - 1], false);
-          }
-        },
-        "style":
-              { "padding": "0px 8px"
-                , "cursor": this.file === "local" || this.history.length > 1 ? "pointer" : null
-                , "color": this.file === "local" || this.history.length > 1 ? "black" : "rgb(180,180,180)"}},
-      "⇦"),
-      h("span", {
-        "onClick": () => {
-          var file = prompt("File name:");
-          if (file) this.load_file(file);
-        },
-        "style":
-              { "cursor": "pointer"
-                , "flex-grow": "1"}
-      }, this.file),
-      h("span", {
-        "onClick": () => {
-          if (!this.editing) {
-            this.file = "local";
-            this.editing = true;
-          } else {
-            this.editing = false;
-            this.load_code(this.code);
-          }
-          this.forceUpdate();
-        },
-        "style":
-              { "padding-right": "8px"
-                , "cursor": "pointer"}
-      }, this.editing ? "✓" : "✎"),
-      h("span", {
-        "onClick": async () => {
-          var file = prompt("File name:");
-          try {
-            if (file) {
-              var unam = await fm.lang.save_file(file, this.code);
-              this.load_file(unam);
-            } else {
-              throw "";
-            }
-          } catch (e) {
-            alert("Couldn't save file.");
-          }
-        },
-        "style":
-              { "padding-right": "8px"
-                , "cursor": "pointer"
-                , "user-select": "none"
-                , "opacity": this.file === "local" && !this.editing ? "1.0" : "0.4"}
-      }, "💾")
-    ]),
-    body
-    ]);
+          },
+          [
+            h(
+              "span",
+              {
+                onClick: () => {
+                  if (this.file === "local" || this.history.length > 1) {
+                    if (this.file !== "local") {
+                      this.history.pop();
+                      window.history.back();
+                    }
+                    this.load_file(
+                      this.history[this.history.length - 1],
+                      false
+                    );
+                  }
+                },
+                style: {
+                  padding: "0px 8px",
+                  cursor:
+                    this.file === "local" || this.history.length > 1
+                      ? "pointer"
+                      : null,
+                  color:
+                    this.file === "local" || this.history.length > 1
+                      ? "black"
+                      : "rgb(180,180,180)"
+                }
+              },
+              "⇦"
+            ),
+            h(
+              "span",
+              {
+                onClick: () => {
+                  var file = prompt("File name:");
+                  if (file) this.load_file(file);
+                },
+                style: { "cursor": "pointer", "flex-grow": "1" }
+              },
+              this.file
+            ),
+            h(
+              "span",
+              {
+                onClick: () => {
+                  if (!this.editing) {
+                    this.file = "local";
+                    this.editing = true;
+                  } else {
+                    this.editing = false;
+                    this.load_code(this.code);
+                  }
+                  this.forceUpdate();
+                },
+                style: { "padding-right": "8px", "cursor": "pointer" }
+              },
+              this.editing ? "✓" : "✎"
+            ),
+            h(
+              "span",
+              {
+                onClick: async () => {
+                  var file = prompt("File name:");
+                  try {
+                    if (file) {
+                      var unam = await fm.lang.save_file(file, this.code);
+                      this.load_file(unam);
+                    } else {
+                      throw "";
+                    }
+                  } catch (e) {
+                    alert("Couldn't save file.");
+                  }
+                },
+                style: {
+                  "padding-right": "8px",
+                  "cursor": "pointer",
+                  "user-select": "none",
+                  "opacity":
+                    this.file === "local" && !this.editing ? "1.0" : "0.4"
+                }
+              },
+              "💾"
+            )
+          ]
+        ),
+        body
+      ]
+    );
   }
-
 }

@@ -1,4 +1,4 @@
-import {Component, render} from "inferno";
+import { Component, render } from "inferno";
 import { h } from "inferno-hyperscript";
 import CodeBrowser from "./CodeBrowser";
 
@@ -7,17 +7,16 @@ class Main extends Component {
     super(props);
     this.state = {
       defs: null,
-      writing: false,
+      writing: false
     };
   }
 
   render() {
-    return h("div",
-      {style:
-        { "font-family": "Gotham Book"
-          , "height": "100%"}}, [
-        h(CodeBrowser, {file: "Root@0"})
-      ]);
+    return h(
+      "div",
+      { style: { "font-family": "Gotham Book", "height": "100%" } },
+      [h(CodeBrowser, { file: "Root@0" })]
+    );
   }
 }
 
