@@ -9,13 +9,13 @@ export default class Code extends Component {
     super(props);
 
     this.version = "0";
-    this.file = null; // String           -- name of the loaded file
-    this.code = null; // String           -- the loaded code
-    this.defs = null; // {[String]: Term} -- the defs inside that code
-    this.parents = null; // [String]         -- FPM files that imported the loaded file
-    this.tokens = null; // [[String, Info]] -- chunks of code with syntax highlight info
-    this.history = []; // [Strnig]         -- name of past loaded files
-    this.editing = false; //
+    this.file = null; //     String           -- name of the loaded file
+    this.code = null; //     String           -- the loaded code
+    this.defs = null; //     {[String]: Term} -- the defs inside that code
+    this.parents = null; //  [String]         -- FPM files that imported the loaded file
+    this.tokens = null; //   [[String, Info]] -- chunks of code with syntax highlight info
+    this.history = []; //    [String]         -- name of past loaded files
+    this.editing = false; // Boolean          -- Whether or not editing mode is on
 
     this.load_file(window.location.pathname.slice(1) || "Root@0");
   }
