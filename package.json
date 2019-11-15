@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "rm -rf docs; cp -r src docs; webpack"
+    "build": "rm -rf docs; cp -r src docs; webpack",
+    "lint": "eslint \"src/**/*.js\" && npx prettier-eslint \"src/**/*.js\" --list-different",
+    "format": "prettier-eslint \"src/**/*.js\" --write"
   },
   "repository": {
     "type": "git",
@@ -21,6 +23,7 @@
     "formality-lang": "^0.1.178",
     "inferno": "^7.1.10",
     "inferno-hyperscript": "^7.1.10",
+    "prettier-eslint-cli": "^5.0.0",
     "raw-loader": "^1.0.0",
     "webpack": "^4.29.6",
     "webpack-cli": "^3.2.3"
