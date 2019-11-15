@@ -2,7 +2,10 @@
 
 import {Component, render} from "inferno"
 import {h} from "inferno-hyperscript"
-import fm from "formality-lang"
+
+// TODO: how to improve this?
+declare var require: any
+const fm = require("formality-lang");
 
 // Components
 import CodeEditor from "./CodeEditor"
@@ -22,7 +25,7 @@ class Moonad extends Component {
   code     : string        = null;  // contents of the current file
   tokens   : Tokens        = null;  // chunks of code with syntax highlight info
   cited_by : Array<string> = null;  // files that import the current file
-  history  : Array<string> = null;  // previous files
+  history  : Array<string> = [];    // previous files
   defs     : Defs          = null;  // loaded formality token
   editing  : Bool          = false; // are we editing this file?
   
@@ -108,10 +111,11 @@ class Moonad extends Component {
 
   // Normalizes a definition
   normalize(name) {
+    var norm : any;
     try {
-      var norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
+      norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
     } catch (e) {
-      var norm = "<unable_to_normalize>";
+      norm = "<unable_to_normalize>";
     };
     alert(norm);
   }
