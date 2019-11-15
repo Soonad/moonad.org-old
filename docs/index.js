@@ -199,7 +199,7 @@ module.exports = function (encodedURI) {
 /*! exports provided: _args, _development, _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _spec, _where, author, bin, bugs, dependencies, description, homepage, license, main, name, repository, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"_args\":[[\"formality-lang@0.1.178\",\"/Users/maisa/Documents/Provit\"]],\"_development\":true,\"_from\":\"formality-lang@0.1.178\",\"_id\":\"formality-lang@0.1.178\",\"_inBundle\":false,\"_integrity\":\"sha512-DdPZk7znfr2CHtB+H90fAZZOpMezmz4UVcrFgTtvt9+8gVzjKXYfzUBlp6+Pn/A5EqO14/qHGXPvc8ZRFSFqiQ==\",\"_location\":\"/formality-lang\",\"_phantomChildren\":{},\"_requested\":{\"type\":\"version\",\"registry\":true,\"raw\":\"formality-lang@0.1.178\",\"name\":\"formality-lang\",\"escapedName\":\"formality-lang\",\"rawSpec\":\"0.1.178\",\"saveSpec\":null,\"fetchSpec\":\"0.1.178\"},\"_requiredBy\":[\"#DEV:/\"],\"_resolved\":\"https://registry.npmjs.org/formality-lang/-/formality-lang-0.1.178.tgz\",\"_spec\":\"0.1.178\",\"_where\":\"/Users/maisa/Documents/Provit\",\"author\":{\"name\":\"Victor Maia\"},\"bin\":{\"fm\":\"src/main.js\"},\"bugs\":{\"url\":\"https://github.com/moonad/formality-core/issues\"},\"dependencies\":{\"xhr-request-promise\":\"^0.1.2\"},\"description\":\"![](archive/images/formality-banner-white.png)\",\"homepage\":\"https://github.com/moonad/formality-core#readme\",\"license\":\"MIT\",\"main\":\"src/fm-lib.js\",\"name\":\"formality-lang\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/moonad/formality-core.git\"},\"scripts\":{\"test\":\"echo \\\"Error: no test specified\\\" && exit 1\"},\"version\":\"0.1.178\"}");
+module.exports = JSON.parse("{\"_args\":[[\"formality-lang@0.1.180\",\"/Users/maisa/Documents/Provit\"]],\"_development\":true,\"_from\":\"formality-lang@0.1.180\",\"_id\":\"formality-lang@0.1.180\",\"_inBundle\":false,\"_integrity\":\"sha512-sFf9AcLX0nkvOQPvFVMvAeuDVqWLzRn9ndDeT2nCfx3YbXKW/wBacAsBsWXjHNpq0dlhGxfNi8RoD8Gn4bwjtA==\",\"_location\":\"/formality-lang\",\"_phantomChildren\":{},\"_requested\":{\"type\":\"version\",\"registry\":true,\"raw\":\"formality-lang@0.1.180\",\"name\":\"formality-lang\",\"escapedName\":\"formality-lang\",\"rawSpec\":\"0.1.180\",\"saveSpec\":null,\"fetchSpec\":\"0.1.180\"},\"_requiredBy\":[\"#DEV:/\"],\"_resolved\":\"https://registry.npmjs.org/formality-lang/-/formality-lang-0.1.180.tgz\",\"_spec\":\"0.1.180\",\"_where\":\"/Users/maisa/Documents/Provit\",\"author\":{\"name\":\"Victor Maia\"},\"bin\":{\"fm\":\"src/main.js\"},\"bugs\":{\"url\":\"https://github.com/moonad/formality-core/issues\"},\"dependencies\":{\"xhr-request-promise\":\"^0.1.2\"},\"description\":\"![](archive/images/formality-banner-white.png)\",\"homepage\":\"https://github.com/moonad/formality-core#readme\",\"license\":\"MIT\",\"main\":\"src/fm-lib.js\",\"name\":\"formality-lang\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/moonad/formality-core.git\"},\"scripts\":{\"test\":\"echo \\\"Error: no test specified\\\" && exit 1\"},\"version\":\"0.1.180\"}");
 
 /***/ }),
 
@@ -1554,33 +1554,29 @@ const js_number = {
 }
 
 const list = (type) => ({
-  to: (val) => (cons) => (nil) => (
-    val.length == 0
-      ? nil
-      : cons(type.to(val[0]))(list(type).to(val.slice(1)))
-  ),
+  to: (val) => (nil) => (cons) => val.length == 0 ? nil : cons(type.to(val[0]))(list(type).to(val.slice(1))),
   from: (val) => {
-    const cons = (head) => (tail) => [type.from(head)].concat(list(type).from(tail))
-    const nil = []
-
-    return val(cons)(nil)
+    const cons = (head) => (tail) => [type.from(head)].concat(list(type).from(tail));
+    const nil = [];
+    return val(nil)(cons);
   }
 })
 
 const string = {
   to: (str) => {
-    let bytes = Array.from(new TextEncoder("utf-8").encode(str));
-    while (bytes.length % 4 !== 0) {
-      bytes.push(0);
+    var nums = [];
+    for (var i = 0; i < str.length; ++i) {
+      nums.push(str.charCodeAt(i));
     }
-    const nums = new Uint32Array(new Uint8Array(bytes).buffer)
-    return list(word).to(nums)
+    return list(word).to(nums);
   },
   from: (enc) => {
     const nums = list(word).from(enc);
-    const bytes = new Uint8Array(new Uint32Array(nums).buffer)
-    const str = new TextDecoder("utf-8").decode(bytes)
-    return str.replace(/\0*$/, '')
+    var str = "";
+    for (var i = 0; i < nums.length; ++i) {
+      str += String.fromCharCode(nums[i]);
+    }
+    return str;
   }
 }
 
@@ -1593,33 +1589,32 @@ const pair = (tfst, tsnd) => ({
 const json = {
   to: (val) => (j_null) => (j_number) => (j_string) => (j_list) => (j_object) => {
     if(val === null) {
-      return j_null
+      return j_null;
     } else if(typeof val === "number") {
-      return j_number(js_number.to(val))
+      return j_number(js_number.to(val));
     } else if(typeof val === "string") {
-      return j_string(string.to(val))
+      return j_string(string.to(val));
     } else if (Array.isArray(val)) {
-      return j_list(list(json).to(val))
+      return j_list(list(json).to(val));
     } else {
-      return j_object(list(pair(string, json)).to(obj_to_kw(val)))
+      return j_object(list(pair(string, json)).to(obj_to_kw(val)));
     }
   },
   from: (enc) => {
-    const j_null = null
-    const j_number = js_number.from
-    const j_string = string.from
-    const j_list = list(json).from
-    const j_object = (o) => kw_to_obj(list(pair(string, json)).from(o))
-
-    return enc(j_null)(j_number)(j_string)(j_list)(j_object)
+    const j_null = null;
+    const j_number = js_number.from;
+    const j_string = string.from;
+    const j_list = list(json).from;
+    const j_object = (o) => kw_to_obj(list(pair(string, json)).from(o));
+    return enc(j_null)(j_number)(j_string)(j_list)(j_object);
   }
 }
 
 // Object to keyword list conversion
-const obj_to_kw = (obj) => Object.keys(obj).map((key) => [key.toString(), obj[key]])
-const kw_to_obj = (kw) => kw.reduce((obj, [k, v]) => ({[k]: v, ...obj}), {})
+const obj_to_kw = (obj) => Object.keys(obj).map((key) => [key.toString(), obj[key]]);
+const kw_to_obj = (kw) => kw.reduce((obj, [k, v]) => ({[k]: v, ...obj}), {});
 
-module.exports = { to, from, native_to: json.to, native_from: json.from, call }
+module.exports = { to, from, native_to: json.to, native_from: json.from, call };
 
 
 /***/ }),
@@ -2098,7 +2093,7 @@ const parse = async (code, opts, root = true, loaded = {}) => {
   // Advances the cursor 1 step forward
   function next() {
     if (tokens) {
-      tokens[tokens.length - 1][1] += code[idx];
+      tokens[tokens.length - 1][1] += code[idx] || "";
     }
     if (is_newline(code[idx])) {
       row += 1;
@@ -8203,6 +8198,148 @@ exports["default"] = Editor;
 
 /***/ }),
 
+/***/ "./src/components/CodePlayer.ts":
+/*!**************************************!*\
+  !*** ./src/components/CodePlayer.ts ***!
+  \**************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+exports.__esModule = true;
+var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var DocRender_1 = __webpack_require__(/*! ./DocRender */ "./src/components/DocRender.ts");
+var fm = __webpack_require__(/*! formality-lang */ "./node_modules/formality-lang/src/fm-lib.js");
+var App = "App@0";
+// Plays an application
+var CodePlayer = /** @class */ (function (_super) {
+    __extends(CodePlayer, _super);
+    function CodePlayer(props) {
+        var _this = _super.call(this, props) || this;
+        _this.app_error = null;
+        _this.app_state = null;
+        _this.app_funcs = null;
+        _this.defs = null;
+        _this.file = null;
+        _this.defs = props.defs;
+        _this.file = props.file;
+        return _this;
+    }
+    CodePlayer.prototype.componentDidMount = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                this.compile();
+                return [2 /*return*/];
+            });
+        });
+    };
+    CodePlayer.prototype.compile = function () {
+        var defs = this.defs;
+        var file = this.file;
+        if (defs && defs[file + "/main"]) {
+            var get_state = fm.to_js.compile(fm.lang.erase(defs[App + "/get_state"]), { defs: defs });
+            var get_render = fm.to_js.compile(fm.lang.erase(defs[App + "/get_render"]), { defs: defs });
+            var get_update = fm.to_js.compile(fm.lang.erase(defs[App + "/get_update"]), { defs: defs });
+            var mouseclick = fm.to_js.compile(fm.lang.erase(defs[App + "/mouseclick"]), { defs: defs });
+            var keypress = fm.to_js.compile(fm.lang.erase(defs[App + "/keypress"]), { defs: defs });
+            var app = fm.to_js.compile(fm.lang.erase(defs[file + "/main"]), { defs: defs });
+            var app_state = get_state(app);
+            var app_render = get_render(app);
+            var app_update = get_update(app);
+            this.app_funcs = {
+                mouseclick: mouseclick,
+                keypress: keypress,
+                state: app_state,
+                render: app_render,
+                update: app_update
+            };
+            this.app_state = app_state;
+            this.forceUpdate();
+        }
+        else {
+            this.app_error = "No main found.";
+        }
+    };
+    CodePlayer.prototype.render = function () {
+        var _this = this;
+        var app_state = this.app_state;
+        var app_funcs = this.app_funcs;
+        var defs = this.defs;
+        var file = this.file;
+        var style = { "flex-grow": 1 };
+        var onClick = function (e) {
+            _this.app_state = app_funcs.update(app_funcs.mouseclick(e.pageX)(e.pageY))(app_state);
+            _this.forceUpdate();
+        };
+        if (this.app_error) {
+            return inferno_hyperscript_1.h("div", { style: style }, this.app_error);
+        }
+        else if (app_state === null || app_funcs === null) {
+            return inferno_hyperscript_1.h("div", { style: style }, "Compiling application...");
+        }
+        else {
+            return inferno_hyperscript_1.h("div", { style: style, onClick: onClick }, DocRender_1["default"](app_funcs.render(app_state)));
+        }
+    };
+    return CodePlayer;
+}(inferno_1.Component));
+;
+exports["default"] = CodePlayer;
+
+
+/***/ }),
+
 /***/ "./src/components/CodeRender.ts":
 /*!**************************************!*\
   !*** ./src/components/CodeRender.ts ***!
@@ -8357,6 +8494,53 @@ exports["default"] = Console;
 
 /***/ }),
 
+/***/ "./src/components/DocRender.ts":
+/*!*************************************!*\
+  !*** ./src/components/DocRender.ts ***!
+  \*************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+// Converts a `Doc` value from Formality to an Inferno element
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var DocRender = function (doc) {
+    var case_text = function (value) {
+        var str = "";
+        (function go(value) {
+            var case_nil = "";
+            var case_cons = function (head) { return function (tail) {
+                str += String.fromCharCode(head);
+                go(tail);
+            }; };
+            value(case_nil)(case_cons);
+        })(value);
+        return inferno_hyperscript_1.h("span", {}, str);
+    };
+    var case_numb = function (value) {
+        return inferno_hyperscript_1.h("span", {}, String(value));
+    };
+    var case_many = function (value) {
+        var arr = [];
+        (function go(value) {
+            var case_nil = null;
+            var case_cons = function (head) { return function (tail) {
+                arr.push(inferno_hyperscript_1.h("div", {}, DocRender(head)));
+                go(tail);
+            }; };
+            value(case_nil)(case_cons);
+        })(value);
+        return inferno_hyperscript_1.h("div", {}, arr);
+    };
+    return doc(case_text)(case_numb)(case_many);
+};
+exports["default"] = DocRender;
+
+
+/***/ }),
+
 /***/ "./src/components/Moonad.ts":
 /*!**********************************!*\
   !*** ./src/components/Moonad.ts ***!
@@ -8419,9 +8603,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
 exports.__esModule = true;
 var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
 var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
-var formality_lang_1 = __webpack_require__(/*! formality-lang */ "./node_modules/formality-lang/src/fm-lib.js");
+var fm = __webpack_require__(/*! formality-lang */ "./node_modules/formality-lang/src/fm-lib.js");
 // Components
 var CodeEditor_1 = __webpack_require__(/*! ./CodeEditor */ "./src/components/CodeEditor.ts");
+var CodePlayer_1 = __webpack_require__(/*! ./CodePlayer */ "./src/components/CodePlayer.ts");
 var CodeRender_1 = __webpack_require__(/*! ./CodeRender */ "./src/components/CodeRender.ts");
 var Console_1 = __webpack_require__(/*! ./Console */ "./src/components/Console.ts");
 var TopMenu_1 = __webpack_require__(/*! ./TopMenu */ "./src/components/TopMenu.ts");
@@ -8429,23 +8614,15 @@ var Moonad = /** @class */ (function (_super) {
     __extends(Moonad, _super);
     function Moonad(props) {
         var _this = _super.call(this, props) || this;
-        _this.version = "0";
-        _this.file = null;
-        _this.code = null;
-        _this.defs = null;
-        _this.cited_by = null;
-        _this.tokens = null;
-        _this.history = null;
-        _this.editing = false;
         // Application state
-        //this.version = "0";   // change this to clear the cache
-        //this.file = null;     // String           -- name of the loaded file
-        //this.code = null;     // String           -- the loaded code
-        //this.defs = null;     // {[String]: Term} -- the loaded module
-        //this.cited_by = null; // [String]         -- files that imported this.file
-        //this.tokens = null;   // [[String, Info]] -- chunks of code with syntax highlight info
-        //this.history = [];    // [String]         -- name of past loaded files
-        //this.editing = false; // Bool             -- are we editing the code?
+        _this.version = "1"; // change to clear the user's caches
+        _this.file = null; // name of the current file being rendered
+        _this.code = null; // contents of the current file
+        _this.tokens = null; // chunks of code with syntax highlight info
+        _this.cited_by = null; // files that import the current file
+        _this.history = []; // previous files
+        _this.defs = null; // loaded formality token
+        _this.mode = "VIEW"; // are we editing, playing or viewing this file?
         _this.load_file(window.location.pathname.slice(1) || "Base@0");
         return _this;
     }
@@ -8453,10 +8630,10 @@ var Moonad = /** @class */ (function (_super) {
         var _this = this;
         var cached_fm_version = window.localStorage.getItem("cached_fm_version");
         var cached_moonad_version = window.localStorage.getItem("cached_moonad_version");
-        if (cached_fm_version !== formality_lang_1["default"].lang.version || cached_moonad_version !== this.version) {
+        if (cached_fm_version !== fm.lang.version || cached_moonad_version !== this.version) {
             window.localStorage.clear();
             window.localStorage.setItem("cached_moonad_version", this.version);
-            window.localStorage.setItem("cached_fm_version", formality_lang_1["default"].lang.version);
+            window.localStorage.setItem("cached_fm_version", fm.lang.version);
         }
         window.onpopstate = function (e) { return _this.load_file(e.state, false); };
     };
@@ -8466,6 +8643,26 @@ var Moonad = /** @class */ (function (_super) {
             this.load_code(props.code);
         if (props.file)
             this.load_file(props.file);
+    };
+    Moonad.prototype.loader = function (file) {
+        return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
+    };
+    // Re-parses the code to build defs and tokens
+    Moonad.prototype.parse = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var parsed;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, fm.lang.parse(this.code, { file: this.file, tokenify: true, loader: this.loader })];
+                    case 1:
+                        parsed = _a.sent();
+                        this.defs = parsed.defs;
+                        this.tokens = parsed.tokens;
+                        this.forceUpdate();
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     // Loads a file (ex: "Data.Bool@0")
     Moonad.prototype.load_file = function (file, push_history) {
@@ -8485,58 +8682,48 @@ var Moonad = /** @class */ (function (_super) {
                             this.history.push(file);
                             window.history.pushState(file, file, file);
                         }
-                        this.editing = false;
+                        this.mode = "VIEW";
                         this.file = file;
                         _c.label = 1;
                     case 1:
-                        _c.trys.push([1, 5, , 6]);
+                        _c.trys.push([1, 4, , 5]);
                         this.cited_by = [];
-                        _a = this.load_code;
-                        return [4 /*yield*/, formality_lang_1["default"].forall.with_local_storage_cache(formality_lang_1["default"].forall.load_file)(file)];
-                    case 2: return [4 /*yield*/, _a.apply(this, [_c.sent()])];
-                    case 3:
-                        _c.sent();
+                        _a = this;
+                        return [4 /*yield*/, this.loader(this.file)];
+                    case 2:
+                        _a.code = _c.sent();
+                        this.parse();
                         _b = this;
-                        return [4 /*yield*/, formality_lang_1["default"].forall.load_file_parents(file)];
-                    case 4:
+                        return [4 /*yield*/, fm.forall.load_file_parents(file)];
+                    case 3:
                         _b.cited_by = _c.sent();
-                        return [3 /*break*/, 6];
-                    case 5:
+                        return [3 /*break*/, 5];
+                    case 4:
                         e_1 = _c.sent();
                         console.log(e_1);
                         this.code = "<error>";
-                        return [3 /*break*/, 6];
-                    case 6:
                         this.forceUpdate();
-                        return [2 /*return*/];
+                        return [3 /*break*/, 5];
+                    case 5: return [2 /*return*/];
                 }
             });
         });
     };
-    // Loads a code
+    // Loads a code without a file (local)
     Moonad.prototype.load_code = function (code) {
         return __awaiter(this, void 0, void 0, function () {
-            var loader, _a, defs, tokens;
-            return __generator(this, function (_b) {
-                switch (_b.label) {
-                    case 0:
-                        this.code = code;
-                        loader = formality_lang_1["default"].forall.with_local_storage_cache(formality_lang_1["default"].forall.load_file);
-                        return [4 /*yield*/, formality_lang_1["default"].lang.parse(this.code, { file: this.file, tokenify: true, loader: loader })];
-                    case 1:
-                        _a = _b.sent(), defs = _a.defs, tokens = _a.tokens;
-                        this.defs = defs;
-                        this.tokens = tokens;
-                        this.forceUpdate();
-                        return [2 /*return*/];
-                }
+            return __generator(this, function (_a) {
+                this.file = "local";
+                this.code = code;
+                this.parse();
+                return [2 /*return*/];
             });
         });
     };
     // Type-checks a definition 
     Moonad.prototype.typecheck = function (name) {
         try {
-            var type = formality_lang_1["default"].lang.run("TYPE", name, "TYPE", { defs: this.defs });
+            var type = fm.lang.run("TYPE", name, "TYPE", { defs: this.defs });
             var good = true;
         }
         catch (e) {
@@ -8545,15 +8732,15 @@ var Moonad = /** @class */ (function (_super) {
         }
         var text = ":: Type ::\n";
         if (good) {
-            text += "✓ " + formality_lang_1["default"].lang.show(type);
+            text += "✓ " + fm.lang.show(type);
         }
         else {
             text += "✗ " + type;
         }
         try {
-            var norm = formality_lang_1["default"].lang.run("REDUCE_DEBUG", name, { defs: this.defs, erased: true, unbox: true, logging: true });
+            var norm = fm.lang.run("REDUCE_DEBUG", name, { defs: this.defs, erased: true, unbox: true, logging: true });
             text += "\n\n:: Output ::\n";
-            text += formality_lang_1["default"].lang.show(norm, [], { full_refs: false });
+            text += fm.lang.show(norm, [], { full_refs: false });
         }
         catch (e) { }
         ;
@@ -8561,11 +8748,12 @@ var Moonad = /** @class */ (function (_super) {
     };
     // Normalizes a definition
     Moonad.prototype.normalize = function (name) {
+        var norm;
         try {
-            var norm = formality_lang_1["default"].lang.show(formality_lang_1["default"].lang.norm(this.defs[name], this.defs, "DEBUG", {}));
+            norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
         }
         catch (e) {
-            var norm = "<unable_to_normalize>";
+            norm = "<unable_to_normalize>";
         }
         ;
         alert(norm);
@@ -8596,15 +8784,17 @@ var Moonad = /** @class */ (function (_super) {
             _this.load_file(file);
         };
     };
+    Moonad.prototype.on_click_view = function () {
+        this.mode = "VIEW";
+        this.load_code(this.code);
+        this.forceUpdate();
+    };
     Moonad.prototype.on_click_edit = function () {
-        if (!this.editing) {
-            this.file = "local";
-            this.editing = true;
-        }
-        else {
-            this.editing = false;
-            this.load_code(this.code);
-        }
+        this.mode = "EDIT";
+        this.forceUpdate();
+    };
+    Moonad.prototype.on_click_play = function () {
+        this.mode = "PLAY";
         this.forceUpdate();
     };
     Moonad.prototype.on_input_code = function (code) {
@@ -8622,7 +8812,7 @@ var Moonad = /** @class */ (function (_super) {
                     case 1:
                         _a.trys.push([1, 5, , 6]);
                         if (!file) return [3 /*break*/, 3];
-                        return [4 /*yield*/, formality_lang_1["default"].lang.save_file(file, this.code)];
+                        return [4 /*yield*/, fm.forall.save_file(file, this.code)];
                     case 2:
                         unam = _a.sent();
                         this.load_file(unam);
@@ -8631,6 +8821,7 @@ var Moonad = /** @class */ (function (_super) {
                     case 4: return [3 /*break*/, 6];
                     case 5:
                         e_2 = _a.sent();
+                        console.log(e_2);
                         alert("Couldn't save file.");
                         return [3 /*break*/, 6];
                     case 6: return [2 /*return*/];
@@ -8642,14 +8833,17 @@ var Moonad = /** @class */ (function (_super) {
     Moonad.prototype.render = function () {
         var _this = this;
         // Creates bound variables for states and local methods
-        var editing = this.editing;
+        var mode = this.mode;
         var file = this.file;
+        var defs = this.defs;
         var code = this.code;
         var tokens = this.tokens;
         var cited_by = this.cited_by;
         var load_file = function (file, push) { return _this.load_file(file, push); };
+        var on_click_view = function () { return _this.on_click_view(); };
         var on_click_edit = function () { return _this.on_click_edit(); };
         var on_click_save = function () { return _this.on_click_save(); };
+        var on_click_play = function () { return _this.on_click_play(); };
         var on_click_def = function (path) { return _this.on_click_def(path); };
         var on_click_imp = function (path) { return _this.on_click_imp(path); };
         var on_click_ref = function (path) { return _this.on_click_ref(path); };
@@ -8665,12 +8859,13 @@ var Moonad = /** @class */ (function (_super) {
             }
         }, [
             // Top of the site
-            TopMenu_1["default"]({ editing: editing, file: file, on_click_edit: on_click_edit, on_click_save: on_click_save, load_file: load_file }),
+            TopMenu_1["default"]({ mode: mode, file: file, on_click_view: on_click_view, on_click_edit: on_click_edit, on_click_save: on_click_save, on_click_play: on_click_play, load_file: load_file }),
             // h(PathBar, {path: "Base@0", load_code: load_file}),
             // Middle of the site
-            this.editing
-                ? CodeEditor_1["default"]({ code: code, on_input_code: on_input_code })
-                : CodeRender_1["default"]({ code: code, tokens: tokens, on_click_def: on_click_def, on_click_imp: on_click_imp, on_click_ref: on_click_ref }),
+            (this.mode === "EDIT" ? CodeEditor_1["default"]({ code: code, on_input_code: on_input_code })
+                : this.mode === "VIEW" ? CodeRender_1["default"]({ code: code, tokens: tokens, on_click_def: on_click_def, on_click_imp: on_click_imp, on_click_ref: on_click_ref })
+                    : this.mode === "PLAY" ? inferno_hyperscript_1.h(CodePlayer_1["default"], { defs: defs, file: file })
+                        : null),
             // Bottom of the site
             Console_1["default"]({ load_file: load_file, cited_by: cited_by })
         ]);
@@ -8694,7 +8889,7 @@ exports["default"] = Moonad;
 exports.__esModule = true;
 var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
 var TopMenu = function (_a) {
-    var editing = _a.editing, file = _a.file, load_file = _a.load_file, on_click_edit = _a.on_click_edit, on_click_save = _a.on_click_save;
+    var mode = _a.mode, file = _a.file, load_file = _a.load_file, on_click_view = _a.on_click_view, on_click_edit = _a.on_click_edit, on_click_play = _a.on_click_play, on_click_save = _a.on_click_save;
     return inferno_hyperscript_1.h("div", {
         "style": {
             "background": "rgb(240,240,240)",
@@ -8721,19 +8916,36 @@ var TopMenu = function (_a) {
             }
         }, file),
         inferno_hyperscript_1.h("span", {
+            "onClick": function () { return on_click_view(); },
+            "style": {
+                "padding-right": "8px",
+                "cursor": "pointer",
+                "font-weight": mode === "VIEW" ? "bold" : null
+            }
+        }, " [view] "),
+        inferno_hyperscript_1.h("span", {
             "onClick": function () { return on_click_edit(); },
             "style": {
                 "padding-right": "8px",
-                "cursor": "pointer"
+                "cursor": "pointer",
+                "font-weight": mode === "EDIT" ? "bold" : null
             }
-        }, editing ? "✓" : "✎"),
+        }, " [edit] "),
+        inferno_hyperscript_1.h("span", {
+            "onClick": function () { return on_click_play(); },
+            "style": {
+                "padding-right": "8px",
+                "cursor": "pointer",
+                "font-weight": mode === "PLAY" ? "bold" : null
+            }
+        }, " [play] "),
         inferno_hyperscript_1.h("span", {
             "onClick": function () { return on_click_save(); },
             "style": {
                 "padding-right": "8px",
                 "cursor": "pointer",
                 "user-select": "none",
-                "opacity": file === "local" && !editing ? "1.0" : "0.4"
+                "opacity": file === "local" && mode === "VIEW" ? "1.0" : "0.4"
             }
         }, "💾")
     ]);
