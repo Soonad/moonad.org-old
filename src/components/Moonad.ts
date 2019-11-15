@@ -9,6 +9,7 @@ import CodeEditor from "./CodeEditor"
 import CodeRender from "./CodeRender"
 import Console from "./Console"
 import TopMenu from "./TopMenu"
+import PathBar from "./Pathbar"
 
 class Moonad extends Component {
 
@@ -206,6 +207,7 @@ class Moonad extends Component {
     }}, [
       // Top of the site
       TopMenu({editing, file, on_click_edit, on_click_save, load_file}),
+      // h(PathBar, {path: "Base@0", load_code: load_file}),
 
       // Middle of the site
       this.editing

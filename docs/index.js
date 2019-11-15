@@ -81,7 +81,7 @@
 /******/
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index.js");
+/******/ 	return __webpack_require__(__webpack_require__.s = "./src/index.ts");
 /******/ })
 /************************************************************************/
 /******/ ({
@@ -94,7 +94,101 @@
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nvar token = '%[a-f0-9]{2}';\nvar singleMatcher = new RegExp(token, 'gi');\nvar multiMatcher = new RegExp('(' + token + ')+', 'gi');\n\nfunction decodeComponents(components, split) {\n\ttry {\n\t\t// Try to decode the entire string first\n\t\treturn decodeURIComponent(components.join(''));\n\t} catch (err) {\n\t\t// Do nothing\n\t}\n\n\tif (components.length === 1) {\n\t\treturn components;\n\t}\n\n\tsplit = split || 1;\n\n\t// Split the array in 2 parts\n\tvar left = components.slice(0, split);\n\tvar right = components.slice(split);\n\n\treturn Array.prototype.concat.call([], decodeComponents(left), decodeComponents(right));\n}\n\nfunction decode(input) {\n\ttry {\n\t\treturn decodeURIComponent(input);\n\t} catch (err) {\n\t\tvar tokens = input.match(singleMatcher);\n\n\t\tfor (var i = 1; i < tokens.length; i++) {\n\t\t\tinput = decodeComponents(tokens, i).join('');\n\n\t\t\ttokens = input.match(singleMatcher);\n\t\t}\n\n\t\treturn input;\n\t}\n}\n\nfunction customDecodeURIComponent(input) {\n\t// Keep track of all the replacements and prefill the map with the `BOM`\n\tvar replaceMap = {\n\t\t'%FE%FF': '\\uFFFD\\uFFFD',\n\t\t'%FF%FE': '\\uFFFD\\uFFFD'\n\t};\n\n\tvar match = multiMatcher.exec(input);\n\twhile (match) {\n\t\ttry {\n\t\t\t// Decode as big chunks as possible\n\t\t\treplaceMap[match[0]] = decodeURIComponent(match[0]);\n\t\t} catch (err) {\n\t\t\tvar result = decode(match[0]);\n\n\t\t\tif (result !== match[0]) {\n\t\t\t\treplaceMap[match[0]] = result;\n\t\t\t}\n\t\t}\n\n\t\tmatch = multiMatcher.exec(input);\n\t}\n\n\t// Add `%C2` at the end of the map to make sure it does not replace the combinator before everything else\n\treplaceMap['%C2'] = '\\uFFFD';\n\n\tvar entries = Object.keys(replaceMap);\n\n\tfor (var i = 0; i < entries.length; i++) {\n\t\t// Replace all decoded components\n\t\tvar key = entries[i];\n\t\tinput = input.replace(new RegExp(key, 'g'), replaceMap[key]);\n\t}\n\n\treturn input;\n}\n\nmodule.exports = function (encodedURI) {\n\tif (typeof encodedURI !== 'string') {\n\t\tthrow new TypeError('Expected `encodedURI` to be of type `string`, got `' + typeof encodedURI + '`');\n\t}\n\n\ttry {\n\t\tencodedURI = encodedURI.replace(/\\+/g, ' ');\n\n\t\t// Try the built in decoder first\n\t\treturn decodeURIComponent(encodedURI);\n\t} catch (err) {\n\t\t// Fallback to a more advanced decoder\n\t\treturn customDecodeURIComponent(encodedURI);\n\t}\n};\n\n\n//# sourceURL=webpack:///./node_modules/decode-uri-component/index.js?");
+
+var token = '%[a-f0-9]{2}';
+var singleMatcher = new RegExp(token, 'gi');
+var multiMatcher = new RegExp('(' + token + ')+', 'gi');
+
+function decodeComponents(components, split) {
+	try {
+		// Try to decode the entire string first
+		return decodeURIComponent(components.join(''));
+	} catch (err) {
+		// Do nothing
+	}
+
+	if (components.length === 1) {
+		return components;
+	}
+
+	split = split || 1;
+
+	// Split the array in 2 parts
+	var left = components.slice(0, split);
+	var right = components.slice(split);
+
+	return Array.prototype.concat.call([], decodeComponents(left), decodeComponents(right));
+}
+
+function decode(input) {
+	try {
+		return decodeURIComponent(input);
+	} catch (err) {
+		var tokens = input.match(singleMatcher);
+
+		for (var i = 1; i < tokens.length; i++) {
+			input = decodeComponents(tokens, i).join('');
+
+			tokens = input.match(singleMatcher);
+		}
+
+		return input;
+	}
+}
+
+function customDecodeURIComponent(input) {
+	// Keep track of all the replacements and prefill the map with the `BOM`
+	var replaceMap = {
+		'%FE%FF': '\uFFFD\uFFFD',
+		'%FF%FE': '\uFFFD\uFFFD'
+	};
+
+	var match = multiMatcher.exec(input);
+	while (match) {
+		try {
+			// Decode as big chunks as possible
+			replaceMap[match[0]] = decodeURIComponent(match[0]);
+		} catch (err) {
+			var result = decode(match[0]);
+
+			if (result !== match[0]) {
+				replaceMap[match[0]] = result;
+			}
+		}
+
+		match = multiMatcher.exec(input);
+	}
+
+	// Add `%C2` at the end of the map to make sure it does not replace the combinator before everything else
+	replaceMap['%C2'] = '\uFFFD';
+
+	var entries = Object.keys(replaceMap);
+
+	for (var i = 0; i < entries.length; i++) {
+		// Replace all decoded components
+		var key = entries[i];
+		input = input.replace(new RegExp(key, 'g'), replaceMap[key]);
+	}
+
+	return input;
+}
+
+module.exports = function (encodedURI) {
+	if (typeof encodedURI !== 'string') {
+		throw new TypeError('Expected `encodedURI` to be of type `string`, got `' + typeof encodedURI + '`');
+	}
+
+	try {
+		encodedURI = encodedURI.replace(/\+/g, ' ');
+
+		// Try the built in decoder first
+		return decodeURIComponent(encodedURI);
+	} catch (err) {
+		// Fallback to a more advanced decoder
+		return customDecodeURIComponent(encodedURI);
+	}
+};
+
 
 /***/ }),
 
@@ -105,7 +199,7 @@ eval("\nvar token = '%[a-f0-9]{2}';\nvar singleMatcher = new RegExp(token, 'gi')
 /*! exports provided: _args, _development, _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _spec, _where, author, bin, bugs, dependencies, description, homepage, license, main, name, repository, scripts, version, default */
 /***/ (function(module) {
 
-eval("module.exports = JSON.parse(\"{\\\"_args\\\":[[\\\"formality-lang@0.1.178\\\",\\\"/Users/maisa/Documents/Provit\\\"]],\\\"_development\\\":true,\\\"_from\\\":\\\"formality-lang@0.1.178\\\",\\\"_id\\\":\\\"formality-lang@0.1.178\\\",\\\"_inBundle\\\":false,\\\"_integrity\\\":\\\"sha512-DdPZk7znfr2CHtB+H90fAZZOpMezmz4UVcrFgTtvt9+8gVzjKXYfzUBlp6+Pn/A5EqO14/qHGXPvc8ZRFSFqiQ==\\\",\\\"_location\\\":\\\"/formality-lang\\\",\\\"_phantomChildren\\\":{},\\\"_requested\\\":{\\\"type\\\":\\\"version\\\",\\\"registry\\\":true,\\\"raw\\\":\\\"formality-lang@0.1.178\\\",\\\"name\\\":\\\"formality-lang\\\",\\\"escapedName\\\":\\\"formality-lang\\\",\\\"rawSpec\\\":\\\"0.1.178\\\",\\\"saveSpec\\\":null,\\\"fetchSpec\\\":\\\"0.1.178\\\"},\\\"_requiredBy\\\":[\\\"#DEV:/\\\"],\\\"_resolved\\\":\\\"https://registry.npmjs.org/formality-lang/-/formality-lang-0.1.178.tgz\\\",\\\"_spec\\\":\\\"0.1.178\\\",\\\"_where\\\":\\\"/Users/maisa/Documents/Provit\\\",\\\"author\\\":{\\\"name\\\":\\\"Victor Maia\\\"},\\\"bin\\\":{\\\"fm\\\":\\\"src/main.js\\\"},\\\"bugs\\\":{\\\"url\\\":\\\"https://github.com/moonad/formality-core/issues\\\"},\\\"dependencies\\\":{\\\"xhr-request-promise\\\":\\\"^0.1.2\\\"},\\\"description\\\":\\\"![](archive/images/formality-banner-white.png)\\\",\\\"homepage\\\":\\\"https://github.com/moonad/formality-core#readme\\\",\\\"license\\\":\\\"MIT\\\",\\\"main\\\":\\\"src/fm-lib.js\\\",\\\"name\\\":\\\"formality-lang\\\",\\\"repository\\\":{\\\"type\\\":\\\"git\\\",\\\"url\\\":\\\"git+https://github.com/moonad/formality-core.git\\\"},\\\"scripts\\\":{\\\"test\\\":\\\"echo \\\\\\\"Error: no test specified\\\\\\\" && exit 1\\\"},\\\"version\\\":\\\"0.1.178\\\"}\");\n\n//# sourceURL=webpack:///./node_modules/formality-lang/package.json?");
+module.exports = JSON.parse("{\"_args\":[[\"formality-lang@0.1.178\",\"/Users/maisa/Documents/Provit\"]],\"_development\":true,\"_from\":\"formality-lang@0.1.178\",\"_id\":\"formality-lang@0.1.178\",\"_inBundle\":false,\"_integrity\":\"sha512-DdPZk7znfr2CHtB+H90fAZZOpMezmz4UVcrFgTtvt9+8gVzjKXYfzUBlp6+Pn/A5EqO14/qHGXPvc8ZRFSFqiQ==\",\"_location\":\"/formality-lang\",\"_phantomChildren\":{},\"_requested\":{\"type\":\"version\",\"registry\":true,\"raw\":\"formality-lang@0.1.178\",\"name\":\"formality-lang\",\"escapedName\":\"formality-lang\",\"rawSpec\":\"0.1.178\",\"saveSpec\":null,\"fetchSpec\":\"0.1.178\"},\"_requiredBy\":[\"#DEV:/\"],\"_resolved\":\"https://registry.npmjs.org/formality-lang/-/formality-lang-0.1.178.tgz\",\"_spec\":\"0.1.178\",\"_where\":\"/Users/maisa/Documents/Provit\",\"author\":{\"name\":\"Victor Maia\"},\"bin\":{\"fm\":\"src/main.js\"},\"bugs\":{\"url\":\"https://github.com/moonad/formality-core/issues\"},\"dependencies\":{\"xhr-request-promise\":\"^0.1.2\"},\"description\":\"![](archive/images/formality-banner-white.png)\",\"homepage\":\"https://github.com/moonad/formality-core#readme\",\"license\":\"MIT\",\"main\":\"src/fm-lib.js\",\"name\":\"formality-lang\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/moonad/formality-core.git\"},\"scripts\":{\"test\":\"echo \\\"Error: no test specified\\\" && exit 1\"},\"version\":\"0.1.178\"}");
 
 /***/ }),
 
@@ -116,7 +210,1246 @@ eval("module.exports = JSON.parse(\"{\\\"_args\\\":[[\\\"formality-lang@0.1.178\
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// ~~ Formality Core Language ~~\n\n// ::::::::::\n// :: Term ::\n// ::::::::::\n\n// An FM-Lang term is an ADT represented as a JSON.\n// - Var: a variable\n// - Typ: the type of types, `Type`\n// - All: the dependent function type, `{x : A} -> B`, optionally erased\n// - Lam: a lambda, `{x} => B`, optionally erased/annotated\n// - App: an application `f(a)`, optionally erased\n// - Box: a boxed type, `!A`\n// - Put: a boxed value, `#a`\n// - Tak: unboxes a boxed value, `<>a`\n// - Dup: copies a boxed value, `dup x = a; b`\n// - Dbl: type of a native number\n// - Val: value of a native number\n// - Op1: partially applied binary numeric operation, `|n + k|`, with `k` fixed\n// - Op2: binary numeric operation, `|x + y|`\n// - Ite: if-then-else, `if n p`,  with a numeric conditional `n`, and two branches in a pair `p`\n// - Cpy: copies a number, `cpy x = a; b`\n// - Sig: type of a dependent pair, `[x : A, B(x)]`, or of a subset type, `[x : A ~ B(x)]`\n// - Par: value of a dependent pair, `[a, b]`, or of a dependent intersection `[a ~ b]`\n// - Fst: extracts 1st value of a dependent pair, `fst p`, or of a dependent intersection, `~fst p`\n// - Snd: extracts 2nd value of a dependent pair, `snd p`, or of a dependent intersection, `~snd p`\n// - Prj: projects a dependent pair, `get [x , y] = a; b`, or a dependent intersection, `get [x ~ y] = a; b`\n// - Ann: an explicit type annotaion, `: A a`\n// - Log: debug-prints a term during evaluation\n// - Hol: a type-hole\n// - Ref: a reference to a global def\nconst Var = (index, loc)                          => [\"Var\", {index},                        MEMO && (\"^\" + index)                             , loc];\nconst Typ = (loc)                                 => [\"Typ\", {},                             MEMO && (\"ty\")                                    , loc];\nconst Tid = (expr, loc)                           => [\"Tid\", {expr},                         MEMO && expr[2]                                   , loc];\nconst Utt = (expr, loc)                           => [\"Utt\", {expr},                         MEMO && (\"ut\" + expr[2])                          , loc];\nconst Utv = (expr, loc)                           => [\"Utv\", {expr},                         MEMO && (\"uv\" + expr[2])                          , loc];\nconst Ute = (expr, loc)                           => [\"Ute\", {expr},                         MEMO && (\"ue\" + expr[2])                          , loc];\nconst All = (name, bind, body, eras, loc)         => [\"All\", {name, bind, body, eras},       MEMO && (\"al\" + (eras?\"~\":\"\") + bind[2] + body[2]), loc];\nconst Lam = (name, bind, body, eras, loc)         => [\"Lam\", {name, bind, body, eras},       MEMO && (\"lm\" + (eras?\"~\":\"\") + body[2])          , loc];\nconst App = (func, argm, eras, loc)               => [\"App\", {func, argm, eras},             MEMO && (\"ap\" + (eras?\"~\":\"\") + func[2] + argm[2]), loc];\nconst Box = (expr, loc)                           => [\"Box\", {expr},                         MEMO && (\"bx\" + expr[2])                          , loc];\nconst Put = (expr, loc)                           => [\"Put\", {expr},                         MEMO && (\"pt\" + expr[2])                          , loc];\nconst Tak = (expr, loc)                           => [\"Tak\", {expr},                         MEMO && (\"tk\" + expr[2])                          , loc];\nconst Dup = (name, expr, body, loc)               => [\"Dup\", {name, expr, body},             MEMO && (\"dp\" + expr[2] + body[2])                , loc];\nconst Num = (loc)                                 => [\"Num\", {},                             MEMO && (\"wd\")                                    , loc];\nconst Val = (numb, loc)                           => [\"Val\", {numb},                         MEMO && (\"[\" + numb + \"]\")                        , loc];\nconst Op1 = (func, num0, num1, loc)               => [\"Op1\", {func, num0, num1},             MEMO && (\"o1\" + func + num0[2] + num1[2])         , loc];\nconst Op2 = (func, num0, num1, loc)               => [\"Op2\", {func, num0, num1},             MEMO && (\"o2\" + func + num0[2] + num1[2])         , loc];\nconst Ite = (cond, pair, loc)                     => [\"Ite\", {cond, pair},                   MEMO && (\"ie\" + cond[2] + pair[2])                , loc];\nconst Cpy = (name, numb, body, loc)               => [\"Cpy\", {name, numb, body},             MEMO && (\"cy\" + numb[2] + body[2])                , loc];\nconst Sig = (name, typ0, typ1, eras, loc)         => [\"Sig\", {name, typ0, typ1, eras},       MEMO && (\"sg\" + eras + typ0[2] + typ1[2])         , loc];\nconst Par = (val0, val1, eras, loc)               => [\"Par\", {val0, val1, eras},             MEMO && (\"pr\" + eras + val0[2] + val1[2])         , loc];\nconst Fst = (pair, eras=0, loc)                   => [\"Fst\", {pair, eras},                   MEMO && (\"ft\" + eras + pair[2])                   , loc];\nconst Snd = (pair, eras=0, loc)                   => [\"Snd\", {pair, eras},                   MEMO && (\"sd\" + eras + pair[2])                   , loc];\nconst Prj = (nam0, nam1, pair, body, eras=0, loc) => [\"Prj\", {nam0, nam1, pair, body, eras}, MEMO && (\"pj\" + eras + pair[2] + body[2])         , loc];\nconst Slf = (name, type, loc)                     => [\"Slf\", {name, type},                   MEMO && (\"sf\" + type[2])                          , loc];\nconst New = (type, expr, loc)                     => [\"New\", {type, expr},                   MEMO && expr[2]                                   , loc];\nconst Use = (expr, loc)                           => [\"Use\", {expr},                         MEMO && expr[2]                                   , loc];\nconst Ann = (type, expr, done, loc)               => [\"Ann\", {type, expr, done},             MEMO && expr[2]                                   , loc];\nconst Log = (msge, expr, loc)                     => [\"Log\", {msge, expr},                   MEMO && expr[2]                                   , loc];\nconst Hol = (name, loc)                           => [\"Hol\", {name},                         MEMO && (\"{?\" + name + \"?}\")                      , loc];\nconst Ref = (name, eras, loc)                     => [\"Ref\", {name, eras},                   MEMO && (\"{\" + name + \"}\")                        , loc];\nvar MEMO  = true;\n\n// ::::::::::::::::::\n// :: Substitution ::\n// ::::::::::::::::::\n\n// Shifts a term\n// shift : Maybe(Term) -> Nat -> Nat -> Maybe(Term)\nconst shift = (term, inc, depth) => {\n  if  (!term) {\n    return null;\n  } else {\n    const [f, [c, t, h, l], i, d] = [shift, term, inc, depth];\n    switch (c) {\n      case \"Var\": return Var(t.index < d ? t.index : t.index + i, l);\n      case \"Typ\": return Typ(l);\n      case \"Tid\": return Tid(f(t.expr, i, d), l);\n      case \"Utt\": return Utt(f(t.expr, i, d), l);\n      case \"Utv\": return Utv(f(t.expr, i, d), l);\n      case \"Ute\": return Ute(f(t.expr, i, d), l);\n      case \"All\": return All(t.name, f(t.bind, i, d), f(t.body, i, d+1), t.eras, l);\n      case \"Lam\": return Lam(t.name, f(t.bind, i, d), f(t.body, i, d+1), t.eras, l);\n      case \"App\": return App(f(t.func, i, d), f(t.argm, i, d), t.eras, l);\n      case \"Box\": return Box(f(t.expr, i, d), l);\n      case \"Put\": return Put(f(t.expr, i, d), l);\n      case \"Tak\": return Tak(f(t.expr, i, d), l);\n      case \"Dup\": return Dup(t.name, f(t.expr, i, d), f(t.body, i, d+1), l);\n      case \"Num\": return Num(l);\n      case \"Val\": return Val(t.numb, l);\n      case \"Op1\": return Op1(t.func, f(t.num0, i, d), f(t.num1, i, d), l);\n      case \"Op2\": return Op2(t.func, f(t.num0, i, d), f(t.num1, i, d), l);\n      case \"Ite\": return Ite(f(t.cond, i, d), f(t.pair, i, d), l);\n      case \"Cpy\": return Cpy(t.name, f(t.numb, i, d), f(t.body, i, d+1), l);\n      case \"Sig\": return Sig(t.name, f(t.typ0, i, d), f(t.typ1, i, d+1),  t.eras, l);\n      case \"Par\": return Par(f(t.val0, i, d), f(t.val1, i, d), t.eras, l);\n      case \"Fst\": return Fst(f(t.pair, i, d), t.eras, l);\n      case \"Snd\": return Snd(f(t.pair, i, d), t.eras, l);\n      case \"Prj\": return Prj(t.nam0, t.nam1, f(t.pair, i,  d), f(t.body, i, d+2), t.eras, l);\n      case \"Slf\": return Slf(t.name, f(t.type, i, d+1), l);\n      case \"New\": return New(f(t.type, i, d), f(t.expr, i, d), l);\n      case \"Use\": return Use(f(t.expr, i, d), l);\n      case \"Ann\": return Ann(f(t.type, i, d), f(t.expr, i, d), t.done, l);\n      case \"Log\": return Log(f(t.msge, i, d), f(t.expr, i, d), l);\n      case \"Hol\": return Hol(t.name, l);\n      case \"Ref\": return Ref(t.name, t.eras, l);\n    }\n  }\n}\n\n// shift : Maybe(Term) -> Term -> Nat -> Maybe(Term)\nconst subst = (term, val, depth) => {\n  if  (!term) {\n    return null;\n  } else {\n    const [s, f, [c, t, h, l], v, d] = [shift, subst, term, val, depth];\n    switch (c) {\n      case \"Var\": return d === t.index ? v : Var(t.index - (t.index > d ? 1 : 0), l);\n      case \"Typ\": return Typ(l);\n      case \"Tid\": return Tid(f(t.expr, v, d), l);\n      case \"Utt\": return Utt(f(t.expr, v, d), l);\n      case \"Utv\": return Utv(f(t.expr, v, d), l);\n      case \"Ute\": return Ute(f(t.expr, v, d), l);\n      case \"All\": return All(t.name, f(t.bind, v, d), f(t.body, s(v,1,0), d+1), t.eras, l);\n      case \"Lam\": return Lam(t.name, f(t.bind, v, d), f(t.body, s(v,1,0), d+1), t.eras, l);\n      case \"App\": return App(f(t.func, v, d), f(t.argm, v, d), t.eras, l);\n      case \"Box\": return Box(f(t.expr, v, d), l);\n      case \"Put\": return Put(f(t.expr, v, d), l);\n      case \"Tak\": return Tak(f(t.expr, v, d), l);\n      case \"Dup\": return Dup(t.name, f(t.expr, v, d), f(t.body, s(v,1,0), d+1), l);\n      case \"Num\": return Num(l);\n      case \"Val\": return Val(t.numb, l);\n      case \"Op1\": return Op1(t.func, f(t.num0, v, d), f(t.num1, v, d), l);\n      case \"Op2\": return Op2(t.func, f(t.num0, v, d), f(t.num1, v, d), l);\n      case \"Ite\": return Ite(f(t.cond, v, d), f(t.pair, v, d), l);\n      case \"Cpy\": return Cpy(t.name, f(t.numb, v, d), f(t.body, s(v,1,0), d+1), l);\n      case \"Sig\": return Sig(t.name, f(t.typ0, v, d), f(t.typ1, s(v,1,0), d+1),  t.eras, l);\n      case \"Par\": return Par(f(t.val0, v, d), f(t.val1, v, d), t.eras, l);\n      case \"Fst\": return Fst(f(t.pair, v, d), t.eras, l);\n      case \"Snd\": return Snd(f(t.pair, v, d), t.eras, l);\n      case \"Prj\": return Prj(t.nam0, t.nam1, f(t.pair, v, d), f(t.body, s(v,2,0), d+2), t.eras, l);\n      case \"Slf\": return Slf(t.name, f(t.type, s(v,1,0), d+1), l);\n      case \"New\": return New(f(t.type, v, d), f(t.expr, v, d), l);\n      case \"Use\": return Use(f(t.expr, v, d), l);\n      case \"Ann\": return Ann(f(t.type, v, d), f(t.expr, v, d), t.done, l);\n      case \"Log\": return Log(f(t.msge, v, d), f(t.expr, v, d), l);\n      case \"Hol\": return Hol(t.name, l);\n      case \"Ref\": return Ref(t.name, t.eras, l);\n    }\n  }\n}\n\n// subst_many : Term -> [Term] -> Nat -> Term\nconst subst_many = (term, vals, depth) => {\n  for (var i = 0; i < vals.length; ++i) {\n    term = subst(term, shift(vals[i], vals.length - i - 1, 0), depth + vals.length - i - 1);\n  }\n  return term;\n}\n\n// ::::::::::::::::\n// :: Evaluation ::\n// ::::::::::::::::\n\n// Reduces a term to normal form or head normal form\n// Opts: weak, unbox, logging, eta\nconst reduce = (term, opts = {}) => {\n  const names_new = null;\n  const names_ext = (bind, name, rest) => {\n    return {bind, name, rest};\n  }\n  const names_get = (i, names) => {\n    for (var k = 0; k < i; ++k) {\n      names = names ? names.rest : null;\n    }\n    return names ? {bind: names.bind, name: names.name} : null;\n  };\n  const names_len = (names) => {\n    for (var i = 0; names; ++i) {\n      names = names.rest;\n    }\n    return i;\n  };\n  const names_arr = names => {\n    return names ? [names.name].concat(names_arr(names.rest)) : [];\n  };\n  const names_var = (i, names) => {\n    const got = names_get(i, names);\n    return got ? got.bind : Var(names_len(names) - i - 1);\n  };\n  const apply = (func, argm, eras, names) => {\n    var func = reduce(func, names);\n    if (!opts.no_app && func[0] === \"Lam\") {\n      return reduce(func[1].body(argm), names);\n    } else if (!opts.no_app && func[0] === \"Dup\") {\n      return Dup(func[1].name, func[1].expr, x => weak_reduce(App(func[1].body(x), argm, eras), names_ext(x, func[1].name, names)));\n    } else {\n      return App(func, weak_reduce(argm, names), eras);\n    }\n  };\n  const take = (expr, names) => {\n    var expr = reduce(expr, names);\n    if (!opts.no_tak && expr[0] === \"Put\") {\n      return reduce(expr[1].expr, names);\n    } else if (!opts.no_tak && expr[0] === \"Dup\"){\n      return Dup(expr[1].name, expr[1].expr, x => weak_reduce(Tak(expr[1].body(x)), names_ext(x, expr[1].name, names)));\n    } else {\n      return Tak(expr);\n    }\n  };\n  const duplicate = (name, expr, body, names) => {\n    var expr = reduce(expr, names);\n    if (!opts.dup && expr[0] === \"Put\") {\n      return reduce(body(expr[1].expr), names);\n    } else if (!opts.no_dup && expr[0] === \"Dup\") {\n      return Dup(expr[1].name, expr[1].expr, x => weak_reduce(Dup(name, expr[1].body(x), x => body(x)), names_ext(x, name, expr[1].name)));\n    } else {\n      if (opts.undup) {\n        return reduce(body(Tak(expr)), names);\n      } else {\n        return Dup(name, expr, x => weak_reduce(body(x), names_ext(x, name, names)));\n      }\n    }\n  };\n  const dereference = (name, eras, names) => {\n    if (!opts.no_ref && (opts.defs||{})[name]) {\n      return reduce(unquote(eras ? erase((opts.defs||{})[name]) : (opts.defs||{})[name]), names_new);\n    } else {\n      return Ref(name, eras);\n    }\n  };\n  const op1 = (func, num0, num1, names) => {\n    var num0 = reduce(num0, names);\n    if (!opts.no_op1 && num0[0] === \"Val\") {\n      switch (func) {\n        case \".+.\"   : return Val(num0[1].numb + num1[1].numb);\n        case \".-.\"   : return Val(num0[1].numb - num1[1].numb);\n        case \".*.\"   : return Val(num0[1].numb * num1[1].numb);\n        case \"./.\"   : return Val(num0[1].numb / num1[1].numb);\n        case \".%.\"   : return Val(num0[1].numb % num1[1].numb);\n        case \".**.\"  : return Val(num0[1].numb ** num1[1].numb);\n        case \".&.\"   : return Val((num0[1].numb & num1[1].numb) >>> 0);\n        case \".|.\"   : return Val((num0[1].numb | num1[1].numb) >>> 0);\n        case \".^.\"   : return Val((num0[1].numb ^ num1[1].numb) >>> 0);\n        case \".~.\"   : return Val(~ num1[1].numb);\n        case \".>>>.\" : return Val((num0[1].numb >>> num1[1].numb));\n        case \".<<.\"  : return Val((num0[1].numb << num1[1].numb));\n        case \".>.\"   : return Val(num0[1].numb > num1[1].numb ? 1 : 0);\n        case \".<.\"   : return Val(num0[1].numb < num1[1].numb ? 1 : 0);\n        case \".==.\"  : return Val(num0[1].numb === num1[1].numb ? 1 : 0);\n        default      : throw \"[NORMALIZATION-ERROR]\\nUnknown primitive: \" + func + \".\";\n      }\n    } else {\n      return Op1(func, num0, num1);\n    }\n  };\n  const op2 = (func, num0, num1, names) => {\n    var num1 = reduce(num1, names);\n    if (!opts.no_op2 && num1[0] === \"Val\") {\n      return reduce(Op1(func, num0, num1, null), names);\n    } else {\n      return Op2(func, weak_reduce(num0, names), num1);\n    }\n  };\n  const if_then_else = (cond, pair, names) => {\n    var cond = reduce(cond, names);\n    if (!opts.no_ite && cond[0] === \"Val\") {\n      return cond[1].numb > 0 ? reduce(Fst(pair, false, null), names) : reduce(Snd(pair, false, null), names);\n    } else {\n      return Ite(cond, weak_reduce(pair, names));\n    }\n  };\n  const copy = (name, numb, body, names) => {\n    var numb = reduce(numb, names);\n    if (!opts.no_cpy && numb[0] === \"Val\") {\n      return reduce(body(numb), names);\n    } else {\n      return Cpy(name, numb, x => weak_reduce(body(x), names_ext(x, name, names)));\n    }\n  };\n  const first = (pair, eras, names) => {\n    var pair = reduce(pair, names);\n    if (!opts.no_fst && pair[0] === \"Par\") {\n      return reduce(pair[1].val0, names);\n    } else {\n      return Fst(pair, eras);\n    }\n  };\n  const second = (pair, eras, names) => {\n    var pair = reduce(pair, names);\n    if (!opts.no_snd && pair[0] === \"Par\") {\n      return reduce(pair[1].val1, names);\n    } else {\n      return Snd(pair, eras);\n    }\n  };\n  const project = (nam0, nam1, pair, body, eras, names) => {\n    var pair = reduce(pair, names);\n    if (!opts.no_prj && pair[0] === \"Par\") {\n      return reduce(body(pair[1].val0, pair[1].val1), names);\n    } else {\n      return Prj(nam0, nam1, pair, (x,y) => weak_reduce(body(x,y), names_ext(y, nam0, names_ext(x, nam1, names))), eras);\n    }\n  };\n  //const restrict = (expr, names) => {\n    //var expr = reduce(expr, names);\n    //if (expr[0] === \"Utv\") {\n      //return reduce(expr[1].expr, names);\n    //} else {\n      //return Ute(expr);\n    //}\n  //};\n  //const unrestrict = (expr, names) => {\n    //var expr = reduce(expr, names);\n    //if (expr[0] === \"Ute\") {\n      //return reduce(expr[1].expr, names);\n    //} else {\n      //return Ute(expr);\n    //}\n  //};\n  const log = (msge, expr, names) => {\n    var msge = reduce(msge, names);\n    var expr = reduce(expr, names);\n    if (opts.logging) {\n      var nams = names_arr(names).reverse();\n    }\n    if (opts.show) {\n      console.log(opts.show(quote(msge, 0), names || null));\n    }\n    return expr;\n  };\n  const unquote = (term, names = null) => {\n    var [ctor, term] = term;\n    switch (ctor) {\n      case \"Var\": return names_var(term.index, names);\n      case \"Typ\": return Typ();\n      case \"Tid\": return Tid(unquote(term.expr, names));\n      case \"Utt\": return Utt(unquote(term.expr, names));\n      case \"Utv\": return Utv(unquote(term.expr, names));\n      case \"Ute\": return Ute(unquote(term.expr, names));\n      case \"All\": return All(term.name, unquote(term.bind, names), x => unquote(term.body, names_ext(x, null, names)), term.eras);\n      case \"Lam\": return Lam(term.name, term.bind && unquote(term.bind, names), x => unquote(term.body, names_ext(x, null, names)), term.eras);\n      case \"App\": return App(unquote(term.func, names), unquote(term.argm, names), term.eras);\n      case \"Box\": return Box(unquote(term.expr, names));\n      case \"Put\": return Put(unquote(term.expr, names));\n      case \"Tak\": return Tak(unquote(term.expr, names));\n      case \"Dup\": return Dup(term.name, unquote(term.expr, names), x => unquote(term.body, names_ext(x, null, names)));\n      case \"Num\": return Num();\n      case \"Val\": return Val(term.numb);\n      case \"Op1\": return Op1(term.func, unquote(term.num0, names), unquote(term.num1, names));\n      case \"Op2\": return Op2(term.func, unquote(term.num0, names), unquote(term.num1, names));\n      case \"Ite\": return Ite(unquote(term.cond, names), unquote(term.pair, names));\n      case \"Cpy\": return Cpy(term.name, unquote(term.numb, names), x => unquote(term.body, names_ext(x, null, names)));\n      case \"Sig\": return Sig(term.name, unquote(term.typ0, names), x => unquote(term.typ1, names_ext(x, null, names)), term.eras);\n      case \"Par\": return Par(unquote(term.val0, names), unquote(term.val1, names), term.eras);\n      case \"Fst\": return Fst(unquote(term.pair, names), term.eras);\n      case \"Snd\": return Snd(unquote(term.pair, names), term.eras);\n      case \"Prj\": return Prj(term.nam0, term.nam1, unquote(term.pair, names), (x,y) => unquote(term.body, names_ext(y, null, names_ext(x, null, names)), term.eras));\n      case \"Slf\": return Slf(term.name, x => unquote(term.type, names_ext(x, null, names)));\n      case \"New\": return New(unquote(term.type, names), unquote(term.expr, names));\n      case \"Use\": return Use(unquote(term.expr, names));\n      case \"Ann\": return Ann(unquote(term.type, names), unquote(term.expr, names), term.done);\n      case \"Log\": return Log(unquote(term.msge, names), unquote(term.expr, names));\n      case \"Hol\": return Hol(term.name);\n      case \"Ref\": return Ref(term.name, term.eras);\n    }\n  };\n  const reduce = (term, names = null) => {\n    var [ctor, term] = term;\n    switch (ctor) {\n      case \"Var\": return Var(term.index);\n      case \"Typ\": return Typ();\n      case \"Tid\": return reduce(term.expr, names);\n      case \"Utt\": return Utt(reduce(term.expr, names));\n      case \"Utv\": return reduce(term.expr, names);\n      case \"Ute\": return reduce(term.expr, names);\n      case \"All\": return All(term.name, weak_reduce(term.bind, names), x => weak_reduce(term.body(x), names_ext(x, term.name, names)), term.eras);\n      case \"Lam\": return Lam(term.name, term.bind && weak_reduce(term.bind, names), x => weak_reduce(term.body(x), names_ext(x, term.name, names)), term.eras);\n      case \"App\": return apply(term.func, term.argm, term.eras, names);\n      case \"Box\": return Box(weak_reduce(term.expr, names));\n      case \"Put\": return opts.unbox ? reduce(term.expr, names) : Put(weak_reduce(term.expr, names));\n      case \"Tak\": return opts.unbox ? reduce(term.expr, names) : take(weak_reduce(term.expr, names), names);\n      case \"Dup\": return opts.unbox ? reduce(term.body(term.expr), names) : duplicate(term.name, term.expr, term.body, names);\n      case \"Num\": return Num();\n      case \"Val\": return Val(term.numb);\n      case \"Op1\": return op1(term.func, term.num0, term.num1, names);\n      case \"Op2\": return op2(term.func, term.num0, term.num1, names);\n      case \"Ite\": return if_then_else(term.cond, term.pair, names);\n      case \"Cpy\": return opts.unbox ? reduce(term.body(term.numb), names) : copy(term.name, term.numb, term.body, names);\n      case \"Sig\": return Sig(term.name, weak_reduce(term.typ0, names), x => weak_reduce(term.typ1(x), names_ext(x, term.name, names)), term.eras);\n      case \"Par\": return Par(weak_reduce(term.val0, names), weak_reduce(term.val1, names), term.eras);\n      case \"Fst\": return first(term.pair, term.eras, names);\n      case \"Snd\": return second(term.pair, term.eras, names);\n      case \"Prj\": return project(term.nam0, term.nam1, term.pair, term.body, term.eras, names);\n      case \"Slf\": return Slf(term.name, x => weak_reduce(term.type(x), names_ext(x, term.name, names)));\n      case \"New\": return reduce(term.expr, names);\n      case \"Use\": return reduce(term.expr, names);\n      case \"Ann\": return reduce(term.expr, names);\n      case \"Log\": return log(term.msge, term.expr, names);\n      case \"Hol\": return Hol(term.name);\n      case \"Ref\": return dereference(term.name, term.eras, names);\n    }\n  };\n  const quote = (term, depth) => {\n    var [ctor, term] = term;\n    switch (ctor) {\n      case \"Var\": return Var(depth - 1 - term.index);\n      case \"Typ\": return Typ();\n      case \"Tid\": return Tid(quote(term.expr, depth));\n      case \"Utt\": return Utt(quote(term.expr, depth));\n      case \"Utv\": return Utv(quote(term.expr, depth));\n      case \"Ute\": return Ute(quote(term.expr, depth));\n      case \"All\": return All(term.name, quote(term.bind, depth), quote(term.body(Var(depth)), depth + 1), term.eras);\n      case \"Lam\": return Lam(term.name, term.bind && quote(term.bind, depth), quote(term.body(Var(depth)), depth + 1), term.eras);\n      case \"App\": return App(quote(term.func, depth), quote(term.argm, depth), term.eras);\n      case \"Box\": return Box(quote(term.expr, depth));\n      case \"Put\": return Put(quote(term.expr, depth));\n      case \"Tak\": return Tak(quote(term.expr, depth));\n      case \"Dup\": return Dup(term.name, quote(term.expr, depth), quote(term.body(Var(depth)), depth + 1));\n      case \"Num\": return Num();\n      case \"Val\": return Val(term.numb);\n      case \"Op1\": return Op1(term.func, quote(term.num0, depth), quote(term.num1, depth));\n      case \"Op2\": return Op2(term.func, quote(term.num0, depth), quote(term.num1, depth));\n      case \"Ite\": return Ite(quote(term.cond, depth), quote(term.pair, depth));\n      case \"Cpy\": return Cpy(term.name, quote(term.numb, depth), quote(term.body(Var(depth)), depth + 1));\n      case \"Sig\": return Sig(term.name, quote(term.typ0, depth), quote(term.typ1(Var(depth)), depth + 1), term.eras);\n      case \"Par\": return Par(quote(term.val0, depth), quote(term.val1, depth), term.eras);\n      case \"Fst\": return Fst(quote(term.pair, depth), term.eras);\n      case \"Snd\": return Snd(quote(term.pair, depth), term.eras);\n      case \"Prj\": return Prj(term.nam0, term.nam1, quote(term.pair, depth), quote(term.body(Var(depth), Var(depth + 1)), depth + 2), term.eras);\n      case \"Slf\": return Slf(term.name, quote(term.type(Var(depth)), depth + 1));\n      case \"New\": return New(quote(term.type, depth), quote(term.expr, depth));\n      case \"Use\": return Use(quote(term.expr, depth));\n      case \"Ann\": return Ann(quote(term.type, depth), quote(term.expr, depth), term.done);\n      case \"Log\": return Log(quote(term.msge, depth), quote(term.expr, depth));\n      case \"Hol\": return Hol(term.name);\n      case \"Ref\": return Ref(term.name, term.eras);\n    }\n  };\n  const weak_reduce = (term, names) => {\n    return opts.weak ? term : reduce(term, names);\n  };\n  MEMO = false;\n  var unquoted = unquote(term);\n  var reduced = reduce(unquoted);\n  MEMO = true;\n  var quoted = quote(reduced, 0);\n  return quoted;\n};\n\n// erase : Term -> Term\nconst erase = (term) => {\n  const [f,[c,t],e] = [erase, term, Put(Hol(\"\"))];\n  switch (c) {\n    case \"Var\": return Var(t.index);\n    case \"Typ\": return Typ();\n    case \"Tid\": return f(t.expr);\n    case \"Utt\": return Utt(f(t.expr));\n    case \"Utv\": return f(t.expr);\n    case \"Ute\": return f(t.expr);\n    case \"All\": return All(t.name, f(t.bind), f(t.body), t.eras);\n    case \"Lam\": return t.eras ? f(subst(t.body, e, 0)) : Lam(t.name, null, f(t.body), t.eras);\n    case \"App\": return t.eras ? f(t.func)              : App(f(t.func), f(t.argm), t.eras);\n    case \"Box\": return Box(f(t.expr));\n    case \"Put\": return Put(f(t.expr));\n    case \"Tak\": return Tak(f(t.expr));\n    case \"Dup\": return Dup(t.name, f(t.expr), f(t.body));\n    case \"Num\": return Num();\n    case \"Val\": return Val(t.numb);\n    case \"Op1\": return Op1(t.func, f(t.num0), f(t.num1));\n    case \"Op2\": return Op2(t.func, f(t.num0), f(t.num1));\n    case \"Ite\": return Ite(f(t.cond), f(t.pair));\n    case \"Cpy\": return Cpy(t.name, f(t.numb), f(t.body));\n    case \"Sig\": return Sig(t.name, f(t.typ0), f(t.typ1), t.eras);\n    case \"Par\": return (t.eras === 1 ? f(t.val1) : t.eras === 2 ? f(t.val0) : Par(f(t.val0), f(t.val1), t.eras));\n    case \"Fst\": return (t.eras === 1 ? e         : t.eras === 2 ? f(t.pair) : Fst(f(t.pair), t.eras));\n    case \"Snd\": return (t.eras === 1 ? f(t.pair) : t.eras === 2 ? e         : Snd(f(t.pair), t.eras));\n    case \"Prj\": return (\n      t.eras === 1 ? f(subst_many(t.body, [e, f(t.pair)]), 0) :\n      t.eras === 2 ? f(subst_many(t.body, [f(t.pair), e]), 0) :\n      Prj(t.nam0, t.nam1, f(t.pair), f(t.body), t.eras));\n    case \"Slf\": return Slf(t.name, f(t.type));\n    case \"New\": return f(t.expr);\n    case \"Use\": return f(t.expr);\n    case \"Ann\": return f(t.expr);\n    case \"Log\": return Log(f(t.msge), f(t.expr));\n    case \"Hol\": return Hol(t.name);\n    case \"Ref\": return Ref(t.name, true);\n  }\n}\n\n// ::::::::::::::\n// :: Equality ::\n// ::::::::::::::\n\n// equal : Term -> Term -> Opts -> Bool\nconst equal = (a, b, d, opts) => {\n  const Eqs = (a, b, d) => [\"Eqs\", {a, b, d}];\n  const Bop = (v, x, y) => [\"Bop\", {v, x, y}];\n  const And = (x,y)     => Bop(false, x, y);\n  const Or  = (x,y)     => Bop(true, x, y);\n  const Val = (v)       => [\"Val\", {v}];\n\n  const step = (node) => {\n    switch (node[0]) {\n      // An equality test\n      case \"Eqs\":\n        var {a, b, d} = node[1];\n\n        // Gets whnfs with and without dereferencing\n        // Note: can't use weak:true because it won't give opportunity to eta...\n        var ax = reduce(a, {show: null, defs: opts.defs, weak: true, undup: true, defs: {}});\n        var bx = reduce(b, {show: null, defs: opts.defs, weak: true, undup: true, defs: {}});\n        var ay = reduce(a, {show: null, defs: opts.defs, weak: true, undup: true});\n        var by = reduce(b, {show: null, defs: opts.defs, weak: true, undup: true});\n\n        // Optimization: if hashes are equal, then a == b prematurely\n        if (a[2] === b[2] || ax[2] === bx[2] || ay[2] === by[2]) {\n          return Val(true);\n        }\n\n        // If non-deref whnfs are app and fields are equal, then a == b\n        var x = null;\n        if (ax[0] === \"Ref\" && bx[0] === \"Ref\" && ax[1].name === bx[1].name) {\n          x = Val(true);\n        } else if (ax[0] === \"App\" && bx[0] === \"App\") {\n          var func = Eqs(ax[1].func, bx[1].func, d);\n          var argm = Eqs(ax[1].argm, bx[1].argm, d);\n          x = Bop(false, func, argm);\n        }\n\n        // If whnfs are equal and fields are equal, then a == b\n        var y = null;\n        switch (ay[0] + \"-\" + by[0]) {\n          case \"Var-Var\": y = Val(ay[1].index === by[1].index); break;\n          case \"Typ-Typ\": y = Val(true); break;\n          case \"Tid-Tid\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Utt-Utt\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Utv-Utv\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Ute-Ute\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"All-All\": y = And(And(Eqs(ay[1].bind, by[1].bind, d), Eqs(ay[1].body, by[1].body, d+1)), Val(ay[1].eras === by[1].eras)); break;\n          case \"Lam-Lam\": y = And(Eqs(ay[1].body, by[1].body, d+1), Val(ay[1].eras === by[1].eras)); break;\n          case \"App-App\": y = And(And(Eqs(ay[1].func, by[1].func, d), Eqs(ay[1].argm, by[1].argm, d)), Val(ay[1].eras === by[1].eras)); break;\n          case \"Box-Box\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Put-Put\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Tak-Tak\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Dup-Dup\": y = And(Eqs(ay[1].expr, by[1].expr, d), Eqs(ay[1].body, by[1].body, d+1)); break;\n          case \"Num-Num\": y = Val(true); break;\n          case \"Val-Val\": y = Val(ay[1].numb === by[1].numb); break;\n          case \"Op1-Op1\": y = And(Val(ay[1].func === by[1].func), And(Eqs(ay[1].num0, by[1].num0, d), Val(ay[1].num1[1].numb === ay[1].num1[1].numb))); break;\n          case \"Op2-Op2\": y = And(Val(ay[1].func === by[1].func), And(Eqs(ay[1].num0, by[1].num0, d), Eqs(ay[1].num1, by[1].num1, d))); break;\n          case \"Ite-Ite\": y = And(Eqs(ay[1].cond, by[1].cond, d), Eqs(ay[1].pair, by[1].pair, d)); break;\n          case \"Cpy-Cpy\": y = And(Eqs(ay[1].numb, by[1].numb, d), Eqs(ay[1].body, by[1].body, d+1)); break;\n          case \"Sig-Sig\": y = And(Eqs(ay[1].typ0, by[1].typ0, d), Eqs(ay[1].typ1, by[1].typ1, d+1)); break;\n          case \"Par-Par\": y = And(Eqs(ay[1].val0, by[1].val0, d), Eqs(ay[1].val1, by[1].val1, d)); break;\n          case \"Fst-Fst\": y = And(Eqs(ay[1].pair, by[1].pair, d), Val(ay[1].eras === by[1].eras)); break;\n          case \"Snd-Snd\": y = And(Eqs(ay[1].pair, by[1].pair, d), Val(ay[1].eras === by[1].eras)); break;\n          case \"Prj-Prj\": y = And(Eqs(ay[1].pair, by[1].pair, d), Eqs(ay[1].body, by[1].body, d+2)); break;\n          case \"Slf-Slf\": y = Eqs(ay[1].type, by[1].type, d+1); break;\n          case \"New-New\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Use-Use\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Log-Log\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          case \"Ann-Ann\": y = Eqs(ay[1].expr, by[1].expr, d); break;\n          default:\n            if (ay[0] === \"Hol\") {\n              y = Val(true);\n            } else if (by[0] === \"Hol\") {\n              y = Val(true);\n            } else {\n              y = Val(false);\n            }\n        }\n\n        return x ? Bop(true, x, y) : y;\n\n      // A binary operation (or / and)\n      case \"Bop\":\n        var {v, x, y} = node[1];\n        if (x[0] === \"Val\") {\n          return x[1].v === v ? Val(v) : y;\n        } else if (y[0] === \"Val\") {\n          return y[1].v === v ? Val(v) : x;\n        } else {\n          var X = step(x);\n          var Y = step(y);\n          return Bop(v, X, Y);\n        }\n\n      // A result value (true / false)\n      case \"Val\":\n        return node;\n    }\n  }\n\n  // Expands the search tree until it finds an answer\n  var tree = Eqs(erase(a), erase(b), d);\n  while (tree[0] !== \"Val\") {\n    var tree = step(tree);\n  }\n  return tree[1].v;\n}\n\n// :::::::::::::::::::\n// :: Type Checking ::\n// :::::::::::::::::::\n\nconst {marked_code, random_excuse} = __webpack_require__(/*! ./fm-error.js */ \"./node_modules/formality-lang/src/fm-error.js\");\n\n// Type-checks a term and returns both its type and its program (an erased\n// copy of the term with holes filled and adjustments made). Does NOT check\n// termination, so a well-typed term may be bottom. Use haltcheck for that.\n// typecheck : Term -> Term -> Opts -> [Term, Term]\nconst typecheck = (term, expect, opts = {}) => {\n  var type_memo  = {};\n  var hole_msg   = {};\n  var hole_depth = {};\n  var found_anns = [];\n\n  const pad_right = (len, chr, str) => {\n    while (str.length < len) {\n      str += chr;\n    }\n    return str;\n  };\n\n  const highlight = (str)  => {\n    return \"\\x1b[2m\" + str + \"\\x1b[0m\";\n  };\n\n  const ctx_new = null;\n\n  const ctx_ext = (name, term, type, eras, many, lvel, ctx) => {\n    return {name, term, type, eras, many, lvel, uses: 0, rest: ctx};\n  };\n\n  const ctx_get = (i, ctx, use) => {\n    if (i < 0) return null;\n    for (var k = 0; k < i; ++k) {\n      if (!ctx.rest) return null;\n      ctx = ctx.rest;\n    }\n    var got = {\n      name: ctx.name,\n      term: ctx.term ? shift(ctx.term, i + 1, 0) : Var(i),\n      type: shift(ctx.type, i + 1, 0),\n      eras: ctx.eras,\n      many: ctx.many,\n      uses: ctx.uses,\n      lvel: ctx.lvel,\n    };\n    if (use) {\n      ctx.uses += 1;\n    }\n    return got;\n  };\n\n  const ctx_str = (ctx) => {\n    var txt = [];\n    var idx = 0;\n    var max_len = 0;\n    for (var c = ctx; c !== null; c = c.rest) {\n      max_len = Math.max(c.name.length, max_len);\n    }\n    for (var c = ctx; c !== null; c = c.rest) {\n      var name = c.name;\n      var type = c.type;\n      var tstr = opts.show(reduce(type, {defs: {}, undup: true}) , ctx_names(c.rest));\n      txt.push(\"\\x1b[2m- \" + pad_right(max_len, \" \", c.name) + \" : \" + tstr + \"\\x1b[0m\");\n    }\n    return txt.reverse().join(\"\\n\");\n  };\n\n  const ctx_names = (ctx) => {\n    var names = [];\n    while (ctx !== null) {\n      names.push(ctx.name);\n      ctx = ctx.rest;\n    }\n    return names.reverse();\n  };\n\n\n  const ctx_cpy = ctx => {\n    if (ctx === null) {\n      return null;\n    } else {\n      return {\n        name: ctx.name,\n        term: ctx.term,\n        type: ctx.type,\n        eras: ctx.eras,\n        many: ctx.many,\n        uses: ctx.uses,\n        lvel: ctx.lvel,\n        rest: ctx_cpy(ctx.rest)\n      }\n    }\n  };\n\n  const ctx_subst = (ctx, term) => {\n    var vals = [];\n    for (var c = ctx, i = 0; c !== null; c = c.rest, ++i) {\n      vals.push(c.term ? shift(c.term, i + 1, 0) : Var(i));\n    }\n    var term = shift(term, vals.length, vals.length);\n    var term = subst_many(term, vals.reverse(), 0)\n    return term;\n  };\n\n  const weak_normal = (term) => {\n    return reduce(term, {defs: opts.defs, undup: true, weak: true});\n  };\n\n  const display_normal = (term) => {\n    return reduce(term, {defs: opts.defs, defs: {}, undup: true, weak: false});\n  };\n\n  const format = (ctx, term) => {\n    return opts.show ? highlight(opts.show(display_normal(term), ctx_names(ctx))) : \"?\";\n  };\n\n  // Checks and returns the type of a term\n  const typecheck = (term, expect, ctx = ctx_new, affine = true, lvel = 0) => {\n    const do_error = (str)  => {\n      var err_msg = \"\";\n      err_msg += \"[ERROR]\\n\" + str;\n      err_msg += \"\\n- When checking \" + format(ctx, term)\n      if (ctx !== null) {\n        err_msg += \"\\n- With context:\\n\" + ctx_str(ctx);\n      }\n      if (term[3]) {\n        err_msg += \"\\n- On line \" + (term[3].row+1) + \", col \" + (term[3].col) + \", file \\x1b[4m\" + term[3].file + \".fm\\x1b[0m:\";\n        err_msg += \"\\n\" + marked_code(term[3]);\n      }\n      throw err_msg;\n    };\n\n    const do_match = (a, b) => {\n      if (!equal(a, b, ctx_names(ctx).length, {show: opts.show, defs: opts.defs, hole_depth})) {\n        do_error(\"Type mismatch.\"\n          + \"\\n- Found type... \" + format(ctx, a)\n          + \"\\n- Instead of... \" + format(ctx, b));\n      }\n    };\n\n    if (expect) {\n      var expect_nf = weak_normal(expect);\n      if (expect[0] === \"Typ\" || expect[0] === \"Utt\") {\n        affine = false;\n      }\n    } else {\n      var expect_nf = null;\n    }\n\n    var ctx_arg = ctx_cpy(ctx);\n\n    var type;\n    switch (term[0]) {\n      case \"Var\":\n        var got = ctx_get(term[1].index, ctx, affine);\n        if (got) {\n          if (affine) {\n            if (got.eras) {\n              do_error(\"Use of erased variable `\" + got.name + \"` in proof-relevant position.\");\n            }\n            if (got.uses > 0 && !got.many && !(expect_nf !== null && expect_nf[0] === \"Num\")) {\n              do_error(\"Use of affine variable `\" + got.name + \"` more than once in proof-relevant position.\");\n            }\n            if (got.lvel !== lvel) {\n              do_error(\"Use of variable `\" + got.name + \"` would change its level in proof-relevant position.\");\n            }\n          }\n          type = got.type;\n        } else {\n          do_error(\"Unbound variable.\");\n        }\n        break;\n      case \"Typ\":\n        type = Typ();\n        break;\n      case \"Tid\":\n        var expr_t = typecheck(term[1].expr, Typ(), ctx, false, lvel, [term, ctx]);\n        type = Typ();\n        break;\n      case \"Utt\":\n        if (expect_nf !== null && expect_nf[0] !== \"Typ\") {\n          do_error(\"The inferred type of an unrestricted type (example: \"\n            + format(ctx, Utt(Ref(\"A\"))) + \") isn't \"\n            + format(ctx, Typ())\n            + \".\\n- Inferred type is \" + format(ctx, expect_nf));\n        }\n        var expr_t = typecheck(term[1].expr, Typ(), ctx, false, lvel, [term, ctx]);\n        type = Typ();\n        break;\n      case \"Utv\":\n        if (expect_nf !== null && expect_nf[0] !== \"Utt\") {\n          do_error(\"The inferred type of an unrestricted term (example: \"\n            + format(ctx, Utv(Ref(\"x\")))\n            + \") isn't an unrestricted type (example: \"\n            + format(ctx, Utt(Ref(\"A\")))\n            + \").\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var expr_t = expect_nf && expect_nf[0] === \"Utt\" ? expect_nf[1].expr : null;\n        var expr_t = typecheck(term[1].expr, expr_t, ctx, false, lvel, [term, ctx]);\n        type = Utt(expr_t);\n        break;\n      case \"Ute\":\n        if (affine) {\n          do_error(\"Attempted to unrestrict a term (ex: \"\n            + format(ctx, Ute(Ref(\"+x\")))\n            + \") in a proof-relevant position.\");\n        }\n        var expr_t = typecheck(term[1].expr, null, ctx, false, lvel, [term, ctx]);\n        var expr_t = weak_normal(expr_t);\n        if (expr_t[0] !== \"Utt\") {\n          do_error(\"Expected an unrestricted type (example: \"\n            + format(ctx, Utt(Ref(\"A\")))\n            + \").\\n- Found type... \"\n            + format(ctx, expr_t));\n        }\n        type = expr_t[1].expr;\n        break;\n      case \"All\":\n        if (expect_nf && expect_nf[0] !== \"Typ\") {\n          do_error(\"The inferred type of a forall (example: \"\n            + format(ctx, All(\"x\", Ref(\"A\"), Ref(\"B\"), false))\n            + \") isn't \"\n            + format(ctx, Typ())\n            + \".\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var bind_t = typecheck(term[1].bind, Typ(), ctx, false, lvel, [term, ctx]);\n        var ex_ctx = ctx_ext(term[1].name, null, term[1].bind, term[1].eras, false, lvel, ctx);\n        var body_t = typecheck(term[1].body, Typ(), ex_ctx, false, lvel, [term, ctx]);\n        type = Typ();\n        break;\n      case \"Lam\":\n        var bind_v = expect_nf && expect_nf[0] === \"All\" ? expect_nf[1].bind : term[1].bind;\n        if (bind_v === null && expect_nf === null) {\n          do_error(\"Can't infer non-annotated lambda.\");\n        }\n        if (bind_v === null && expect_nf !== null) {\n          do_error(\"The inferred type of a lambda (example: \"\n            + format(ctx, Lam(\"x\",null,Ref(\"f\"),false))\n            + \") isn't forall (example: \"\n            + format(ctx, All(\"x\", Ref(\"A\"), Ref(\"B\"), false))\n            + \").\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var bind_t = typecheck(bind_v, Typ(), ctx, false, lvel, ctx);\n        var ex_ctx = ctx_ext(term[1].name, null, bind_v, term[1].eras, false, lvel, ctx);\n        var body_t = typecheck(term[1].body, expect_nf && expect_nf[0] === \"All\" ? expect_nf[1].body : null, ex_ctx, affine, lvel, [term, ctx]);\n        var body_T = typecheck(body_t, Typ(), ex_ctx, false, lvel, ctx);\n        type = All(term[1].name, bind_v, body_t, term[1].eras);\n        break;\n      case \"App\":\n        var func_t = typecheck(term[1].func, null, ctx, affine, lvel, [term, ctx]);\n        var func_t = weak_normal(func_t);\n        if (func_t[0] !== \"All\") {\n          do_error(\"Attempted to apply a value that isn't a function.\");\n        }\n        var argm_t = typecheck(term[1].argm, func_t[1].bind, ctx, affine, lvel, [term, ctx]);\n        if (func_t[1].eras !== term[1].eras) {\n          do_error(\"Mismatched erasure.\");\n        }\n        type = subst(func_t[1].body, Ann(func_t[1].bind, term[1].argm, false), 0);\n        break;\n      case \"Box\":\n        if (expect_nf !== null && expect_nf[0] !== \"Typ\") {\n          do_error(\"The inferred type of a box (example: \"\n            + format(ctx, Box(Ref(\"A\")))\n            + \") isn't \"\n            + format(ctx, Typ())\n            + \".\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var expr_t = typecheck(term[1].expr, Typ(), ctx, affine, lvel, [term, ctx]);\n        var expr_t = weak_normal(expr_t);\n        type = Typ();\n        break;\n      case \"Put\":\n        if (expect_nf !== null && expect_nf[0] !== \"Box\") {\n          do_error(\"The inferred type of a boxed value (example: \"\n            + format(ctx, Put(Ref(\"x\")))\n            + \") isn't a box (example: \"\n            + format(ctx, Box(Ref(\"A\")))\n            + \").\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var expr_t = expect_nf && expect_nf[0] === \"Box\" ? expect_nf[1].expr : null;\n        var term_t = typecheck(term[1].expr, expr_t, ctx, affine, lvel + 1, [term, ctx]);\n        type = Box(term_t);\n        break;\n      case \"Tak\":\n        var expr_t = typecheck(term[1].expr, null, ctx, affine, lvel - 1, [term, ctx]);\n        var expr_t = weak_normal(expr_t);\n        if (expr_t[0] !== \"Box\") {\n          do_error(\"Expected a boxed type (example: \"\n            + format(ctx, Box(Ref(\"A\")))\n            + \").\\n- Found type... \"\n            + format(ctx, expr_t));\n        }\n        type = expr_t[1].expr;\n        break;\n      case \"Dup\":\n        var expr_t = typecheck(term[1].expr, null, ctx, affine, lvel, [term, ctx]);\n        var expr_t = weak_normal(expr_t);\n        if (expr_t[0] !== \"Box\") {\n          do_error(\"Expected a boxed type (example: \"\n            + format(ctx, Box(Ref(\"A\")))\n            + \").\\n- Found type... \"\n            + format(ctx, expr_t));\n        }\n        var ex_ctx = ctx_ext(term[1].name, Tak(term[1].expr), expr_t[1].expr, false, true, lvel + 1, ctx);\n        var body_t = typecheck(term[1].body, expect_nf && shift(expect_nf, 1, 0), ex_ctx, affine, lvel, [term, ctx]);\n        type = subst(body_t, Tak(term[1].expr), 0);\n        break;\n      case \"Num\":\n        type = Typ();\n        break;\n      case \"Val\":\n        type = Num();\n        break;\n      case \"Op1\":\n      case \"Op2\":\n        if (expect_nf !== null && expect_nf[0] !== \"Num\") {\n          do_error(\"The inferred type of a numeric operation (example: \"\n            + format(ctx, Op2(term[1].func, Ref(\"x\"), Ref(\"y\")))\n            + \") isn't \"\n            + format(ctx, Num())\n            + \".\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var num0_t = typecheck(term[1].num0, Num(), ctx, affine, lvel, [term, ctx]);\n        var num1_t = typecheck(term[1].num1, Num(), ctx, affine, lvel, [term, ctx]);\n        type = Num();\n        break;\n      case \"Ite\":\n        var cond_t = typecheck(term[1].cond, null, ctx, affine, lvel, [term, ctx]);\n        var cond_t = weak_normal(cond_t);\n        if (cond_t[0] !== \"Num\") {\n          do_error(\"Attempted to use if on a non-numeric value.\");\n        }\n        var pair_t = expect_nf ? Sig(\"x\", expect_nf, shift(expect_nf, 1, 0), 0) : null;\n        var pair_t = typecheck(term[1].pair, pair_t, ctx, affine, lvel, [term, ctx]);\n        var pair_t = weak_normal(pair_t);\n        if (pair_t[0] !== \"Sig\") {\n          do_error(\"The body of an if must be a pair.\");\n        }\n        var typ0_v = pair_t[1].typ0;\n        var typ1_v = subst(pair_t[1].typ1, Typ(), 0);\n        if (!equal(typ0_v, typ1_v, ctx_names(ctx).length, {defs: opts.defs, hole_depth})) {\n          do_error(\"Both branches of if must have the same type.\");\n        }\n        type = expect_nf || typ0_v;\n        break;\n      case \"Cpy\":\n        var numb_t = typecheck(term[1].numb, null, ctx, affine, lvel, [term, ctx]);\n        var numb_t = weak_normal(numb_t);\n        if (numb_t[0] !== \"Num\") {\n          do_error(\"Atempted to copy a non-numeric value.\");\n        }\n        var ex_ctx = ctx_ext(term[1].name, term[1].numb, Num(), false, true, lvel, ctx);\n        var body_t = typecheck(term[1].body, expect_nf && shift(expect_nf, 1, 0), ex_ctx, affine, lvel, [term, ctx]);\n        type = subst(body_t, term[1].numb, 0);\n        break;\n      case \"Sig\":\n        if (expect_nf && expect_nf[0] !== \"Typ\") {\n          do_error(\"The inferred type of a sigma (example: \"\n            + format(ctx, Sig(\"x\", Ref(\"A\"), Ref(\"B\")))\n            + \") isn't \"\n            + format(ctx, Typ())\n            + \".\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var typ0_t = typecheck(term[1].typ0, Typ(), ctx, false, lvel, [term, ctx]);\n        var ex_ctx = ctx_ext(term[1].name, null, term[1].typ0, false, false, lvel, ctx);\n        var typ1_t = typecheck(term[1].typ1, Typ(), ex_ctx, false, lvel, [term, ctx]);\n        type = Typ();\n        break;\n      case \"Par\":\n        if (expect_nf && expect_nf[0] !== \"Sig\") {\n          do_error(\"Inferred type of a pair (example: \"\n            + format(ctx, Par(Ref(\"a\"),Ref(\"b\")))\n            + \") isn't \"\n            + format(ctx, Sig(\"x\", Ref(\"A\"), Ref(\"B\")))\n            + \".\\n- Inferred type is \"\n            + format(ctx, expect_nf));\n        }\n        var val0_t = typecheck(term[1].val0, expect_nf && expect_nf[1].typ0, ctx, affine, lvel, [term, ctx]);\n        if (expect_nf) {\n          var val1_t = typecheck(term[1].val1, subst(expect_nf[1].typ1, term[1].val0, 0), ctx, affine, lvel, [term, ctx]);\n        } else {\n          var val1_t = typecheck(term[1].val1, null, ctx, affine, lvel, [term, ctx]);\n          var val1_t = shift(val1_t, 1, 0);\n        }\n        var eras = expect_nf ? expect_nf[1].eras : term[1].eras;\n        if (term[1].eras !== eras) {\n          do_error(\"Mismatched erasure.\");\n        }\n        type = expect_nf || Sig(\"x\", val0_t, val1_t, term[1].eras);\n        break;\n      case \"Fst\":\n        if (term[1].eras === 1) {\n          do_error(\"Attempted to extract erased first element.\");\n        }\n        var pair_t = typecheck(term[1].pair, null, ctx, affine, lvel, [term, ctx]);\n        var pair_t = weak_normal(pair_t);\n        if (pair_t[0] !== \"Sig\") {\n          do_error(\"Attempted to extract the first element of a term that isn't a pair.\");\n        }\n        if (term[1].eras !== pair_t[1].eras) {\n          do_error(\"Mismatched erasure.\");\n        }\n        type = pair_t[1].typ0;\n        break;\n      case \"Snd\":\n        if (term[1].eras === 2) {\n          do_error(\"Attempted to extract erased second element.\");\n        }\n        var pair_t = typecheck(term[1].pair, null, ctx, affine, lvel, [term, ctx]);\n        var pair_t = weak_normal(pair_t);\n        if (pair_t[0] !== \"Sig\") {\n          do_error(\"Attempted to extract the second element of a term that isn't a pair.\");\n        }\n        if (term[1].eras !== pair_t[1].eras) {\n          do_error(\"Mismatched erasure.\");\n        }\n        type = subst(pair_t[1].typ1, Fst(term[1].pair, term[1].eras), 0);\n        break;\n      case \"Prj\":\n        var pair_t = typecheck(term[1].pair, null, ctx, affine, lvel, [term, ctx]);\n        var pair_t = weak_normal(pair_t);\n        if (pair_t[0] !== \"Sig\") {\n          do_error(\"Attempted to project the elements of a term that isn't a pair.\");\n        }\n        if (term[1].eras !== pair_t[1].eras) {\n          do_error(\"Mismatched erasure.\");\n        }\n        var ex_ctx = ctx_ext(term[1].nam0, null, pair_t[1].typ0, pair_t[1].eras === 1, false, lvel, ctx);\n        var ex_ctx = ctx_ext(term[1].nam1, null, pair_t[1].typ1, pair_t[1].eras === 2, false, lvel, ex_ctx);\n        try {\n          var tp_ctx = ctx_cpy(ex_ctx);\n          var body_t = typecheck(term[1].body, shift(expect, 2, 0), tp_ctx, affine, lvel, [term, ctx]);\n          var ex_ctx = tp_ctx;\n        } catch (e) {\n          var tp_ctx = ctx_cpy(ex_ctx);\n          var body_t = typecheck(term[1].body, null, ex_ctx, affine, lvel, [term, ctx]);\n          var ex_ctx = tp_ctx;\n        }\n        type = subst(subst(body_t, Snd(shift(term[1].pair, 1, 0), term[1].eras), 0), Fst(term[1].pair, term[1].eras), 0);\n        break;\n      case \"Slf\":\n        var ex_ctx = ctx_ext(term[1].name, null, term, false, false, lvel, ctx);\n        var type_t = typecheck(term[1].type, Typ(), ex_ctx, false, lvel, [term, ctx]);\n        type = Typ();\n        break;\n      case \"New\":\n        var ttyp = weak_normal(term[1].type);\n        if (ttyp[0] !== \"Slf\") {\n          do_error(\"Attempted to make an instance of a type that isn't self.\");\n        }\n        var ttyp_t = typecheck(ttyp, null, ctx, false, lvel, [term, ctx]);\n        var expr_t = typecheck(term[1].expr, subst(ttyp[1].type, Ann(ttyp, term, true), 0), ctx, affine, lvel, [term, ctx]);\n        type = term[1].type;\n        break;\n      case \"Use\":\n        var expr_t = typecheck(term[1].expr, null, ctx, affine, lvel, [term, ctx]);\n        var expr_t = weak_normal(expr_t);\n        if (expr_t[0] !== \"Slf\") {\n          do_error(\"Attempted to use a value that isn't a self type.\");\n        }\n        type = subst(expr_t[1].type, term[1].expr, 0);\n        break;\n      case \"Ann\":\n        if (!term[1].done) {\n          term[1].done = true;\n          found_anns.push(term);\n          try {\n            var type_t = typecheck(term[1].type, Typ(), ctx, affine, lvel, [term, ctx]);\n            var expr_t = typecheck(term[1].expr, term[1].type, ctx, affine, lvel, [term, ctx]);\n            //if (term[1].expr[0] === \"Ref\" && is_recursive((opts.defs||{})[term[1].expr[1].name], term[1].expr[1].name)) {\n              //do_error(\"Recursive occurrence of '\" + term[1].expr[1].name + \"'.\");\n            //}\n            type = term[1].type;\n          } catch (e) {\n            term[1].done = false;\n            throw e;\n          }\n        } else {\n          type = term[1].type;\n        }\n        break;\n      case \"Log\":\n        var msge_v = term[1].msge;\n        try {\n          var msge_t = typecheck(msge_v, null, ctx, false, lvel, [term, ctx]);\n          var msge_t = display_normal(erase(msge_t));\n        } catch (e) {\n          console.log(e);\n          var msge_t = Hol(\"\");\n        }\n        if (!opts.no_logs) {\n          console.log(\"[LOG]\");\n          console.log(\"Term: \" + opts.show(msge_v, ctx_names(ctx)));\n          console.log(\"Type: \" + opts.show(msge_t, ctx_names(ctx)) + \"\\n\");\n        }\n        var expr_t = typecheck(term[1].expr, expect, ctx, affine, lvel);\n        type = expr_t;\n        break;\n      case \"Hol\":\n        if (!hole_msg[term[1].name]) {\n          hole_msg[term[1].name] = {ctx, name: term[1].name, expect};\n          hole_depth[term[1].name] = ctx_names(ctx).length;\n        }\n        if (expect) {\n          type = expect;\n        } else {\n          throw new Error(\"Untyped hole.\");\n        }\n        break;\n      case \"Ref\":\n        if (!(opts.defs||{})[term[1].name]) {\n          do_error(\"Undefined reference: `\" + term[1].name + \"`.\");\n        } else if (!type_memo[term[1].name]) {\n          var dref_t = typecheck((opts.defs||{})[term[1].name], null, ctx, affine, lvel, [term, ctx]);\n          type_memo[term[1].name] = dref_t;\n        }\n        type = type_memo[term[1].name];\n        break;\n      default:\n        throw \"TODO: type checker for \" + term[0] + \".\";\n    }\n    if (expect) {\n      var type_nf = weak_normal(type);\n      // Fill an Utv\n      if (expect_nf[0] === \"Utt\" && type_nf[0] !== \"Utt\") {\n        return typecheck(Utv(term), expect_nf, ctx_arg, affine, lvel)\n      }\n      // Fill an Ute\n      if (expect_nf[0] !== \"Utt\" && type_nf[0] === \"Utt\") {\n        return typecheck(Ute(term), expect_nf, ctx_arg, affine, lvel)\n      }\n      // Check if inferred and expected types match\n      do_match(type, expect);\n    }\n    return type;\n  };\n\n  try {\n    // Type-checks the term\n    var type = typecheck(term, expect);\n\n    // Afterwards, prints hole msgs\n    for (var hole_name in hole_msg) {\n      var info = hole_msg[hole_name];\n      var msg = \"\";\n      msg += \"Found hole\" + (info.name ? \": '\" + info.name + \"'\" : \"\") + \".\\n\";\n      if (info.expect) {\n        msg += \"- With goal... \" + format(info.ctx, info.expect) + \"\\n\";\n      }\n      var cstr = ctx_str(info.ctx);\n      msg += \"- With context:\\n\" + (cstr.length > 0 ? cstr + \"\\n\" : \"\");\n      if (!opts.no_logs) {\n        console.log(msg);\n      }\n    }\n\n    // If so, normalize it to an user-friendly form and return\n    type = display_normal(type);\n\n    // Cleans side-effects\n    for (var i = 0; i < found_anns.length; ++i) {\n      found_anns[i][1].done = false;\n    }\n\n    return type;\n\n  // In case there is an error, adjust and throw\n  } catch (e) {\n    if (typeof e === \"string\") {\n      throw e;\n    } else {\n      console.log(e);\n      throw \"Sorry, the type-checker couldn't handle your input.\";\n    }\n  }\n};\n\n// Checks if a well-typed term terminates. Since well-typed terms must be\n// elementary affine, the only way they can fail to halt is through recursion.\n// This conservative check excludes any kind of recursion. Further work may be\n// done to identify and allow well-founded recursion.\nconst haltcheck = (term, defs, seen = {}) => {\n  switch (term[0]) {\n    case \"Utv\": return haltcheck(term[1].expr, defs, seen);\n    case \"Ute\": return haltcheck(term[1].expr, defs, seen);\n    case \"Lam\": return haltcheck(term[1].body, defs, seen);\n    case \"App\": return haltcheck(term[1].func, defs, seen) && (term[1].eras ? true : haltcheck(term[1].argm, defs, seen));\n    case \"Put\": return haltcheck(term[1].expr, defs, seen);\n    case \"Dup\": return haltcheck(term[1].expr, defs, seen) && haltcheck(term[1].body, defs, seen);\n    case \"Op1\": return haltcheck(term[1].num0, defs, seen) && haltcheck(term[1].num1, defs, seen);\n    case \"Op2\": return haltcheck(term[1].num0, defs, seen) && haltcheck(term[1].num1, defs, seen);\n    case \"Ite\": return haltcheck(term[1].cond, defs, seen) && haltcheck(term[1].pair, defs, seen);\n    case \"Cpy\": return haltcheck(term[1].numb, defs, seen) && haltcheck(term[1].body, defs, seen);\n    case \"Par\": return (term[1].eras === 1 ? true : haltcheck(term[1].val0, defs, seen)) && (term[1].eras === 2 ? true : haltcheck(term[1].val1, defs, seen));\n    case \"Fst\": return haltcheck(term[1].pair, defs, seen);\n    case \"Snd\": return haltcheck(term[1].pair, defs, seen);\n    case \"Prj\": return haltcheck(term[1].pair, defs, seen) && haltcheck(term[1].body, defs, seen);\n    case \"Ann\": return haltcheck(term[1].expr, defs, seen);\n    case \"New\": return haltcheck(term[1].expr, defs, seen);\n    case \"Use\": return haltcheck(term[1].expr, defs, seen);\n    case \"Log\": return haltcheck(term[1].expr, defs, seen);\n    case \"Ref\":\n      if (seen[term[1].name]) {\n        return false;\n      } else {\n        return haltcheck(defs[term[1].name], defs, {...seen, [term[1].name]: true});\n      }\n    default: return true;\n  }\n};\n\nmodule.exports = {\n  Var, Typ, Tid, Utt, Utv, Ute, All, Lam,\n  App, Box, Put, Tak, Dup, Num, Val, Op1,\n  Op2, Ite, Cpy, Sig, Par, Fst, Snd, Prj,\n  Slf, New, Use, Ann, Log, Hol, Ref,\n  equal,\n  erase,\n  reduce,\n  shift,\n  subst,\n  subst_many,\n  typecheck,\n  haltcheck,\n};\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-core.js?");
+// ~~ Formality Core Language ~~
+
+// ::::::::::
+// :: Term ::
+// ::::::::::
+
+// An FM-Lang term is an ADT represented as a JSON.
+// - Var: a variable
+// - Typ: the type of types, `Type`
+// - All: the dependent function type, `{x : A} -> B`, optionally erased
+// - Lam: a lambda, `{x} => B`, optionally erased/annotated
+// - App: an application `f(a)`, optionally erased
+// - Box: a boxed type, `!A`
+// - Put: a boxed value, `#a`
+// - Tak: unboxes a boxed value, `<>a`
+// - Dup: copies a boxed value, `dup x = a; b`
+// - Dbl: type of a native number
+// - Val: value of a native number
+// - Op1: partially applied binary numeric operation, `|n + k|`, with `k` fixed
+// - Op2: binary numeric operation, `|x + y|`
+// - Ite: if-then-else, `if n p`,  with a numeric conditional `n`, and two branches in a pair `p`
+// - Cpy: copies a number, `cpy x = a; b`
+// - Sig: type of a dependent pair, `[x : A, B(x)]`, or of a subset type, `[x : A ~ B(x)]`
+// - Par: value of a dependent pair, `[a, b]`, or of a dependent intersection `[a ~ b]`
+// - Fst: extracts 1st value of a dependent pair, `fst p`, or of a dependent intersection, `~fst p`
+// - Snd: extracts 2nd value of a dependent pair, `snd p`, or of a dependent intersection, `~snd p`
+// - Prj: projects a dependent pair, `get [x , y] = a; b`, or a dependent intersection, `get [x ~ y] = a; b`
+// - Ann: an explicit type annotaion, `: A a`
+// - Log: debug-prints a term during evaluation
+// - Hol: a type-hole
+// - Ref: a reference to a global def
+const Var = (index, loc)                          => ["Var", {index},                        MEMO && ("^" + index)                             , loc];
+const Typ = (loc)                                 => ["Typ", {},                             MEMO && ("ty")                                    , loc];
+const Tid = (expr, loc)                           => ["Tid", {expr},                         MEMO && expr[2]                                   , loc];
+const Utt = (expr, loc)                           => ["Utt", {expr},                         MEMO && ("ut" + expr[2])                          , loc];
+const Utv = (expr, loc)                           => ["Utv", {expr},                         MEMO && ("uv" + expr[2])                          , loc];
+const Ute = (expr, loc)                           => ["Ute", {expr},                         MEMO && ("ue" + expr[2])                          , loc];
+const All = (name, bind, body, eras, loc)         => ["All", {name, bind, body, eras},       MEMO && ("al" + (eras?"~":"") + bind[2] + body[2]), loc];
+const Lam = (name, bind, body, eras, loc)         => ["Lam", {name, bind, body, eras},       MEMO && ("lm" + (eras?"~":"") + body[2])          , loc];
+const App = (func, argm, eras, loc)               => ["App", {func, argm, eras},             MEMO && ("ap" + (eras?"~":"") + func[2] + argm[2]), loc];
+const Box = (expr, loc)                           => ["Box", {expr},                         MEMO && ("bx" + expr[2])                          , loc];
+const Put = (expr, loc)                           => ["Put", {expr},                         MEMO && ("pt" + expr[2])                          , loc];
+const Tak = (expr, loc)                           => ["Tak", {expr},                         MEMO && ("tk" + expr[2])                          , loc];
+const Dup = (name, expr, body, loc)               => ["Dup", {name, expr, body},             MEMO && ("dp" + expr[2] + body[2])                , loc];
+const Num = (loc)                                 => ["Num", {},                             MEMO && ("wd")                                    , loc];
+const Val = (numb, loc)                           => ["Val", {numb},                         MEMO && ("[" + numb + "]")                        , loc];
+const Op1 = (func, num0, num1, loc)               => ["Op1", {func, num0, num1},             MEMO && ("o1" + func + num0[2] + num1[2])         , loc];
+const Op2 = (func, num0, num1, loc)               => ["Op2", {func, num0, num1},             MEMO && ("o2" + func + num0[2] + num1[2])         , loc];
+const Ite = (cond, pair, loc)                     => ["Ite", {cond, pair},                   MEMO && ("ie" + cond[2] + pair[2])                , loc];
+const Cpy = (name, numb, body, loc)               => ["Cpy", {name, numb, body},             MEMO && ("cy" + numb[2] + body[2])                , loc];
+const Sig = (name, typ0, typ1, eras, loc)         => ["Sig", {name, typ0, typ1, eras},       MEMO && ("sg" + eras + typ0[2] + typ1[2])         , loc];
+const Par = (val0, val1, eras, loc)               => ["Par", {val0, val1, eras},             MEMO && ("pr" + eras + val0[2] + val1[2])         , loc];
+const Fst = (pair, eras=0, loc)                   => ["Fst", {pair, eras},                   MEMO && ("ft" + eras + pair[2])                   , loc];
+const Snd = (pair, eras=0, loc)                   => ["Snd", {pair, eras},                   MEMO && ("sd" + eras + pair[2])                   , loc];
+const Prj = (nam0, nam1, pair, body, eras=0, loc) => ["Prj", {nam0, nam1, pair, body, eras}, MEMO && ("pj" + eras + pair[2] + body[2])         , loc];
+const Slf = (name, type, loc)                     => ["Slf", {name, type},                   MEMO && ("sf" + type[2])                          , loc];
+const New = (type, expr, loc)                     => ["New", {type, expr},                   MEMO && expr[2]                                   , loc];
+const Use = (expr, loc)                           => ["Use", {expr},                         MEMO && expr[2]                                   , loc];
+const Ann = (type, expr, done, loc)               => ["Ann", {type, expr, done},             MEMO && expr[2]                                   , loc];
+const Log = (msge, expr, loc)                     => ["Log", {msge, expr},                   MEMO && expr[2]                                   , loc];
+const Hol = (name, loc)                           => ["Hol", {name},                         MEMO && ("{?" + name + "?}")                      , loc];
+const Ref = (name, eras, loc)                     => ["Ref", {name, eras},                   MEMO && ("{" + name + "}")                        , loc];
+var MEMO  = true;
+
+// ::::::::::::::::::
+// :: Substitution ::
+// ::::::::::::::::::
+
+// Shifts a term
+// shift : Maybe(Term) -> Nat -> Nat -> Maybe(Term)
+const shift = (term, inc, depth) => {
+  if  (!term) {
+    return null;
+  } else {
+    const [f, [c, t, h, l], i, d] = [shift, term, inc, depth];
+    switch (c) {
+      case "Var": return Var(t.index < d ? t.index : t.index + i, l);
+      case "Typ": return Typ(l);
+      case "Tid": return Tid(f(t.expr, i, d), l);
+      case "Utt": return Utt(f(t.expr, i, d), l);
+      case "Utv": return Utv(f(t.expr, i, d), l);
+      case "Ute": return Ute(f(t.expr, i, d), l);
+      case "All": return All(t.name, f(t.bind, i, d), f(t.body, i, d+1), t.eras, l);
+      case "Lam": return Lam(t.name, f(t.bind, i, d), f(t.body, i, d+1), t.eras, l);
+      case "App": return App(f(t.func, i, d), f(t.argm, i, d), t.eras, l);
+      case "Box": return Box(f(t.expr, i, d), l);
+      case "Put": return Put(f(t.expr, i, d), l);
+      case "Tak": return Tak(f(t.expr, i, d), l);
+      case "Dup": return Dup(t.name, f(t.expr, i, d), f(t.body, i, d+1), l);
+      case "Num": return Num(l);
+      case "Val": return Val(t.numb, l);
+      case "Op1": return Op1(t.func, f(t.num0, i, d), f(t.num1, i, d), l);
+      case "Op2": return Op2(t.func, f(t.num0, i, d), f(t.num1, i, d), l);
+      case "Ite": return Ite(f(t.cond, i, d), f(t.pair, i, d), l);
+      case "Cpy": return Cpy(t.name, f(t.numb, i, d), f(t.body, i, d+1), l);
+      case "Sig": return Sig(t.name, f(t.typ0, i, d), f(t.typ1, i, d+1),  t.eras, l);
+      case "Par": return Par(f(t.val0, i, d), f(t.val1, i, d), t.eras, l);
+      case "Fst": return Fst(f(t.pair, i, d), t.eras, l);
+      case "Snd": return Snd(f(t.pair, i, d), t.eras, l);
+      case "Prj": return Prj(t.nam0, t.nam1, f(t.pair, i,  d), f(t.body, i, d+2), t.eras, l);
+      case "Slf": return Slf(t.name, f(t.type, i, d+1), l);
+      case "New": return New(f(t.type, i, d), f(t.expr, i, d), l);
+      case "Use": return Use(f(t.expr, i, d), l);
+      case "Ann": return Ann(f(t.type, i, d), f(t.expr, i, d), t.done, l);
+      case "Log": return Log(f(t.msge, i, d), f(t.expr, i, d), l);
+      case "Hol": return Hol(t.name, l);
+      case "Ref": return Ref(t.name, t.eras, l);
+    }
+  }
+}
+
+// shift : Maybe(Term) -> Term -> Nat -> Maybe(Term)
+const subst = (term, val, depth) => {
+  if  (!term) {
+    return null;
+  } else {
+    const [s, f, [c, t, h, l], v, d] = [shift, subst, term, val, depth];
+    switch (c) {
+      case "Var": return d === t.index ? v : Var(t.index - (t.index > d ? 1 : 0), l);
+      case "Typ": return Typ(l);
+      case "Tid": return Tid(f(t.expr, v, d), l);
+      case "Utt": return Utt(f(t.expr, v, d), l);
+      case "Utv": return Utv(f(t.expr, v, d), l);
+      case "Ute": return Ute(f(t.expr, v, d), l);
+      case "All": return All(t.name, f(t.bind, v, d), f(t.body, s(v,1,0), d+1), t.eras, l);
+      case "Lam": return Lam(t.name, f(t.bind, v, d), f(t.body, s(v,1,0), d+1), t.eras, l);
+      case "App": return App(f(t.func, v, d), f(t.argm, v, d), t.eras, l);
+      case "Box": return Box(f(t.expr, v, d), l);
+      case "Put": return Put(f(t.expr, v, d), l);
+      case "Tak": return Tak(f(t.expr, v, d), l);
+      case "Dup": return Dup(t.name, f(t.expr, v, d), f(t.body, s(v,1,0), d+1), l);
+      case "Num": return Num(l);
+      case "Val": return Val(t.numb, l);
+      case "Op1": return Op1(t.func, f(t.num0, v, d), f(t.num1, v, d), l);
+      case "Op2": return Op2(t.func, f(t.num0, v, d), f(t.num1, v, d), l);
+      case "Ite": return Ite(f(t.cond, v, d), f(t.pair, v, d), l);
+      case "Cpy": return Cpy(t.name, f(t.numb, v, d), f(t.body, s(v,1,0), d+1), l);
+      case "Sig": return Sig(t.name, f(t.typ0, v, d), f(t.typ1, s(v,1,0), d+1),  t.eras, l);
+      case "Par": return Par(f(t.val0, v, d), f(t.val1, v, d), t.eras, l);
+      case "Fst": return Fst(f(t.pair, v, d), t.eras, l);
+      case "Snd": return Snd(f(t.pair, v, d), t.eras, l);
+      case "Prj": return Prj(t.nam0, t.nam1, f(t.pair, v, d), f(t.body, s(v,2,0), d+2), t.eras, l);
+      case "Slf": return Slf(t.name, f(t.type, s(v,1,0), d+1), l);
+      case "New": return New(f(t.type, v, d), f(t.expr, v, d), l);
+      case "Use": return Use(f(t.expr, v, d), l);
+      case "Ann": return Ann(f(t.type, v, d), f(t.expr, v, d), t.done, l);
+      case "Log": return Log(f(t.msge, v, d), f(t.expr, v, d), l);
+      case "Hol": return Hol(t.name, l);
+      case "Ref": return Ref(t.name, t.eras, l);
+    }
+  }
+}
+
+// subst_many : Term -> [Term] -> Nat -> Term
+const subst_many = (term, vals, depth) => {
+  for (var i = 0; i < vals.length; ++i) {
+    term = subst(term, shift(vals[i], vals.length - i - 1, 0), depth + vals.length - i - 1);
+  }
+  return term;
+}
+
+// ::::::::::::::::
+// :: Evaluation ::
+// ::::::::::::::::
+
+// Reduces a term to normal form or head normal form
+// Opts: weak, unbox, logging, eta
+const reduce = (term, opts = {}) => {
+  const names_new = null;
+  const names_ext = (bind, name, rest) => {
+    return {bind, name, rest};
+  }
+  const names_get = (i, names) => {
+    for (var k = 0; k < i; ++k) {
+      names = names ? names.rest : null;
+    }
+    return names ? {bind: names.bind, name: names.name} : null;
+  };
+  const names_len = (names) => {
+    for (var i = 0; names; ++i) {
+      names = names.rest;
+    }
+    return i;
+  };
+  const names_arr = names => {
+    return names ? [names.name].concat(names_arr(names.rest)) : [];
+  };
+  const names_var = (i, names) => {
+    const got = names_get(i, names);
+    return got ? got.bind : Var(names_len(names) - i - 1);
+  };
+  const apply = (func, argm, eras, names) => {
+    var func = reduce(func, names);
+    if (!opts.no_app && func[0] === "Lam") {
+      return reduce(func[1].body(argm), names);
+    } else if (!opts.no_app && func[0] === "Dup") {
+      return Dup(func[1].name, func[1].expr, x => weak_reduce(App(func[1].body(x), argm, eras), names_ext(x, func[1].name, names)));
+    } else {
+      return App(func, weak_reduce(argm, names), eras);
+    }
+  };
+  const take = (expr, names) => {
+    var expr = reduce(expr, names);
+    if (!opts.no_tak && expr[0] === "Put") {
+      return reduce(expr[1].expr, names);
+    } else if (!opts.no_tak && expr[0] === "Dup"){
+      return Dup(expr[1].name, expr[1].expr, x => weak_reduce(Tak(expr[1].body(x)), names_ext(x, expr[1].name, names)));
+    } else {
+      return Tak(expr);
+    }
+  };
+  const duplicate = (name, expr, body, names) => {
+    var expr = reduce(expr, names);
+    if (!opts.dup && expr[0] === "Put") {
+      return reduce(body(expr[1].expr), names);
+    } else if (!opts.no_dup && expr[0] === "Dup") {
+      return Dup(expr[1].name, expr[1].expr, x => weak_reduce(Dup(name, expr[1].body(x), x => body(x)), names_ext(x, name, expr[1].name)));
+    } else {
+      if (opts.undup) {
+        return reduce(body(Tak(expr)), names);
+      } else {
+        return Dup(name, expr, x => weak_reduce(body(x), names_ext(x, name, names)));
+      }
+    }
+  };
+  const dereference = (name, eras, names) => {
+    if (!opts.no_ref && (opts.defs||{})[name]) {
+      return reduce(unquote(eras ? erase((opts.defs||{})[name]) : (opts.defs||{})[name]), names_new);
+    } else {
+      return Ref(name, eras);
+    }
+  };
+  const op1 = (func, num0, num1, names) => {
+    var num0 = reduce(num0, names);
+    if (!opts.no_op1 && num0[0] === "Val") {
+      switch (func) {
+        case ".+."   : return Val(num0[1].numb + num1[1].numb);
+        case ".-."   : return Val(num0[1].numb - num1[1].numb);
+        case ".*."   : return Val(num0[1].numb * num1[1].numb);
+        case "./."   : return Val(num0[1].numb / num1[1].numb);
+        case ".%."   : return Val(num0[1].numb % num1[1].numb);
+        case ".**."  : return Val(num0[1].numb ** num1[1].numb);
+        case ".&."   : return Val((num0[1].numb & num1[1].numb) >>> 0);
+        case ".|."   : return Val((num0[1].numb | num1[1].numb) >>> 0);
+        case ".^."   : return Val((num0[1].numb ^ num1[1].numb) >>> 0);
+        case ".~."   : return Val(~ num1[1].numb);
+        case ".>>>." : return Val((num0[1].numb >>> num1[1].numb));
+        case ".<<."  : return Val((num0[1].numb << num1[1].numb));
+        case ".>."   : return Val(num0[1].numb > num1[1].numb ? 1 : 0);
+        case ".<."   : return Val(num0[1].numb < num1[1].numb ? 1 : 0);
+        case ".==."  : return Val(num0[1].numb === num1[1].numb ? 1 : 0);
+        default      : throw "[NORMALIZATION-ERROR]\nUnknown primitive: " + func + ".";
+      }
+    } else {
+      return Op1(func, num0, num1);
+    }
+  };
+  const op2 = (func, num0, num1, names) => {
+    var num1 = reduce(num1, names);
+    if (!opts.no_op2 && num1[0] === "Val") {
+      return reduce(Op1(func, num0, num1, null), names);
+    } else {
+      return Op2(func, weak_reduce(num0, names), num1);
+    }
+  };
+  const if_then_else = (cond, pair, names) => {
+    var cond = reduce(cond, names);
+    if (!opts.no_ite && cond[0] === "Val") {
+      return cond[1].numb > 0 ? reduce(Fst(pair, false, null), names) : reduce(Snd(pair, false, null), names);
+    } else {
+      return Ite(cond, weak_reduce(pair, names));
+    }
+  };
+  const copy = (name, numb, body, names) => {
+    var numb = reduce(numb, names);
+    if (!opts.no_cpy && numb[0] === "Val") {
+      return reduce(body(numb), names);
+    } else {
+      return Cpy(name, numb, x => weak_reduce(body(x), names_ext(x, name, names)));
+    }
+  };
+  const first = (pair, eras, names) => {
+    var pair = reduce(pair, names);
+    if (!opts.no_fst && pair[0] === "Par") {
+      return reduce(pair[1].val0, names);
+    } else {
+      return Fst(pair, eras);
+    }
+  };
+  const second = (pair, eras, names) => {
+    var pair = reduce(pair, names);
+    if (!opts.no_snd && pair[0] === "Par") {
+      return reduce(pair[1].val1, names);
+    } else {
+      return Snd(pair, eras);
+    }
+  };
+  const project = (nam0, nam1, pair, body, eras, names) => {
+    var pair = reduce(pair, names);
+    if (!opts.no_prj && pair[0] === "Par") {
+      return reduce(body(pair[1].val0, pair[1].val1), names);
+    } else {
+      return Prj(nam0, nam1, pair, (x,y) => weak_reduce(body(x,y), names_ext(y, nam0, names_ext(x, nam1, names))), eras);
+    }
+  };
+  //const restrict = (expr, names) => {
+    //var expr = reduce(expr, names);
+    //if (expr[0] === "Utv") {
+      //return reduce(expr[1].expr, names);
+    //} else {
+      //return Ute(expr);
+    //}
+  //};
+  //const unrestrict = (expr, names) => {
+    //var expr = reduce(expr, names);
+    //if (expr[0] === "Ute") {
+      //return reduce(expr[1].expr, names);
+    //} else {
+      //return Ute(expr);
+    //}
+  //};
+  const log = (msge, expr, names) => {
+    var msge = reduce(msge, names);
+    var expr = reduce(expr, names);
+    if (opts.logging) {
+      var nams = names_arr(names).reverse();
+    }
+    if (opts.show) {
+      console.log(opts.show(quote(msge, 0), names || null));
+    }
+    return expr;
+  };
+  const unquote = (term, names = null) => {
+    var [ctor, term] = term;
+    switch (ctor) {
+      case "Var": return names_var(term.index, names);
+      case "Typ": return Typ();
+      case "Tid": return Tid(unquote(term.expr, names));
+      case "Utt": return Utt(unquote(term.expr, names));
+      case "Utv": return Utv(unquote(term.expr, names));
+      case "Ute": return Ute(unquote(term.expr, names));
+      case "All": return All(term.name, unquote(term.bind, names), x => unquote(term.body, names_ext(x, null, names)), term.eras);
+      case "Lam": return Lam(term.name, term.bind && unquote(term.bind, names), x => unquote(term.body, names_ext(x, null, names)), term.eras);
+      case "App": return App(unquote(term.func, names), unquote(term.argm, names), term.eras);
+      case "Box": return Box(unquote(term.expr, names));
+      case "Put": return Put(unquote(term.expr, names));
+      case "Tak": return Tak(unquote(term.expr, names));
+      case "Dup": return Dup(term.name, unquote(term.expr, names), x => unquote(term.body, names_ext(x, null, names)));
+      case "Num": return Num();
+      case "Val": return Val(term.numb);
+      case "Op1": return Op1(term.func, unquote(term.num0, names), unquote(term.num1, names));
+      case "Op2": return Op2(term.func, unquote(term.num0, names), unquote(term.num1, names));
+      case "Ite": return Ite(unquote(term.cond, names), unquote(term.pair, names));
+      case "Cpy": return Cpy(term.name, unquote(term.numb, names), x => unquote(term.body, names_ext(x, null, names)));
+      case "Sig": return Sig(term.name, unquote(term.typ0, names), x => unquote(term.typ1, names_ext(x, null, names)), term.eras);
+      case "Par": return Par(unquote(term.val0, names), unquote(term.val1, names), term.eras);
+      case "Fst": return Fst(unquote(term.pair, names), term.eras);
+      case "Snd": return Snd(unquote(term.pair, names), term.eras);
+      case "Prj": return Prj(term.nam0, term.nam1, unquote(term.pair, names), (x,y) => unquote(term.body, names_ext(y, null, names_ext(x, null, names)), term.eras));
+      case "Slf": return Slf(term.name, x => unquote(term.type, names_ext(x, null, names)));
+      case "New": return New(unquote(term.type, names), unquote(term.expr, names));
+      case "Use": return Use(unquote(term.expr, names));
+      case "Ann": return Ann(unquote(term.type, names), unquote(term.expr, names), term.done);
+      case "Log": return Log(unquote(term.msge, names), unquote(term.expr, names));
+      case "Hol": return Hol(term.name);
+      case "Ref": return Ref(term.name, term.eras);
+    }
+  };
+  const reduce = (term, names = null) => {
+    var [ctor, term] = term;
+    switch (ctor) {
+      case "Var": return Var(term.index);
+      case "Typ": return Typ();
+      case "Tid": return reduce(term.expr, names);
+      case "Utt": return Utt(reduce(term.expr, names));
+      case "Utv": return reduce(term.expr, names);
+      case "Ute": return reduce(term.expr, names);
+      case "All": return All(term.name, weak_reduce(term.bind, names), x => weak_reduce(term.body(x), names_ext(x, term.name, names)), term.eras);
+      case "Lam": return Lam(term.name, term.bind && weak_reduce(term.bind, names), x => weak_reduce(term.body(x), names_ext(x, term.name, names)), term.eras);
+      case "App": return apply(term.func, term.argm, term.eras, names);
+      case "Box": return Box(weak_reduce(term.expr, names));
+      case "Put": return opts.unbox ? reduce(term.expr, names) : Put(weak_reduce(term.expr, names));
+      case "Tak": return opts.unbox ? reduce(term.expr, names) : take(weak_reduce(term.expr, names), names);
+      case "Dup": return opts.unbox ? reduce(term.body(term.expr), names) : duplicate(term.name, term.expr, term.body, names);
+      case "Num": return Num();
+      case "Val": return Val(term.numb);
+      case "Op1": return op1(term.func, term.num0, term.num1, names);
+      case "Op2": return op2(term.func, term.num0, term.num1, names);
+      case "Ite": return if_then_else(term.cond, term.pair, names);
+      case "Cpy": return opts.unbox ? reduce(term.body(term.numb), names) : copy(term.name, term.numb, term.body, names);
+      case "Sig": return Sig(term.name, weak_reduce(term.typ0, names), x => weak_reduce(term.typ1(x), names_ext(x, term.name, names)), term.eras);
+      case "Par": return Par(weak_reduce(term.val0, names), weak_reduce(term.val1, names), term.eras);
+      case "Fst": return first(term.pair, term.eras, names);
+      case "Snd": return second(term.pair, term.eras, names);
+      case "Prj": return project(term.nam0, term.nam1, term.pair, term.body, term.eras, names);
+      case "Slf": return Slf(term.name, x => weak_reduce(term.type(x), names_ext(x, term.name, names)));
+      case "New": return reduce(term.expr, names);
+      case "Use": return reduce(term.expr, names);
+      case "Ann": return reduce(term.expr, names);
+      case "Log": return log(term.msge, term.expr, names);
+      case "Hol": return Hol(term.name);
+      case "Ref": return dereference(term.name, term.eras, names);
+    }
+  };
+  const quote = (term, depth) => {
+    var [ctor, term] = term;
+    switch (ctor) {
+      case "Var": return Var(depth - 1 - term.index);
+      case "Typ": return Typ();
+      case "Tid": return Tid(quote(term.expr, depth));
+      case "Utt": return Utt(quote(term.expr, depth));
+      case "Utv": return Utv(quote(term.expr, depth));
+      case "Ute": return Ute(quote(term.expr, depth));
+      case "All": return All(term.name, quote(term.bind, depth), quote(term.body(Var(depth)), depth + 1), term.eras);
+      case "Lam": return Lam(term.name, term.bind && quote(term.bind, depth), quote(term.body(Var(depth)), depth + 1), term.eras);
+      case "App": return App(quote(term.func, depth), quote(term.argm, depth), term.eras);
+      case "Box": return Box(quote(term.expr, depth));
+      case "Put": return Put(quote(term.expr, depth));
+      case "Tak": return Tak(quote(term.expr, depth));
+      case "Dup": return Dup(term.name, quote(term.expr, depth), quote(term.body(Var(depth)), depth + 1));
+      case "Num": return Num();
+      case "Val": return Val(term.numb);
+      case "Op1": return Op1(term.func, quote(term.num0, depth), quote(term.num1, depth));
+      case "Op2": return Op2(term.func, quote(term.num0, depth), quote(term.num1, depth));
+      case "Ite": return Ite(quote(term.cond, depth), quote(term.pair, depth));
+      case "Cpy": return Cpy(term.name, quote(term.numb, depth), quote(term.body(Var(depth)), depth + 1));
+      case "Sig": return Sig(term.name, quote(term.typ0, depth), quote(term.typ1(Var(depth)), depth + 1), term.eras);
+      case "Par": return Par(quote(term.val0, depth), quote(term.val1, depth), term.eras);
+      case "Fst": return Fst(quote(term.pair, depth), term.eras);
+      case "Snd": return Snd(quote(term.pair, depth), term.eras);
+      case "Prj": return Prj(term.nam0, term.nam1, quote(term.pair, depth), quote(term.body(Var(depth), Var(depth + 1)), depth + 2), term.eras);
+      case "Slf": return Slf(term.name, quote(term.type(Var(depth)), depth + 1));
+      case "New": return New(quote(term.type, depth), quote(term.expr, depth));
+      case "Use": return Use(quote(term.expr, depth));
+      case "Ann": return Ann(quote(term.type, depth), quote(term.expr, depth), term.done);
+      case "Log": return Log(quote(term.msge, depth), quote(term.expr, depth));
+      case "Hol": return Hol(term.name);
+      case "Ref": return Ref(term.name, term.eras);
+    }
+  };
+  const weak_reduce = (term, names) => {
+    return opts.weak ? term : reduce(term, names);
+  };
+  MEMO = false;
+  var unquoted = unquote(term);
+  var reduced = reduce(unquoted);
+  MEMO = true;
+  var quoted = quote(reduced, 0);
+  return quoted;
+};
+
+// erase : Term -> Term
+const erase = (term) => {
+  const [f,[c,t],e] = [erase, term, Put(Hol(""))];
+  switch (c) {
+    case "Var": return Var(t.index);
+    case "Typ": return Typ();
+    case "Tid": return f(t.expr);
+    case "Utt": return Utt(f(t.expr));
+    case "Utv": return f(t.expr);
+    case "Ute": return f(t.expr);
+    case "All": return All(t.name, f(t.bind), f(t.body), t.eras);
+    case "Lam": return t.eras ? f(subst(t.body, e, 0)) : Lam(t.name, null, f(t.body), t.eras);
+    case "App": return t.eras ? f(t.func)              : App(f(t.func), f(t.argm), t.eras);
+    case "Box": return Box(f(t.expr));
+    case "Put": return Put(f(t.expr));
+    case "Tak": return Tak(f(t.expr));
+    case "Dup": return Dup(t.name, f(t.expr), f(t.body));
+    case "Num": return Num();
+    case "Val": return Val(t.numb);
+    case "Op1": return Op1(t.func, f(t.num0), f(t.num1));
+    case "Op2": return Op2(t.func, f(t.num0), f(t.num1));
+    case "Ite": return Ite(f(t.cond), f(t.pair));
+    case "Cpy": return Cpy(t.name, f(t.numb), f(t.body));
+    case "Sig": return Sig(t.name, f(t.typ0), f(t.typ1), t.eras);
+    case "Par": return (t.eras === 1 ? f(t.val1) : t.eras === 2 ? f(t.val0) : Par(f(t.val0), f(t.val1), t.eras));
+    case "Fst": return (t.eras === 1 ? e         : t.eras === 2 ? f(t.pair) : Fst(f(t.pair), t.eras));
+    case "Snd": return (t.eras === 1 ? f(t.pair) : t.eras === 2 ? e         : Snd(f(t.pair), t.eras));
+    case "Prj": return (
+      t.eras === 1 ? f(subst_many(t.body, [e, f(t.pair)]), 0) :
+      t.eras === 2 ? f(subst_many(t.body, [f(t.pair), e]), 0) :
+      Prj(t.nam0, t.nam1, f(t.pair), f(t.body), t.eras));
+    case "Slf": return Slf(t.name, f(t.type));
+    case "New": return f(t.expr);
+    case "Use": return f(t.expr);
+    case "Ann": return f(t.expr);
+    case "Log": return Log(f(t.msge), f(t.expr));
+    case "Hol": return Hol(t.name);
+    case "Ref": return Ref(t.name, true);
+  }
+}
+
+// ::::::::::::::
+// :: Equality ::
+// ::::::::::::::
+
+// equal : Term -> Term -> Opts -> Bool
+const equal = (a, b, d, opts) => {
+  const Eqs = (a, b, d) => ["Eqs", {a, b, d}];
+  const Bop = (v, x, y) => ["Bop", {v, x, y}];
+  const And = (x,y)     => Bop(false, x, y);
+  const Or  = (x,y)     => Bop(true, x, y);
+  const Val = (v)       => ["Val", {v}];
+
+  const step = (node) => {
+    switch (node[0]) {
+      // An equality test
+      case "Eqs":
+        var {a, b, d} = node[1];
+
+        // Gets whnfs with and without dereferencing
+        // Note: can't use weak:true because it won't give opportunity to eta...
+        var ax = reduce(a, {show: null, defs: opts.defs, weak: true, undup: true, defs: {}});
+        var bx = reduce(b, {show: null, defs: opts.defs, weak: true, undup: true, defs: {}});
+        var ay = reduce(a, {show: null, defs: opts.defs, weak: true, undup: true});
+        var by = reduce(b, {show: null, defs: opts.defs, weak: true, undup: true});
+
+        // Optimization: if hashes are equal, then a == b prematurely
+        if (a[2] === b[2] || ax[2] === bx[2] || ay[2] === by[2]) {
+          return Val(true);
+        }
+
+        // If non-deref whnfs are app and fields are equal, then a == b
+        var x = null;
+        if (ax[0] === "Ref" && bx[0] === "Ref" && ax[1].name === bx[1].name) {
+          x = Val(true);
+        } else if (ax[0] === "App" && bx[0] === "App") {
+          var func = Eqs(ax[1].func, bx[1].func, d);
+          var argm = Eqs(ax[1].argm, bx[1].argm, d);
+          x = Bop(false, func, argm);
+        }
+
+        // If whnfs are equal and fields are equal, then a == b
+        var y = null;
+        switch (ay[0] + "-" + by[0]) {
+          case "Var-Var": y = Val(ay[1].index === by[1].index); break;
+          case "Typ-Typ": y = Val(true); break;
+          case "Tid-Tid": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Utt-Utt": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Utv-Utv": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Ute-Ute": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "All-All": y = And(And(Eqs(ay[1].bind, by[1].bind, d), Eqs(ay[1].body, by[1].body, d+1)), Val(ay[1].eras === by[1].eras)); break;
+          case "Lam-Lam": y = And(Eqs(ay[1].body, by[1].body, d+1), Val(ay[1].eras === by[1].eras)); break;
+          case "App-App": y = And(And(Eqs(ay[1].func, by[1].func, d), Eqs(ay[1].argm, by[1].argm, d)), Val(ay[1].eras === by[1].eras)); break;
+          case "Box-Box": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Put-Put": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Tak-Tak": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Dup-Dup": y = And(Eqs(ay[1].expr, by[1].expr, d), Eqs(ay[1].body, by[1].body, d+1)); break;
+          case "Num-Num": y = Val(true); break;
+          case "Val-Val": y = Val(ay[1].numb === by[1].numb); break;
+          case "Op1-Op1": y = And(Val(ay[1].func === by[1].func), And(Eqs(ay[1].num0, by[1].num0, d), Val(ay[1].num1[1].numb === ay[1].num1[1].numb))); break;
+          case "Op2-Op2": y = And(Val(ay[1].func === by[1].func), And(Eqs(ay[1].num0, by[1].num0, d), Eqs(ay[1].num1, by[1].num1, d))); break;
+          case "Ite-Ite": y = And(Eqs(ay[1].cond, by[1].cond, d), Eqs(ay[1].pair, by[1].pair, d)); break;
+          case "Cpy-Cpy": y = And(Eqs(ay[1].numb, by[1].numb, d), Eqs(ay[1].body, by[1].body, d+1)); break;
+          case "Sig-Sig": y = And(Eqs(ay[1].typ0, by[1].typ0, d), Eqs(ay[1].typ1, by[1].typ1, d+1)); break;
+          case "Par-Par": y = And(Eqs(ay[1].val0, by[1].val0, d), Eqs(ay[1].val1, by[1].val1, d)); break;
+          case "Fst-Fst": y = And(Eqs(ay[1].pair, by[1].pair, d), Val(ay[1].eras === by[1].eras)); break;
+          case "Snd-Snd": y = And(Eqs(ay[1].pair, by[1].pair, d), Val(ay[1].eras === by[1].eras)); break;
+          case "Prj-Prj": y = And(Eqs(ay[1].pair, by[1].pair, d), Eqs(ay[1].body, by[1].body, d+2)); break;
+          case "Slf-Slf": y = Eqs(ay[1].type, by[1].type, d+1); break;
+          case "New-New": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Use-Use": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Log-Log": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          case "Ann-Ann": y = Eqs(ay[1].expr, by[1].expr, d); break;
+          default:
+            if (ay[0] === "Hol") {
+              y = Val(true);
+            } else if (by[0] === "Hol") {
+              y = Val(true);
+            } else {
+              y = Val(false);
+            }
+        }
+
+        return x ? Bop(true, x, y) : y;
+
+      // A binary operation (or / and)
+      case "Bop":
+        var {v, x, y} = node[1];
+        if (x[0] === "Val") {
+          return x[1].v === v ? Val(v) : y;
+        } else if (y[0] === "Val") {
+          return y[1].v === v ? Val(v) : x;
+        } else {
+          var X = step(x);
+          var Y = step(y);
+          return Bop(v, X, Y);
+        }
+
+      // A result value (true / false)
+      case "Val":
+        return node;
+    }
+  }
+
+  // Expands the search tree until it finds an answer
+  var tree = Eqs(erase(a), erase(b), d);
+  while (tree[0] !== "Val") {
+    var tree = step(tree);
+  }
+  return tree[1].v;
+}
+
+// :::::::::::::::::::
+// :: Type Checking ::
+// :::::::::::::::::::
+
+const {marked_code, random_excuse} = __webpack_require__(/*! ./fm-error.js */ "./node_modules/formality-lang/src/fm-error.js");
+
+// Type-checks a term and returns both its type and its program (an erased
+// copy of the term with holes filled and adjustments made). Does NOT check
+// termination, so a well-typed term may be bottom. Use haltcheck for that.
+// typecheck : Term -> Term -> Opts -> [Term, Term]
+const typecheck = (term, expect, opts = {}) => {
+  var type_memo  = {};
+  var hole_msg   = {};
+  var hole_depth = {};
+  var found_anns = [];
+
+  const pad_right = (len, chr, str) => {
+    while (str.length < len) {
+      str += chr;
+    }
+    return str;
+  };
+
+  const highlight = (str)  => {
+    return "\x1b[2m" + str + "\x1b[0m";
+  };
+
+  const ctx_new = null;
+
+  const ctx_ext = (name, term, type, eras, many, lvel, ctx) => {
+    return {name, term, type, eras, many, lvel, uses: 0, rest: ctx};
+  };
+
+  const ctx_get = (i, ctx, use) => {
+    if (i < 0) return null;
+    for (var k = 0; k < i; ++k) {
+      if (!ctx.rest) return null;
+      ctx = ctx.rest;
+    }
+    var got = {
+      name: ctx.name,
+      term: ctx.term ? shift(ctx.term, i + 1, 0) : Var(i),
+      type: shift(ctx.type, i + 1, 0),
+      eras: ctx.eras,
+      many: ctx.many,
+      uses: ctx.uses,
+      lvel: ctx.lvel,
+    };
+    if (use) {
+      ctx.uses += 1;
+    }
+    return got;
+  };
+
+  const ctx_str = (ctx) => {
+    var txt = [];
+    var idx = 0;
+    var max_len = 0;
+    for (var c = ctx; c !== null; c = c.rest) {
+      max_len = Math.max(c.name.length, max_len);
+    }
+    for (var c = ctx; c !== null; c = c.rest) {
+      var name = c.name;
+      var type = c.type;
+      var tstr = opts.show(reduce(type, {defs: {}, undup: true}) , ctx_names(c.rest));
+      txt.push("\x1b[2m- " + pad_right(max_len, " ", c.name) + " : " + tstr + "\x1b[0m");
+    }
+    return txt.reverse().join("\n");
+  };
+
+  const ctx_names = (ctx) => {
+    var names = [];
+    while (ctx !== null) {
+      names.push(ctx.name);
+      ctx = ctx.rest;
+    }
+    return names.reverse();
+  };
+
+
+  const ctx_cpy = ctx => {
+    if (ctx === null) {
+      return null;
+    } else {
+      return {
+        name: ctx.name,
+        term: ctx.term,
+        type: ctx.type,
+        eras: ctx.eras,
+        many: ctx.many,
+        uses: ctx.uses,
+        lvel: ctx.lvel,
+        rest: ctx_cpy(ctx.rest)
+      }
+    }
+  };
+
+  const ctx_subst = (ctx, term) => {
+    var vals = [];
+    for (var c = ctx, i = 0; c !== null; c = c.rest, ++i) {
+      vals.push(c.term ? shift(c.term, i + 1, 0) : Var(i));
+    }
+    var term = shift(term, vals.length, vals.length);
+    var term = subst_many(term, vals.reverse(), 0)
+    return term;
+  };
+
+  const weak_normal = (term) => {
+    return reduce(term, {defs: opts.defs, undup: true, weak: true});
+  };
+
+  const display_normal = (term) => {
+    return reduce(term, {defs: opts.defs, defs: {}, undup: true, weak: false});
+  };
+
+  const format = (ctx, term) => {
+    return opts.show ? highlight(opts.show(display_normal(term), ctx_names(ctx))) : "?";
+  };
+
+  // Checks and returns the type of a term
+  const typecheck = (term, expect, ctx = ctx_new, affine = true, lvel = 0) => {
+    const do_error = (str)  => {
+      var err_msg = "";
+      err_msg += "[ERROR]\n" + str;
+      err_msg += "\n- When checking " + format(ctx, term)
+      if (ctx !== null) {
+        err_msg += "\n- With context:\n" + ctx_str(ctx);
+      }
+      if (term[3]) {
+        err_msg += "\n- On line " + (term[3].row+1) + ", col " + (term[3].col) + ", file \x1b[4m" + term[3].file + ".fm\x1b[0m:";
+        err_msg += "\n" + marked_code(term[3]);
+      }
+      throw err_msg;
+    };
+
+    const do_match = (a, b) => {
+      if (!equal(a, b, ctx_names(ctx).length, {show: opts.show, defs: opts.defs, hole_depth})) {
+        do_error("Type mismatch."
+          + "\n- Found type... " + format(ctx, a)
+          + "\n- Instead of... " + format(ctx, b));
+      }
+    };
+
+    if (expect) {
+      var expect_nf = weak_normal(expect);
+      if (expect[0] === "Typ" || expect[0] === "Utt") {
+        affine = false;
+      }
+    } else {
+      var expect_nf = null;
+    }
+
+    var ctx_arg = ctx_cpy(ctx);
+
+    var type;
+    switch (term[0]) {
+      case "Var":
+        var got = ctx_get(term[1].index, ctx, affine);
+        if (got) {
+          if (affine) {
+            if (got.eras) {
+              do_error("Use of erased variable `" + got.name + "` in proof-relevant position.");
+            }
+            if (got.uses > 0 && !got.many && !(expect_nf !== null && expect_nf[0] === "Num")) {
+              do_error("Use of affine variable `" + got.name + "` more than once in proof-relevant position.");
+            }
+            if (got.lvel !== lvel) {
+              do_error("Use of variable `" + got.name + "` would change its level in proof-relevant position.");
+            }
+          }
+          type = got.type;
+        } else {
+          do_error("Unbound variable.");
+        }
+        break;
+      case "Typ":
+        type = Typ();
+        break;
+      case "Tid":
+        var expr_t = typecheck(term[1].expr, Typ(), ctx, false, lvel, [term, ctx]);
+        type = Typ();
+        break;
+      case "Utt":
+        if (expect_nf !== null && expect_nf[0] !== "Typ") {
+          do_error("The inferred type of an unrestricted type (example: "
+            + format(ctx, Utt(Ref("A"))) + ") isn't "
+            + format(ctx, Typ())
+            + ".\n- Inferred type is " + format(ctx, expect_nf));
+        }
+        var expr_t = typecheck(term[1].expr, Typ(), ctx, false, lvel, [term, ctx]);
+        type = Typ();
+        break;
+      case "Utv":
+        if (expect_nf !== null && expect_nf[0] !== "Utt") {
+          do_error("The inferred type of an unrestricted term (example: "
+            + format(ctx, Utv(Ref("x")))
+            + ") isn't an unrestricted type (example: "
+            + format(ctx, Utt(Ref("A")))
+            + ").\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var expr_t = expect_nf && expect_nf[0] === "Utt" ? expect_nf[1].expr : null;
+        var expr_t = typecheck(term[1].expr, expr_t, ctx, false, lvel, [term, ctx]);
+        type = Utt(expr_t);
+        break;
+      case "Ute":
+        if (affine) {
+          do_error("Attempted to unrestrict a term (ex: "
+            + format(ctx, Ute(Ref("+x")))
+            + ") in a proof-relevant position.");
+        }
+        var expr_t = typecheck(term[1].expr, null, ctx, false, lvel, [term, ctx]);
+        var expr_t = weak_normal(expr_t);
+        if (expr_t[0] !== "Utt") {
+          do_error("Expected an unrestricted type (example: "
+            + format(ctx, Utt(Ref("A")))
+            + ").\n- Found type... "
+            + format(ctx, expr_t));
+        }
+        type = expr_t[1].expr;
+        break;
+      case "All":
+        if (expect_nf && expect_nf[0] !== "Typ") {
+          do_error("The inferred type of a forall (example: "
+            + format(ctx, All("x", Ref("A"), Ref("B"), false))
+            + ") isn't "
+            + format(ctx, Typ())
+            + ".\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var bind_t = typecheck(term[1].bind, Typ(), ctx, false, lvel, [term, ctx]);
+        var ex_ctx = ctx_ext(term[1].name, null, term[1].bind, term[1].eras, false, lvel, ctx);
+        var body_t = typecheck(term[1].body, Typ(), ex_ctx, false, lvel, [term, ctx]);
+        type = Typ();
+        break;
+      case "Lam":
+        var bind_v = expect_nf && expect_nf[0] === "All" ? expect_nf[1].bind : term[1].bind;
+        if (bind_v === null && expect_nf === null) {
+          do_error("Can't infer non-annotated lambda.");
+        }
+        if (bind_v === null && expect_nf !== null) {
+          do_error("The inferred type of a lambda (example: "
+            + format(ctx, Lam("x",null,Ref("f"),false))
+            + ") isn't forall (example: "
+            + format(ctx, All("x", Ref("A"), Ref("B"), false))
+            + ").\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var bind_t = typecheck(bind_v, Typ(), ctx, false, lvel, ctx);
+        var ex_ctx = ctx_ext(term[1].name, null, bind_v, term[1].eras, false, lvel, ctx);
+        var body_t = typecheck(term[1].body, expect_nf && expect_nf[0] === "All" ? expect_nf[1].body : null, ex_ctx, affine, lvel, [term, ctx]);
+        var body_T = typecheck(body_t, Typ(), ex_ctx, false, lvel, ctx);
+        type = All(term[1].name, bind_v, body_t, term[1].eras);
+        break;
+      case "App":
+        var func_t = typecheck(term[1].func, null, ctx, affine, lvel, [term, ctx]);
+        var func_t = weak_normal(func_t);
+        if (func_t[0] !== "All") {
+          do_error("Attempted to apply a value that isn't a function.");
+        }
+        var argm_t = typecheck(term[1].argm, func_t[1].bind, ctx, affine, lvel, [term, ctx]);
+        if (func_t[1].eras !== term[1].eras) {
+          do_error("Mismatched erasure.");
+        }
+        type = subst(func_t[1].body, Ann(func_t[1].bind, term[1].argm, false), 0);
+        break;
+      case "Box":
+        if (expect_nf !== null && expect_nf[0] !== "Typ") {
+          do_error("The inferred type of a box (example: "
+            + format(ctx, Box(Ref("A")))
+            + ") isn't "
+            + format(ctx, Typ())
+            + ".\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var expr_t = typecheck(term[1].expr, Typ(), ctx, affine, lvel, [term, ctx]);
+        var expr_t = weak_normal(expr_t);
+        type = Typ();
+        break;
+      case "Put":
+        if (expect_nf !== null && expect_nf[0] !== "Box") {
+          do_error("The inferred type of a boxed value (example: "
+            + format(ctx, Put(Ref("x")))
+            + ") isn't a box (example: "
+            + format(ctx, Box(Ref("A")))
+            + ").\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var expr_t = expect_nf && expect_nf[0] === "Box" ? expect_nf[1].expr : null;
+        var term_t = typecheck(term[1].expr, expr_t, ctx, affine, lvel + 1, [term, ctx]);
+        type = Box(term_t);
+        break;
+      case "Tak":
+        var expr_t = typecheck(term[1].expr, null, ctx, affine, lvel - 1, [term, ctx]);
+        var expr_t = weak_normal(expr_t);
+        if (expr_t[0] !== "Box") {
+          do_error("Expected a boxed type (example: "
+            + format(ctx, Box(Ref("A")))
+            + ").\n- Found type... "
+            + format(ctx, expr_t));
+        }
+        type = expr_t[1].expr;
+        break;
+      case "Dup":
+        var expr_t = typecheck(term[1].expr, null, ctx, affine, lvel, [term, ctx]);
+        var expr_t = weak_normal(expr_t);
+        if (expr_t[0] !== "Box") {
+          do_error("Expected a boxed type (example: "
+            + format(ctx, Box(Ref("A")))
+            + ").\n- Found type... "
+            + format(ctx, expr_t));
+        }
+        var ex_ctx = ctx_ext(term[1].name, Tak(term[1].expr), expr_t[1].expr, false, true, lvel + 1, ctx);
+        var body_t = typecheck(term[1].body, expect_nf && shift(expect_nf, 1, 0), ex_ctx, affine, lvel, [term, ctx]);
+        type = subst(body_t, Tak(term[1].expr), 0);
+        break;
+      case "Num":
+        type = Typ();
+        break;
+      case "Val":
+        type = Num();
+        break;
+      case "Op1":
+      case "Op2":
+        if (expect_nf !== null && expect_nf[0] !== "Num") {
+          do_error("The inferred type of a numeric operation (example: "
+            + format(ctx, Op2(term[1].func, Ref("x"), Ref("y")))
+            + ") isn't "
+            + format(ctx, Num())
+            + ".\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var num0_t = typecheck(term[1].num0, Num(), ctx, affine, lvel, [term, ctx]);
+        var num1_t = typecheck(term[1].num1, Num(), ctx, affine, lvel, [term, ctx]);
+        type = Num();
+        break;
+      case "Ite":
+        var cond_t = typecheck(term[1].cond, null, ctx, affine, lvel, [term, ctx]);
+        var cond_t = weak_normal(cond_t);
+        if (cond_t[0] !== "Num") {
+          do_error("Attempted to use if on a non-numeric value.");
+        }
+        var pair_t = expect_nf ? Sig("x", expect_nf, shift(expect_nf, 1, 0), 0) : null;
+        var pair_t = typecheck(term[1].pair, pair_t, ctx, affine, lvel, [term, ctx]);
+        var pair_t = weak_normal(pair_t);
+        if (pair_t[0] !== "Sig") {
+          do_error("The body of an if must be a pair.");
+        }
+        var typ0_v = pair_t[1].typ0;
+        var typ1_v = subst(pair_t[1].typ1, Typ(), 0);
+        if (!equal(typ0_v, typ1_v, ctx_names(ctx).length, {defs: opts.defs, hole_depth})) {
+          do_error("Both branches of if must have the same type.");
+        }
+        type = expect_nf || typ0_v;
+        break;
+      case "Cpy":
+        var numb_t = typecheck(term[1].numb, null, ctx, affine, lvel, [term, ctx]);
+        var numb_t = weak_normal(numb_t);
+        if (numb_t[0] !== "Num") {
+          do_error("Atempted to copy a non-numeric value.");
+        }
+        var ex_ctx = ctx_ext(term[1].name, term[1].numb, Num(), false, true, lvel, ctx);
+        var body_t = typecheck(term[1].body, expect_nf && shift(expect_nf, 1, 0), ex_ctx, affine, lvel, [term, ctx]);
+        type = subst(body_t, term[1].numb, 0);
+        break;
+      case "Sig":
+        if (expect_nf && expect_nf[0] !== "Typ") {
+          do_error("The inferred type of a sigma (example: "
+            + format(ctx, Sig("x", Ref("A"), Ref("B")))
+            + ") isn't "
+            + format(ctx, Typ())
+            + ".\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var typ0_t = typecheck(term[1].typ0, Typ(), ctx, false, lvel, [term, ctx]);
+        var ex_ctx = ctx_ext(term[1].name, null, term[1].typ0, false, false, lvel, ctx);
+        var typ1_t = typecheck(term[1].typ1, Typ(), ex_ctx, false, lvel, [term, ctx]);
+        type = Typ();
+        break;
+      case "Par":
+        if (expect_nf && expect_nf[0] !== "Sig") {
+          do_error("Inferred type of a pair (example: "
+            + format(ctx, Par(Ref("a"),Ref("b")))
+            + ") isn't "
+            + format(ctx, Sig("x", Ref("A"), Ref("B")))
+            + ".\n- Inferred type is "
+            + format(ctx, expect_nf));
+        }
+        var val0_t = typecheck(term[1].val0, expect_nf && expect_nf[1].typ0, ctx, affine, lvel, [term, ctx]);
+        if (expect_nf) {
+          var val1_t = typecheck(term[1].val1, subst(expect_nf[1].typ1, term[1].val0, 0), ctx, affine, lvel, [term, ctx]);
+        } else {
+          var val1_t = typecheck(term[1].val1, null, ctx, affine, lvel, [term, ctx]);
+          var val1_t = shift(val1_t, 1, 0);
+        }
+        var eras = expect_nf ? expect_nf[1].eras : term[1].eras;
+        if (term[1].eras !== eras) {
+          do_error("Mismatched erasure.");
+        }
+        type = expect_nf || Sig("x", val0_t, val1_t, term[1].eras);
+        break;
+      case "Fst":
+        if (term[1].eras === 1) {
+          do_error("Attempted to extract erased first element.");
+        }
+        var pair_t = typecheck(term[1].pair, null, ctx, affine, lvel, [term, ctx]);
+        var pair_t = weak_normal(pair_t);
+        if (pair_t[0] !== "Sig") {
+          do_error("Attempted to extract the first element of a term that isn't a pair.");
+        }
+        if (term[1].eras !== pair_t[1].eras) {
+          do_error("Mismatched erasure.");
+        }
+        type = pair_t[1].typ0;
+        break;
+      case "Snd":
+        if (term[1].eras === 2) {
+          do_error("Attempted to extract erased second element.");
+        }
+        var pair_t = typecheck(term[1].pair, null, ctx, affine, lvel, [term, ctx]);
+        var pair_t = weak_normal(pair_t);
+        if (pair_t[0] !== "Sig") {
+          do_error("Attempted to extract the second element of a term that isn't a pair.");
+        }
+        if (term[1].eras !== pair_t[1].eras) {
+          do_error("Mismatched erasure.");
+        }
+        type = subst(pair_t[1].typ1, Fst(term[1].pair, term[1].eras), 0);
+        break;
+      case "Prj":
+        var pair_t = typecheck(term[1].pair, null, ctx, affine, lvel, [term, ctx]);
+        var pair_t = weak_normal(pair_t);
+        if (pair_t[0] !== "Sig") {
+          do_error("Attempted to project the elements of a term that isn't a pair.");
+        }
+        if (term[1].eras !== pair_t[1].eras) {
+          do_error("Mismatched erasure.");
+        }
+        var ex_ctx = ctx_ext(term[1].nam0, null, pair_t[1].typ0, pair_t[1].eras === 1, false, lvel, ctx);
+        var ex_ctx = ctx_ext(term[1].nam1, null, pair_t[1].typ1, pair_t[1].eras === 2, false, lvel, ex_ctx);
+        try {
+          var tp_ctx = ctx_cpy(ex_ctx);
+          var body_t = typecheck(term[1].body, shift(expect, 2, 0), tp_ctx, affine, lvel, [term, ctx]);
+          var ex_ctx = tp_ctx;
+        } catch (e) {
+          var tp_ctx = ctx_cpy(ex_ctx);
+          var body_t = typecheck(term[1].body, null, ex_ctx, affine, lvel, [term, ctx]);
+          var ex_ctx = tp_ctx;
+        }
+        type = subst(subst(body_t, Snd(shift(term[1].pair, 1, 0), term[1].eras), 0), Fst(term[1].pair, term[1].eras), 0);
+        break;
+      case "Slf":
+        var ex_ctx = ctx_ext(term[1].name, null, term, false, false, lvel, ctx);
+        var type_t = typecheck(term[1].type, Typ(), ex_ctx, false, lvel, [term, ctx]);
+        type = Typ();
+        break;
+      case "New":
+        var ttyp = weak_normal(term[1].type);
+        if (ttyp[0] !== "Slf") {
+          do_error("Attempted to make an instance of a type that isn't self.");
+        }
+        var ttyp_t = typecheck(ttyp, null, ctx, false, lvel, [term, ctx]);
+        var expr_t = typecheck(term[1].expr, subst(ttyp[1].type, Ann(ttyp, term, true), 0), ctx, affine, lvel, [term, ctx]);
+        type = term[1].type;
+        break;
+      case "Use":
+        var expr_t = typecheck(term[1].expr, null, ctx, affine, lvel, [term, ctx]);
+        var expr_t = weak_normal(expr_t);
+        if (expr_t[0] !== "Slf") {
+          do_error("Attempted to use a value that isn't a self type.");
+        }
+        type = subst(expr_t[1].type, term[1].expr, 0);
+        break;
+      case "Ann":
+        if (!term[1].done) {
+          term[1].done = true;
+          found_anns.push(term);
+          try {
+            var type_t = typecheck(term[1].type, Typ(), ctx, affine, lvel, [term, ctx]);
+            var expr_t = typecheck(term[1].expr, term[1].type, ctx, affine, lvel, [term, ctx]);
+            //if (term[1].expr[0] === "Ref" && is_recursive((opts.defs||{})[term[1].expr[1].name], term[1].expr[1].name)) {
+              //do_error("Recursive occurrence of '" + term[1].expr[1].name + "'.");
+            //}
+            type = term[1].type;
+          } catch (e) {
+            term[1].done = false;
+            throw e;
+          }
+        } else {
+          type = term[1].type;
+        }
+        break;
+      case "Log":
+        var msge_v = term[1].msge;
+        try {
+          var msge_t = typecheck(msge_v, null, ctx, false, lvel, [term, ctx]);
+          var msge_t = display_normal(erase(msge_t));
+        } catch (e) {
+          console.log(e);
+          var msge_t = Hol("");
+        }
+        if (!opts.no_logs) {
+          console.log("[LOG]");
+          console.log("Term: " + opts.show(msge_v, ctx_names(ctx)));
+          console.log("Type: " + opts.show(msge_t, ctx_names(ctx)) + "\n");
+        }
+        var expr_t = typecheck(term[1].expr, expect, ctx, affine, lvel);
+        type = expr_t;
+        break;
+      case "Hol":
+        if (!hole_msg[term[1].name]) {
+          hole_msg[term[1].name] = {ctx, name: term[1].name, expect};
+          hole_depth[term[1].name] = ctx_names(ctx).length;
+        }
+        if (expect) {
+          type = expect;
+        } else {
+          throw new Error("Untyped hole.");
+        }
+        break;
+      case "Ref":
+        if (!(opts.defs||{})[term[1].name]) {
+          do_error("Undefined reference: `" + term[1].name + "`.");
+        } else if (!type_memo[term[1].name]) {
+          var dref_t = typecheck((opts.defs||{})[term[1].name], null, ctx, affine, lvel, [term, ctx]);
+          type_memo[term[1].name] = dref_t;
+        }
+        type = type_memo[term[1].name];
+        break;
+      default:
+        throw "TODO: type checker for " + term[0] + ".";
+    }
+    if (expect) {
+      var type_nf = weak_normal(type);
+      // Fill an Utv
+      if (expect_nf[0] === "Utt" && type_nf[0] !== "Utt") {
+        return typecheck(Utv(term), expect_nf, ctx_arg, affine, lvel)
+      }
+      // Fill an Ute
+      if (expect_nf[0] !== "Utt" && type_nf[0] === "Utt") {
+        return typecheck(Ute(term), expect_nf, ctx_arg, affine, lvel)
+      }
+      // Check if inferred and expected types match
+      do_match(type, expect);
+    }
+    return type;
+  };
+
+  try {
+    // Type-checks the term
+    var type = typecheck(term, expect);
+
+    // Afterwards, prints hole msgs
+    for (var hole_name in hole_msg) {
+      var info = hole_msg[hole_name];
+      var msg = "";
+      msg += "Found hole" + (info.name ? ": '" + info.name + "'" : "") + ".\n";
+      if (info.expect) {
+        msg += "- With goal... " + format(info.ctx, info.expect) + "\n";
+      }
+      var cstr = ctx_str(info.ctx);
+      msg += "- With context:\n" + (cstr.length > 0 ? cstr + "\n" : "");
+      if (!opts.no_logs) {
+        console.log(msg);
+      }
+    }
+
+    // If so, normalize it to an user-friendly form and return
+    type = display_normal(type);
+
+    // Cleans side-effects
+    for (var i = 0; i < found_anns.length; ++i) {
+      found_anns[i][1].done = false;
+    }
+
+    return type;
+
+  // In case there is an error, adjust and throw
+  } catch (e) {
+    if (typeof e === "string") {
+      throw e;
+    } else {
+      console.log(e);
+      throw "Sorry, the type-checker couldn't handle your input.";
+    }
+  }
+};
+
+// Checks if a well-typed term terminates. Since well-typed terms must be
+// elementary affine, the only way they can fail to halt is through recursion.
+// This conservative check excludes any kind of recursion. Further work may be
+// done to identify and allow well-founded recursion.
+const haltcheck = (term, defs, seen = {}) => {
+  switch (term[0]) {
+    case "Utv": return haltcheck(term[1].expr, defs, seen);
+    case "Ute": return haltcheck(term[1].expr, defs, seen);
+    case "Lam": return haltcheck(term[1].body, defs, seen);
+    case "App": return haltcheck(term[1].func, defs, seen) && (term[1].eras ? true : haltcheck(term[1].argm, defs, seen));
+    case "Put": return haltcheck(term[1].expr, defs, seen);
+    case "Dup": return haltcheck(term[1].expr, defs, seen) && haltcheck(term[1].body, defs, seen);
+    case "Op1": return haltcheck(term[1].num0, defs, seen) && haltcheck(term[1].num1, defs, seen);
+    case "Op2": return haltcheck(term[1].num0, defs, seen) && haltcheck(term[1].num1, defs, seen);
+    case "Ite": return haltcheck(term[1].cond, defs, seen) && haltcheck(term[1].pair, defs, seen);
+    case "Cpy": return haltcheck(term[1].numb, defs, seen) && haltcheck(term[1].body, defs, seen);
+    case "Par": return (term[1].eras === 1 ? true : haltcheck(term[1].val0, defs, seen)) && (term[1].eras === 2 ? true : haltcheck(term[1].val1, defs, seen));
+    case "Fst": return haltcheck(term[1].pair, defs, seen);
+    case "Snd": return haltcheck(term[1].pair, defs, seen);
+    case "Prj": return haltcheck(term[1].pair, defs, seen) && haltcheck(term[1].body, defs, seen);
+    case "Ann": return haltcheck(term[1].expr, defs, seen);
+    case "New": return haltcheck(term[1].expr, defs, seen);
+    case "Use": return haltcheck(term[1].expr, defs, seen);
+    case "Log": return haltcheck(term[1].expr, defs, seen);
+    case "Ref":
+      if (seen[term[1].name]) {
+        return false;
+      } else {
+        return haltcheck(defs[term[1].name], defs, {...seen, [term[1].name]: true});
+      }
+    default: return true;
+  }
+};
+
+module.exports = {
+  Var, Typ, Tid, Utt, Utv, Ute, All, Lam,
+  App, Box, Put, Tak, Dup, Num, Val, Op1,
+  Op2, Ite, Cpy, Sig, Par, Fst, Snd, Prj,
+  Slf, New, Use, Ann, Log, Hol, Ref,
+  equal,
+  erase,
+  reduce,
+  shift,
+  subst,
+  subst_many,
+  typecheck,
+  haltcheck,
+};
+
 
 /***/ }),
 
@@ -127,7 +1460,49 @@ eval("// ~~ Formality Core Language ~~\n\n// ::::::::::\n// :: Term ::\n// :::::
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("function marked_code(loc) {\n  var text = \"\";\n  var idx = 0;\n  var lines = loc.code.split(\"\\n\");\n  var from_line = Math.max(loc.row - 4, 0);\n  var to_line = Math.min(loc.row + 4, lines.length - 1);\n  for (var line = 0; line < lines.length; ++line) {\n    var write = line >= from_line && line <= to_line;\n    if (write) text += \"\\x1b[2m\" + (\"    \" + (line + 1)).slice(-4) + \"| \\x1b[0m\";\n    for (var i = 0; i < lines[line].length; ++i) {\n      if (idx >= loc.idx && idx < loc.idx + loc.len) {\n        if (write) text += \"\\x1b[31m\\x1b[4m\" + lines[line][i] + \"\\x1b[0m\";\n        idx += 1;\n      } else {\n        if (write) text += \"\\x1b[2m\" + lines[line][i] + \"\\x1b[0m\";\n        idx += 1;\n      }\n    }\n    if (write) text += \"\\n\";\n    idx += 1;\n  }\n  return text;\n}\n\nfunction random_excuse() {\n  var excuses = [\n    \"My parse-robot brain isn't perfect, sorry.\",\n    \"What? If you can't get this right, don't expect me to!\",\n    \"I'm doing my best, ok?\",\n    \"I hope you figure it out!\",\n    \"I can't help any further. But I can pray for you!\",\n    \"I with I could be more precise...\",\n    \"Hey, at least I'm showing a location.\",\n    \"Why programming needs to be so hard?\",\n    \"I hope this doesn't affect your deadlines!\",\n    \"If this is hard, consider relaxing. You deserve it!\",\n    \"It takes me some time to process things. Have patience with me!\"\n  ];\n  return excuses[Math.floor(Math.random() * excuses.length)];\n}\n\nmodule.exports = {marked_code, random_excuse};\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-error.js?");
+function marked_code(loc) {
+  var text = "";
+  var idx = 0;
+  var lines = loc.code.split("\n");
+  var from_line = Math.max(loc.row - 4, 0);
+  var to_line = Math.min(loc.row + 4, lines.length - 1);
+  for (var line = 0; line < lines.length; ++line) {
+    var write = line >= from_line && line <= to_line;
+    if (write) text += "\x1b[2m" + ("    " + (line + 1)).slice(-4) + "| \x1b[0m";
+    for (var i = 0; i < lines[line].length; ++i) {
+      if (idx >= loc.idx && idx < loc.idx + loc.len) {
+        if (write) text += "\x1b[31m\x1b[4m" + lines[line][i] + "\x1b[0m";
+        idx += 1;
+      } else {
+        if (write) text += "\x1b[2m" + lines[line][i] + "\x1b[0m";
+        idx += 1;
+      }
+    }
+    if (write) text += "\n";
+    idx += 1;
+  }
+  return text;
+}
+
+function random_excuse() {
+  var excuses = [
+    "My parse-robot brain isn't perfect, sorry.",
+    "What? If you can't get this right, don't expect me to!",
+    "I'm doing my best, ok?",
+    "I hope you figure it out!",
+    "I can't help any further. But I can pray for you!",
+    "I with I could be more precise...",
+    "Hey, at least I'm showing a location.",
+    "Why programming needs to be so hard?",
+    "I hope this doesn't affect your deadlines!",
+    "If this is hard, consider relaxing. You deserve it!",
+    "It takes me some time to process things. Have patience with me!"
+  ];
+  return excuses[Math.floor(Math.random() * excuses.length)];
+}
+
+module.exports = {marked_code, random_excuse};
+
 
 /***/ }),
 
@@ -138,7 +1513,114 @@ eval("function marked_code(loc) {\n  var text = \"\";\n  var idx = 0;\n  var lin
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("const lang = __webpack_require__(/*! ./fm-lang */ \"./node_modules/formality-lang/src/fm-lang.js\");\nconst to_js = __webpack_require__(/*! ./fm-to-js */ \"./node_modules/formality-lang/src/fm-to-js.js\");\nconst core = __webpack_require__(/*! ./fm-core */ \"./node_modules/formality-lang/src/fm-core.js\");\n\n// For now, we are converting the terms from and to JS-compiled Formality\n// In the future we may convert from and to directly the Formality Core AST\nconst to = (val) => to_js.decompile(json.to(val));\nconst from = (term) => json.from(to_js.compile(term));\n\nconst call = (term_or_name, defs, argument, opts = {}) => {\n  const term =\n    typeof term_or_name === 'string'\n      ? defs[term_or_name] || Ref(term_or_name)\n      : term_or_name;\n\n  lang.typecheck(term, json_to_json_type_term, defs);\n\n  const argument_term = to(argument);\n  const default_reducer = term => lang.run(\"OPTIMAL\", term, {defs});\n  const reducer = opts.reducer || default_reducer;\n  const app_term = lang.App(term, argument_term, false);\n  return from(reducer(app_term));\n}\n\n// A Mapper is responsible for mapping between JS and Formality types.\n// It's basically two functions, to and from. To converts from JS to FormalityJS and from does the\n// other way around.\n// Some mappers are polymorphic (for polymorphic types, for example). Here they are represented as\n// functions which return mappers.\n\nconst word = {\n  to: (x) => x,\n  from: (x) => x\n}\n\nconst js_number = {\n  to: (val) => (js_number) => js_number(val),\n  from: (enc) => enc\n}\n\nconst list = (type) => ({\n  to: (val) => (cons) => (nil) => (\n    val.length == 0\n      ? nil\n      : cons(type.to(val[0]))(list(type).to(val.slice(1)))\n  ),\n  from: (val) => {\n    const cons = (head) => (tail) => [type.from(head)].concat(list(type).from(tail))\n    const nil = []\n\n    return val(cons)(nil)\n  }\n})\n\nconst string = {\n  to: (str) => {\n    let bytes = Array.from(new TextEncoder(\"utf-8\").encode(str));\n    while (bytes.length % 4 !== 0) {\n      bytes.push(0);\n    }\n    const nums = new Uint32Array(new Uint8Array(bytes).buffer)\n    return list(word).to(nums)\n  },\n  from: (enc) => {\n    const nums = list(word).from(enc);\n    const bytes = new Uint8Array(new Uint32Array(nums).buffer)\n    const str = new TextDecoder(\"utf-8\").decode(bytes)\n    return str.replace(/\\0*$/, '')\n  }\n}\n\nconst pair = (tfst, tsnd) => ({\n  to: ([fst, snd]) => [tfst.to(fst), tsnd.to(snd)],\n  from: ([fst, snd]) => [tfst.from(fst), tsnd.from(snd)]\n})\n\n// This is the main mapper of this module, which enables converting almost all JS objects\nconst json = {\n  to: (val) => (j_null) => (j_number) => (j_string) => (j_list) => (j_object) => {\n    if(val === null) {\n      return j_null\n    } else if(typeof val === \"number\") {\n      return j_number(js_number.to(val))\n    } else if(typeof val === \"string\") {\n      return j_string(string.to(val))\n    } else if (Array.isArray(val)) {\n      return j_list(list(json).to(val))\n    } else {\n      return j_object(list(pair(string, json)).to(obj_to_kw(val)))\n    }\n  },\n  from: (enc) => {\n    const j_null = null\n    const j_number = js_number.from\n    const j_string = string.from\n    const j_list = list(json).from\n    const j_object = (o) => kw_to_obj(list(pair(string, json)).from(o))\n\n    return enc(j_null)(j_number)(j_string)(j_list)(j_object)\n  }\n}\n\n// Object to keyword list conversion\nconst obj_to_kw = (obj) => Object.keys(obj).map((key) => [key.toString(), obj[key]])\nconst kw_to_obj = (kw) => kw.reduce((obj, [k, v]) => ({[k]: v, ...obj}), {})\n\nmodule.exports = { to, from, native_to: json.to, native_from: json.from, call }\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-json.js?");
+const lang = __webpack_require__(/*! ./fm-lang */ "./node_modules/formality-lang/src/fm-lang.js");
+const to_js = __webpack_require__(/*! ./fm-to-js */ "./node_modules/formality-lang/src/fm-to-js.js");
+const core = __webpack_require__(/*! ./fm-core */ "./node_modules/formality-lang/src/fm-core.js");
+
+// For now, we are converting the terms from and to JS-compiled Formality
+// In the future we may convert from and to directly the Formality Core AST
+const to = (val) => to_js.decompile(json.to(val));
+const from = (term) => json.from(to_js.compile(term));
+
+const call = (term_or_name, defs, argument, opts = {}) => {
+  const term =
+    typeof term_or_name === 'string'
+      ? defs[term_or_name] || Ref(term_or_name)
+      : term_or_name;
+
+  lang.typecheck(term, json_to_json_type_term, defs);
+
+  const argument_term = to(argument);
+  const default_reducer = term => lang.run("OPTIMAL", term, {defs});
+  const reducer = opts.reducer || default_reducer;
+  const app_term = lang.App(term, argument_term, false);
+  return from(reducer(app_term));
+}
+
+// A Mapper is responsible for mapping between JS and Formality types.
+// It's basically two functions, to and from. To converts from JS to FormalityJS and from does the
+// other way around.
+// Some mappers are polymorphic (for polymorphic types, for example). Here they are represented as
+// functions which return mappers.
+
+const word = {
+  to: (x) => x,
+  from: (x) => x
+}
+
+const js_number = {
+  to: (val) => (js_number) => js_number(val),
+  from: (enc) => enc
+}
+
+const list = (type) => ({
+  to: (val) => (cons) => (nil) => (
+    val.length == 0
+      ? nil
+      : cons(type.to(val[0]))(list(type).to(val.slice(1)))
+  ),
+  from: (val) => {
+    const cons = (head) => (tail) => [type.from(head)].concat(list(type).from(tail))
+    const nil = []
+
+    return val(cons)(nil)
+  }
+})
+
+const string = {
+  to: (str) => {
+    let bytes = Array.from(new TextEncoder("utf-8").encode(str));
+    while (bytes.length % 4 !== 0) {
+      bytes.push(0);
+    }
+    const nums = new Uint32Array(new Uint8Array(bytes).buffer)
+    return list(word).to(nums)
+  },
+  from: (enc) => {
+    const nums = list(word).from(enc);
+    const bytes = new Uint8Array(new Uint32Array(nums).buffer)
+    const str = new TextDecoder("utf-8").decode(bytes)
+    return str.replace(/\0*$/, '')
+  }
+}
+
+const pair = (tfst, tsnd) => ({
+  to: ([fst, snd]) => [tfst.to(fst), tsnd.to(snd)],
+  from: ([fst, snd]) => [tfst.from(fst), tsnd.from(snd)]
+})
+
+// This is the main mapper of this module, which enables converting almost all JS objects
+const json = {
+  to: (val) => (j_null) => (j_number) => (j_string) => (j_list) => (j_object) => {
+    if(val === null) {
+      return j_null
+    } else if(typeof val === "number") {
+      return j_number(js_number.to(val))
+    } else if(typeof val === "string") {
+      return j_string(string.to(val))
+    } else if (Array.isArray(val)) {
+      return j_list(list(json).to(val))
+    } else {
+      return j_object(list(pair(string, json)).to(obj_to_kw(val)))
+    }
+  },
+  from: (enc) => {
+    const j_null = null
+    const j_number = js_number.from
+    const j_string = string.from
+    const j_list = list(json).from
+    const j_object = (o) => kw_to_obj(list(pair(string, json)).from(o))
+
+    return enc(j_null)(j_number)(j_string)(j_list)(j_object)
+  }
+}
+
+// Object to keyword list conversion
+const obj_to_kw = (obj) => Object.keys(obj).map((key) => [key.toString(), obj[key]])
+const kw_to_obj = (kw) => kw.reduce((obj, [k, v]) => ({[k]: v, ...obj}), {})
+
+module.exports = { to, from, native_to: json.to, native_from: json.from, call }
+
 
 /***/ }),
 
@@ -149,7 +1631,1884 @@ eval("const lang = __webpack_require__(/*! ./fm-lang */ \"./node_modules/formali
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// WARNING: here shall be dragons!\n// This is the parser for Formality-Lang. This is NOT fm-core, which is meant\n// to be small, elegant and portable. Instead, it is our user-facing language,\n// which is meant to be big and fully-featured, including several syntax-sugars\n// meant to make programming easier. As such, this file is complex and involves\n// hard transformations of terms, Bruijn-index shifts, crazy parsing flows.\n// You've been warned (:\n\nconst {\n  Var, Typ, Tid, Utt, Utv, Ute, All, Lam,\n  App, Box, Put, Tak, Dup, Num, Val, Op1,\n  Op2, Ite, Cpy, Sig, Par, Fst, Snd, Prj,\n  Slf, New, Use, Ann, Log, Hol, Ref,\n  reduce: core_reduce,\n  typecheck: core_typecheck,\n  haltcheck,\n  ctx_ext,\n  ctx_get,\n  ctx_names,\n  ctx_new,\n  ctx_str,\n  equal,\n  erase,\n  shift,\n  subst,\n  subst_many,\n} = __webpack_require__(/*! ./fm-core.js */ \"./node_modules/formality-lang/src/fm-core.js\");\n\nconst version = __webpack_require__(/*! ./../package.json */ \"./node_modules/formality-lang/package.json\").version;\nconst to_net = __webpack_require__(/*! ./fm-to-net.js */ \"./node_modules/formality-lang/src/fm-to-net.js\");\nconst to_js = __webpack_require__(/*! ./fm-to-js.js */ \"./node_modules/formality-lang/src/fm-to-js.js\");\nconst net = __webpack_require__(/*! ./fm-net.js */ \"./node_modules/formality-lang/src/fm-net.js\");\nconst {load_file} = __webpack_require__(/*! ./forall.js */ \"./node_modules/formality-lang/src/forall.js\");\nconst {marked_code, random_excuse} = __webpack_require__(/*! ./fm-error.js */ \"./node_modules/formality-lang/src/fm-error.js\");\n\n// :::::::::::::::::::::\n// :: Stringification ::\n// :::::::::::::::::::::\n\n// Converts a term to a string\nconst show = ([ctor, args], nams = [], opts = {}) => {\n  const print_output = (term) => {\n    try {\n      if (term[1].val0[1].numb === 0x53484f57) {\n        term = term[1].val1;\n        var nums = [];\n        while (term[1].body[1].body[0] !== \"Var\") {\n          term = term[1].body[1].body;\n          nums.push(term[1].func[1].argm[1].numb);\n          term = term[1].argm;\n        }\n        var str = \"\";\n        for (var i = 0; i < nums.length; ++i) {\n          str += String.fromCharCode(nums[i]);\n        }\n        return str;\n      } else {\n        return null;\n      }\n    } catch (e) {\n      return null;\n    }\n  }\n  switch (ctor) {\n    case \"Var\":\n      var name = nams[nams.length - args.index - 1];\n      if (!name) {\n        return \"^\" + args.index;\n      } else {\n        var suff = \"\";\n        for (var i = 0; i < args.index; ++i) {\n          if (nams[nams.length - i - 1] === name) {\n            var suff = suff + \"^\";\n          }\n        }\n        return name + suff;\n      }\n    case \"Typ\":\n      return \"Type\";\n    case \"Tid\":\n      var expr = show(args.expr, nams, opts);\n      return \"&\" + expr;\n    case \"Utt\":\n      var expr = show(args.expr, nams, opts);\n      return \"-\" + expr;\n    case \"Utv\":\n      var expr = show(args.expr, nams, opts);\n      return \"%\" + expr;\n    case \"Ute\":\n      var expr = show(args.expr, nams, opts);\n      return \"+\" + expr;\n    case \"All\":\n      var term = [ctor, args];\n      var erase = [];\n      var names = [];\n      var types = [];\n      while (term[0] === \"All\") {\n        erase.push(term[1].eras);\n        names.push(term[1].name);\n        types.push(show(term[1].bind, nams.concat(names.slice(0,-1)), opts));\n        term = term[1].body;\n      }\n      var text = \"(\";\n      for (var i = 0; i < names.length; ++i) {\n        text += erase[i] ? \"~\" : \"\";\n        text += names[i] + (names[i].length > 0 ? \" : \" : \":\") + types[i];\n        text += i < names.length - 1 ? \", \" : \"\";\n      }\n      text += \") -> \";\n      text += show(term, nams.concat(names), opts);\n      return text;\n    case \"Lam\":\n      var term = [ctor, args];\n      var erase = [];\n      var names = [];\n      var types = [];\n      while (term[0] === \"Lam\") {\n        erase.push(term[1].eras);\n        names.push(term[1].name);\n        types.push(term[1].bind && term[1].bind[0] !== \"Hol\" ? show(term[1].bind, nams.concat(names.slice(0,-1)), opts) : null);\n        term = term[1].body;\n      }\n      var text = \"(\";\n      for (var i = 0; i < names.length; ++i) {\n        text += erase[i] ? \"~\" : \"\";\n        text += names[i] + (types[i] !== null ? \" : \" + types[i] : \"\");\n        text += i < names.length - 1 ? \", \" : \"\";\n      }\n      text += \") => \";\n      text += show(term, nams.concat(names), opts);\n      return text;\n    case \"App\":\n      var text = \")\";\n      var term = [ctor, args];\n      while (term[0] === \"App\") {\n        text = (term[1].func[0] === \"App\" ? \", \" : \"\")\n             + (term[1].eras ? \"~\" : \"\")\n             + show(term[1].argm, nams, opts)\n             + text;\n        term = term[1].func;\n      }\n      if (term[0] === \"Ref\" || term[0] === \"Var\" || term[0] === \"Tak\") {\n        var func = show(term, nams, opts);\n      } else {\n        var func = \"(\" + show(term,nams, opts) + \")\";\n      }\n      return func + \"(\" + text;\n    case \"Box\":\n      var expr = show(args.expr, nams, opts);\n      return \"!\" + expr;\n    case \"Put\":\n      var expr = show(args.expr, nams, opts);\n      return \"#\" + expr;\n    case \"Tak\":\n      var expr = show(args.expr, nams, opts);\n      return \"$\" + expr;\n    case \"Dup\":\n      var name = args.name;\n      var expr = show(args.expr, nams, opts);\n      if (args.body[0] === \"Var\" && args.body[1].index === 0) {\n        return \"$\" + expr;\n      } else {\n        var body = show(args.body, nams.concat([name]), opts);\n        return \"dup \" + name + \" = \" + expr + \"; \" + body;\n      }\n    case \"Num\":\n      return \"Number\";\n    case \"Val\":\n      return args.numb.toString();\n    case \"Op1\":\n    case \"Op2\":\n      var func = args.func;\n      var num0 = show(args.num0, nams, opts);\n      var num1 = show(args.num1, nams, opts);\n      return num0 + \" \" + func + \" \" + num1;\n    case \"Ite\":\n      var cond = show(args.cond, nams, opts);\n      var pair = show(args.pair, nams, opts);\n      return \"if \" + cond + \" \" + pair;\n    case \"Cpy\":\n      var name = args.name;\n      var numb = show(args.numb, nams, opts);\n      var body = show(args.body, nams.concat([name]), opts);\n      return \"cpy \" + name + \" = \" + numb + \"; \" + body;\n    case \"Sig\":\n      var term = [ctor, args];\n      var erase = [];\n      var names = [];\n      var types = [];\n      while (term[0] === \"Sig\") {\n        erase.push(term[1].eras);\n        names.push(term[1].name);\n        types.push(show(term[1].typ0, nams.concat(names.slice(0,-1)), opts));\n        term = term[1].typ1;\n      }\n      var text = \"[\";\n      for (var i = 0; i < names.length; ++i) {\n        text += erase[i] === 1 ? \"~\" : \"\";\n        text += names[i] + \" : \" + types[i];\n        text += erase[i] === 2 ? \" ~ \" : \", \";\n      }\n      text += show(term, nams.concat(names), opts);\n      text += \"]\";\n      return text;\n    case \"Par\":\n      var output;\n      var term  = [ctor, args];\n      var erase = [];\n      var terms = [];\n      while (term[0] === \"Par\") {\n        if (output = print_output(term)) {\n          break;\n        } else {\n          erase.push(term[1].eras);\n          terms.push(show(term[1].val0, nams, opts));\n          term = term[1].val1;\n        }\n      }\n      if (terms.length > 0) {\n        var text = \"[\";\n      } else {\n        var text = \"\";\n      }\n      for (var i = 0; i < terms.length; ++i) {\n        text += erase[i] === 1 ? \"~\" : \"\";\n        text += terms[i];\n        text += erase[i] === 2 ? \" ~ \" : \", \";\n      }\n      if (output) {\n        text += output;\n      } else {\n        text += show(term, nams, opts);\n      }\n      if (terms.length > 0) {\n        text += \"]\";\n      }\n      return text;\n    case \"Fst\":\n      var pair = show(args.pair, nams, opts);\n      switch (args.eras) {\n        case 0: return \"fst(\" + pair + \")\";\n        case 1: return \"~fst(\" + pair + \")\";\n        case 2: return \"fst~(\" + pair + \")\";\n        case 3: return \"~fst~(\" + pair + \")\";\n      }\n    case \"Snd\":\n      var pair = show(args.pair, nams, opts);\n      switch (args.eras) {\n        case 0: return \"snd(\" + pair + \")\";\n        case 1: return \"~snd(\" + pair + \")\";\n        case 2: return \"snd~(\" + pair + \")\";\n        case 3: return \"~snd~(\" + pair + \")\";\n      }\n    case \"Prj\":\n      var nam0 = args.nam0;\n      var nam1 = args.nam1;\n      var pair = show(args.pair, nams, opts);\n      var body = show(args.body, nams.concat([nam0, nam1]), opts);\n      var era1 = args.eras === 1 ? \"~\" : \"\";\n      var era2 = args.eras === 2 ? \"~\" : \"\";\n      return \"get [\" + era1 + nam0 + \",\" + era2 + nam1 + \"] = \" + pair + \"; \" + body;\n    case \"Slf\":\n      var name = args.name;\n      var type = show(args.type, nams.concat([name]), opts);\n      return \"${\" + name + \"} \" + type;\n    case \"New\":\n      var type = show(args.type, nams, opts);\n      var expr = show(args.expr, nams, opts);\n      return \"new(~\" + type + \") \" + expr;\n    case \"Use\":\n      var expr = show(args.expr, nams, opts);\n      return \"use(\" + expr + \")\";\n    case \"Ann\":\n      var expr = show(args.expr, nams, opts);\n      return expr;\n    case \"Log\":\n      var expr = show(args.expr, nams, opts);\n      return expr;\n    case \"Hol\":\n      return \"?\" + args.name;\n    case \"Ref\":\n      return !opts.full_refs ? args.name.replace(new RegExp(\".*/\", \"g\"), \"\") : args.name;\n  }\n};\n\n// :::::::::::::\n// :: Parsing ::\n// :::::::::::::\n\n// Converts a string to a term\nconst parse = async (code, opts, root = true, loaded = {}) => {\n  const file = opts.file || \"main\";\n  const loader = opts.loader || load_file;\n  const tokenify = opts.tokenify;\n\n  // Imports a local/global file, merging its definitions\n  async function do_import(import_file) {\n    if (import_file.indexOf(\"@\") === -1) {\n      local_imports[import_file] = true;\n    }\n    if (!loaded[import_file]) {\n      try {\n        var file_code = await loader(import_file);\n        loaded[import_file] = await parse(file_code, {file: import_file, tokenify, loader}, false, loaded);\n      } catch (e) {\n        throw e;\n      }\n    }\n    var {defs: file_defs\n      , adts: file_adts\n      , open_imports: file_open_imports\n      } = loaded[import_file];\n    for (let term_path in file_defs) {\n      defs[term_path] = file_defs[term_path];\n    }\n    for (let term_path in file_adts) {\n      adts[term_path] = file_adts[term_path];\n    }\n    for (let open_import in file_open_imports) {\n      open_imports[open_import] = true;\n    }\n    return true;\n  }\n\n  // Finds all imports with a given name\n  function find_name_in_imports(name) {\n    var found = [];\n    for (var open_import in open_imports) {\n      if (defs[open_import + \"/\" + name]) {\n        found.push(open_import + \"/\" + name);\n      }\n    }\n    return found;\n  }\n\n  // Returns current location\n  function loc(len = 1) {\n    return {idx: idx - len, col, row, len, file, code};\n  }\n\n  // Attempts to resolve a name into a full path\n  function ref_path(str) {\n    var result = (function () {\n      if (str.indexOf(\"/\") === -1) {\n        var [str_file, str_name] = [null, str];\n      } else {\n        var [str_file, str_name] = str.split(\"/\");\n      }\n      // If the reference includes the file...\n      if (str_file) {\n        // If it points to a qualified import, expand it\n        if (qual_imports[str_file]) {\n          return qual_imports[str_file] + \"/\" + str_name;\n        // Otherwise, return an undefined reference, as written\n        } else {\n          return str_file + \"/\" + str_name;\n        }\n      // Otherwise, if the reference is missing the file...\n      } else {\n        // If there is a local definition with that name, point to it\n        if (defs[file + \"/\" + str_name]) {\n          return file + \"/\" + str_name;\n        }\n        // Otherwise, if there are many defs with that name, it is ambiguous\n        var found = find_name_in_imports(str_name);\n        if (found.length > 1) {\n          var err_str = \"Ambiguous reference: '\" + str + \"' could refer to:\";\n          for (var i = 0; i < found.length; ++i) {\n            err_str += \"\\n- \" + found[i];\n          }\n          err_str += \"\\nType its full name to prevent this error.\";\n          error(err_str);\n        }\n        // Otherwise, if there is exactly 1 open def with that name, point to it\n        if (found.length === 1) {\n          return found[0];\n        }\n      }\n      // Otherwise, return an undefined reference to hte same file\n      return file + \"/\" + str_name;\n    })();\n    return result;\n  }\n\n  // Makes a ref given a name\n  function ref(str) {\n    return Ref(ref_path(str), false, loc(str.length));\n  }\n\n  // Attempts to make a `ref` to a known base-lib term\n  function base_ref(str) {\n    var path = ref_path(str);\n    if (defs[path]) {\n      return Ref(path, false, loc(str.length));\n    } else {\n      error(\"Attempted to use a syntax-sugar which requires `\" + str + \"` to be in scope, but it isn't.\\n\"\n          + \"To solve that, add `import Base@0` to the start of your file.\\n\"\n          + \"See http://docs.formality-lang.org/en/latest/language/Hello,-world!.html for more info.\");\n    }\n  }\n\n  // Defines a top-level term\n  function define(path, term) {\n    if (root) {\n      var name = path.replace(new RegExp(\"^[\\\\w.]*\\/\"), \"\");\n      var found = find_name_in_imports(name);\n      if (found.length > 0 || defs[ref_path(name)]) {\n        var err_str = \"Attempted to re-define '\" + name + \"', which is already defined\";\n        if (found.length > 0) {\n          err_str += \" as:\";\n          for (var i = 0; i < found.length; ++i) {\n            err_str += \"\\n- \" + found[i];\n          }\n        } else {\n          err_str += \" on this file.\";\n        }\n        error(err_str);\n      }\n    }\n    defs[path] = term;\n  }\n\n  // Creates a new hole name\n  function new_hole_name() {\n    return \"h\" + (hole_count++);\n  }\n\n  // Builds a lookup table\n  function build_charset(chars) {\n    var set = {};\n    for (var i = 0; i < chars.length; ++i) {\n      set[chars[i]] = 1;\n    }\n    return chr => set[chr] === 1;\n  }\n\n  // Some handy lookup tables\n  const is_native_op =\n    { \".+.\"   : 1\n    , \".-.\"   : 1\n    , \".*.\"   : 1\n    , \"./.\"   : 1\n    , \".%.\"   : 1\n    , \".**.\"  : 1\n    , \".&.\"   : 1\n    , \".|.\"   : 1\n    , \".^.\"   : 1\n    , \".~.\"   : 1\n    , \".>>>.\" : 1\n    , \".<<.\"  : 1\n    , \".>.\"   : 1\n    , \".<.\"   : 1\n    , \".==.\"  : 1\n  };\n\n  const op_inits     = [\".\", \"=\", \"->\"];\n  const is_op_init   = str => { for (var k of op_inits) if (str === k || str[0] === k) return str; return null; };\n  const is_num_char  = build_charset(\"0123456789\");\n  const is_name_char = build_charset(\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-@/\");\n  const is_op_char   = build_charset(\"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-@+*/%^!<>=&|\");\n  const is_spacy     = build_charset(\" \\t\\n\\r;\");\n  const is_space     = build_charset(\" \");\n  const is_newline   = build_charset(\"\\n\");\n\n  // Advances the cursor 1 step forward\n  function next() {\n    if (tokens) {\n      tokens[tokens.length - 1][1] += code[idx];\n    }\n    if (is_newline(code[idx])) {\n      row += 1;\n      col = 0;\n    } else {\n      col += 1;\n    }\n    idx += 1;\n  }\n\n  // Advances the cursor until it finds a parseable char, skipping spaces and comments\n  function next_char(is_space = is_spacy) {\n    skip_spaces(is_space);\n    var head = code.slice(idx, idx + 2);\n    // Skips comments\n    while (head === \"//\" || head === \"--\" || head === \"/*\" || head === \"{-\") {\n      // Single-line comments\n      if (head === \"//\" || head === \"--\") {\n        if (tokens) tokens.push([\"cmm\", \"\"]);\n        while (code[idx] !== \"\\n\" && idx < code.length) {\n          next();\n        }\n        next();\n      // Multi-line comments (docs)\n      } else {\n        if (tokens) tokens.push([\"doc\", \"\"]);\n        while (code.slice(idx, idx + 2) !== \"*/\" && code.slice(idx, idx + 2) !== \"-}\" && idx < code.length) {\n          next();\n        }\n        next();\n        next();\n      }\n      if (tokens) tokens.push([\"txt\", \"\"]);\n      skip_spaces(is_space);\n      var head = code.slice(idx, idx + 2);\n    }\n  }\n\n  // Skips space chars\n  function skip_spaces(is_space = is_spacy) {\n    while (idx < code.length && is_space(code[idx])) {\n      next();\n    }\n  }\n\n  // Attempts to match a specific string\n  function match_here(string) {\n    if (code.slice(idx, idx + 2) === \"//\" || code.slice(idx, idx + 2) === \"--\") {\n      return false;\n    } else {\n      var sliced = code.slice(idx, idx + string.length);\n      if (sliced === string) {\n        if (tokens) tokens.push([\"sym\", \"\"]);\n        for (var i = 0; i < string.length; ++i) {\n          next();\n        }\n        if (tokens) tokens.push([\"txt\", \"\"]);\n        return true;\n      }\n      return false;\n    }\n  }\n\n  // Skips spaces, calls `match_here`\n  function match(string, is_space = is_spacy) {\n    next_char(is_space);\n    return match_here(string);\n  }\n\n  // Attempts to match a character that is a valid operator initiator\n  function match_op_init(is_space = is_spacy) {\n    for (var i = 0; i < op_inits.length; ++i) {\n      var op_init = op_inits[i];\n      if (match(op_init, is_space)) {\n        return op_init;\n      }\n    };\n    return null;\n  };\n\n  // Throws a parse error at this location\n  function error(error_message) {\n    var part = \"\";\n    var text = \"\";\n    text += \"[PARSE-ERROR]\\n\";\n    text += error_message;\n    text += \"\\n\\nI noticed the problem on line \" + (row+1) + \", col \" + col + \", file \\x1b[4m\" + file + \".fm\\x1b[0m:\\n\\n\";\n    text += marked_code(loc());\n    text += \"\\nBut it could have happened a little earlier.\\n\";\n    text += random_excuse();\n    throw text;\n  }\n\n  // Constructs an Ind\n  function build_ind(name) {\n    if (!defs[name+\"i\"]) {\n      var numb = name === \"\" ? Math.pow(2,48) - 1 : Number(name);\n      var bits = numb.toString(2);\n      var bits = bits === \"0\" ? \"\" : bits;\n      var term = base_ref(\"base\");\n      for (var i = 0; i < bits.length; ++i) {\n        term = App(base_ref(\"twice\"), term, false);\n        if (bits[i] === \"1\") {\n          term = App(base_ref(\"step\"), term, false);\n        }\n      }\n      define(name+\"i\", term);\n    }\n    return Ref(name+\"i\", false, loc(name.length + 1));\n  }\n\n  // Constructs a nat\n  function build_nat(name) {\n    if (!defs[name+\"n\"]) {\n      var term = base_ref(\"zero\");\n      var numb = Number(name);\n      for (var i = 0; i < numb; ++i) {\n        term = App(base_ref(\"succ\"), term, false);\n      }\n      define(name+\"n\", term);\n    }\n    return Ref(name+\"n\", false, loc(name.length + 1));\n  }\n\n  // Constructs a nat\n  function build_nat(name) {\n    if (!defs[\"n\"+name]) {\n      var term = base_ref(\"zero\");\n      var numb = Number(name);\n      for (var i = 0; i < numb; ++i) {\n        term = App(base_ref(\"succ\"), term, false);\n      }\n      define(\"n\"+name, term);\n    }\n    return Ref(\"n\"+name, false, loc(name.length + 1));\n  }\n\n  // Parses an exact string, errors if it isn't there\n  function parse_exact(string) {\n    if (!match(string)) {\n      var text = \"\";\n      var part = \"\";\n      error(\"Expected '\" + string + \"', but found '\" + (code[idx] || \"(end of file)\") + \"' instead.\");\n    }\n  }\n\n  // Parses characters until `fn` is false\n  function parse_string_here(fn = is_name_char) {\n    var name = \"\";\n    while (idx < code.length && fn(code[idx])) {\n      name = name + code[idx];\n      next();\n    }\n    return name;\n  }\n\n  // Skips spaces and calls parse_string_here\n  function parse_string(fn = is_name_char) {\n    next_char();\n    return parse_string_here(fn);\n  }\n\n  // Parses an alphanumeric name\n  function parse_name() {\n    var op_init = null;\n    if (op_init = is_op_init(code[idx] + (code[idx+1] || \" \"))) {\n      match(op_init);\n      return op_init + parse_string_here(is_op_char);\n    } else {\n      return parse_string();\n    }\n  }\n\n  // Parses a term that demands a name\n  function parse_named_term(nams) {\n    // Parses matched term\n    var term = parse_term(nams);\n\n    // If no name given, attempts to infer it from term\n    if (match(\"as\")) {\n      var name = parse_string();\n    } else if (term[0] === \"Var\" && term[1].__name) {\n      var name = term[1].__name;\n    } else {\n      var name = \"self\";\n      //error(\"The term \\x1b[2m\" + show(term, nams) + \"\\x1b[0m requires an explicit name.\\n\"\n          //+ \"Provide it with the 'as' keyword. Example: \\x1b[2m\" + show(term, nams) + \" as x\\x1b[0m\");\n    }\n\n    return [name, term]\n  }\n\n  // Parses a number, variable, inline operator or reference\n  function parse_atom(nams) {\n    var term = null;\n    if (tokens) tokens.push([\"???\", \"\"]);\n    var name = parse_name();\n    var last = name[name.length - 1];\n    if (is_num_char(name[0])) {\n      var numb = Number(is_num_char(last) ? name : name.slice(0, -1));\n    } else {\n      var numb = NaN;\n    }\n    if (name.length === 0) {\n      next();\n      error(\"Unexpected symbol.\");\n    }\n    // Not a var but a number\n    if (!isNaN(numb)) {\n      if (last === \"i\") {\n        var term = build_ind(name.slice(0,-1));\n      } else if (last === \"n\") {\n        var term = build_nat(name.slice(0,-1));\n      } else {\n        var term = Val(numb, loc(name.length));\n      }\n      if (tokens) tokens[tokens.length - 1][0] = \"num\";\n    } else {\n      // Parses bruijn index\n      var skip = 0;\n      while (match_here(\"^\")) {\n        skip += 1;\n      }\n      // Finds variable in context\n      for (var i = nams.length - 1; i >= 0; --i) {\n        if (nams[i] === name) {\n          if (skip === 0) break;\n          else skip -= 1;\n        }\n      }\n      // Variable\n      if (i !== -1) {\n        term = Var(nams.length - i - 1, loc(name.length));\n        term[1].__name = name;\n        if (tokens) tokens[tokens.length - 1][0] = \"var\";\n      // Inline binary operator \n      } else if (is_native_op[name]) {\n          term = Lam(\"x\", Num(), Lam(\"y\", Num(), Op2(name, Var(1), Var(0)), false), false);\n          if (tokens) tokens[tokens.length - 1][0] = \"nop\";\n      // Reference\n      } else {\n        term = Ref(ref_path(name), false, loc(name.length));\n        if (tokens) {\n          tokens[tokens.length - 1][0] = \"ref\";\n          tokens[tokens.length - 1][2] = term[1].name;\n        }\n      }\n    }\n    if (tokens) tokens.push([\"txt\", \"\"]);\n    return term;\n  }\n\n  // Parses a grouping parens, `(...)`\n  function parse_parens(nams) {\n    if (match(\"(\")) {\n      var term = parse_term(nams);\n      var skip = parse_exact(\")\");\n      return term;\n    }\n  }\n\n  // Parses the type of types, `Type`\n  function parse_typ(nams) {\n    if (match(\"Type\")) {\n      return Typ(loc(4));\n    }\n  }\n\n  // Parses a type-level identity, `~A`\n  function parse_tid(nams) {\n    var init = idx;\n    if (match(\"&\")) {\n      var expr = parse_term(nams);\n      return Tid(expr, loc(idx - init));\n    }\n  }\n\n  // Parses an unrestricted type, `-A`\n  function parse_utt(nams) {\n    var init = idx;\n    if (match(\"-\")) {\n      var expr = parse_term(nams);\n      return Utt(expr, loc(idx - init));\n    }\n  }\n\n  // Parses an unrestricted term, `%t`\n  function parse_utv(nams) {\n    var init = idx;\n    if (match(\"%\")) {\n      var expr = parse_term(nams);\n      return Utv(expr, loc(idx - init));\n    }\n  }\n\n  // Parses an unrestricted elim, `+t`\n  function parse_ute(nams) {\n    var init = idx;\n    if (match(\"+\")) {\n      var expr = parse_term(nams);\n      return Ute(expr, loc(idx - init));\n    }\n  }\n\n  // Parses the `?scope?` utility\n  function parse_scope(nams) {\n    if (match(\"?scope?\")) {\n      console.log(\"Scope:\");\n      for (var i = 0; i < nams.length; ++i) {\n        console.log(\"- \" + nams[i]);\n      }\n      return parse_term(nams);\n    }\n  }\n\n  // Parses a hole, `?name`\n  function parse_hol(nams) {\n    var init = idx;\n    if (match(\"?\")) {\n      var name = parse_string_here();\n      if (name === \"\") {\n        name = new_hole_name();\n      }\n      if (used_hole_name[name]) {\n        error(\"Reused hole name: \" + name);\n      } else {\n        used_hole_name[name] = true;\n      }\n      return Hol(name, loc(idx - init));\n    }\n  }\n\n  // Parses a lambda `{x : A} t` or a forall `{x : A} -> B`\n  function parse_lam_or_all(nams) {\n    function is_lam_or_all() {\n      // TODO: this is ugly, improve\n      var i = idx;\n      if (i < code.length && code[i] === \"(\")          { ++i; } // skips `(`\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      if (code[i] === \"~\")                             { ++i; } // skips `~`\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      while (i < code.length && is_name_char(code[i])) { ++i; } // skips `x`\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      if (code[i] === \":\")                             { ++i; } // skips `:`\n      if (code[i] === \" \") return true;                         // found ` `\n      if (code[i] === \",\") return true;                         // found `,`\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      if (code[i] === \")\")                             { ++i; } // skips `)`\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      if (code[i] === \"=\")                             { ++i; } // skips `=`\n      if (code[i] === \">\") return true;                         // finds `>`\n      return false;\n    }\n    var init = idx;\n    if (is_lam_or_all() && match(\"(\")) {\n      var erass = [];\n      var names = [];\n      var types = [];\n      while (idx < code.length) {\n        var eras = match(\"~\");\n        var name = parse_string();\n        var type = match(\":\") ? parse_term(nams.concat(names)) : null;\n        erass.push(eras);\n        names.push(name);\n        types.push(type);\n        if (match(\")\")) break;\n        else parse_exact(\",\");\n      }\n      var isall = match(\"->\");\n      if (!isall) {\n        var skip = parse_exact(\"=>\");\n      }\n      var parsed = parse_term(nams.concat(names));\n      for (var i = names.length - 1; i >= 0; --i) {\n        if (isall) {\n          parsed = All(names[i], types[i] || Typ(), parsed, erass[i], loc(idx - init));\n        } else {\n          parsed = Lam(names[i], types[i] || null, parsed, erass[i], loc(idx - init));\n        }\n      }\n      return parsed;\n    }\n  }\n\n  // Parses a duplication, `dup x = t; u`\n  function parse_dup(nams) {\n    var init = idx;\n    if (match(\"dup \")) {\n      var name = parse_string();\n      var skip = parse_exact(\"=\");\n      var expr = parse_term(nams);\n      var body = parse_term(nams.concat([name]));\n      return Dup(name, expr, body, loc(idx - init));\n    }\n  }\n\n  // Parses a boxed type, `!A`\n  function parse_box(nams) {\n    var init = idx;\n    if (match(\"!\")) {\n      var expr = parse_term(nams);\n      return Box(expr, loc(idx - init));\n    }\n  }\n\n  // Parses a boxed term, `#t`\n  function parse_put(nams) {\n    var init = idx;\n    if (match(\"#\")) {\n      var expr = parse_term(nams);\n      return Put(expr, loc(idx - init));\n    }\n  }\n\n  // Parses an unboxing, `^t`\n  function parse_tak(nams) {\n    var init = idx;\n    if (match(\"$\")) {\n      var expr = parse_term(nams);\n      return Tak(expr, loc(idx - init));\n    }\n  }\n\n  // Parses a let, `let x = t; u`\n  function parse_let(nams) {\n    if (match(\"let \")) {\n      var name = parse_string();\n      var skip = parse_exact(\"=\");\n      var copy = parse_term(nams);\n      var body = parse_term(nams.concat([name]));\n      return subst(body, copy, 0);\n    }\n  }\n\n  // Parses the type of numbers, `Number`\n  function parse_wrd(nams) {\n    if (match(\"Number\")) {\n      return Num(loc(4));\n    }\n  }\n\n  // Parses a string literal, `\"foo\"`\n  function parse_str(nams) {\n    var init = idx;\n    if (match(\"\\\"\")) {\n      // Parses text\n      var text = \"\";\n      while (idx < code.length && code[idx] !== \"\\\"\") {\n        text += code[idx];\n        next();\n      }\n      next();\n      var nums = [];\n      for (var i = 0; i < text.length; ++i) {\n        nums.push(text.charCodeAt(i));\n      }\n      var term = App(base_ref(\"nil\"), Num(), true);\n      for (var i = nums.length - 1; i >= 0; --i) {\n        var term = App(App(App(base_ref(\"cons\"), Num(), true), Val(nums[i]), false), term, false);\n      }\n      return Ann(base_ref(\"String\"), term, false, loc(idx - init));\n    }\n  }\n\n  // Parses a char literal, `'x'`\n  function parse_chr(nams) {\n    var init = idx;\n    if (match(\"'\")) {\n      var name = parse_name();\n      var skip = parse_exact(\"'\");\n      return Val(name.charCodeAt(0));\n    }\n  }\n\n  // Parses an if-then-else, `if: t else: u`\n  function parse_ite(nams) {\n    var init = idx;\n    if (match(\"if \")) {\n      var cond = parse_term(nams);\n      var skip = match(\"then:\") || parse_exact(\":\");\n      var val0 = parse_term(nams);\n      var skip = parse_exact(\"else:\");\n      var val1 = parse_term(nams);\n      return Ite(cond, Par(val0, val1, 0), loc(idx - init));\n    }\n  }\n\n  // Parses a Number copy, `cpy x = t; u`\n  function parse_cpy(nams) {\n    var init = idx;\n    if (match(\"cpy \")) {\n      var name = parse_string();\n      var skip = parse_exact(\"=\");\n      var numb = parse_term(nams);\n      var body = parse_term(nams.concat([name]));\n      return Cpy(name, numb, body, loc(idx - init));\n    }\n  }\n\n  // Parses a sigma, `[x : A, P(x)]`, or a pair, `[t, u]`\n  function parse_sig_or_par(nams) {\n    function is_sigma() {\n      // TODO: this is ugly, improve\n      var i = idx;\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      if (code[i] === \"~\")                             { ++i; } // skips `~`\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      while (i < code.length && is_name_char(code[i])) { ++i; } // skips `x`\n      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `\n      return code[i] === \":\";                                   // finds `:`\n    }\n    var init = idx;\n    if (match(\"[\")) {\n      if (match(\"]\")) {\n        error(\"Empty pair.\");\n      }\n      // Sigma\n      if (is_sigma()) {\n        var erass = [];\n        var names = [];\n        var types = [];\n        while (idx < code.length && is_sigma()) {\n          var era1 = match(\"~\");\n          var name = parse_string();\n          var skip = parse_exact(\":\");\n          var type = parse_term(nams.concat(names));\n          var era2 = match(\"~\");\n          erass.push(era1 ? 1 : era2 ? 2 : 0);\n          names.push(name);\n          types.push(type);\n          if (!era2) parse_exact(\",\");\n        }\n        var parsed = parse_term(nams.concat(names));\n        var skip = parse_exact(\"]\");\n        for (var i = names.length - 1; i >= 0; --i) {\n          var parsed = Sig(names[i], types[i], parsed, erass[i], loc(idx - init));\n        }\n      // Pair\n      } else {\n        var erass = [];\n        var terms = [];\n        while (idx < code.length) {\n          var era1 = match(\"~\");\n          var term = parse_term(nams);\n          var era2 = match(\"~\");\n          erass.push(era1 ? 1 : era2 ? 2 : 0);\n          terms.push(term);\n          if (match(\"]\")) break;\n          if (!era2) parse_exact(\",\");\n        }\n        var parsed = terms.pop();\n        for (var i = terms.length - 1; i >= 0; --i) {\n          var parsed = Par(terms[i], parsed, erass[i], loc(idx - init));\n        }\n      }\n      return parsed;\n    }\n  }\n\n  // Parses a fst accessor, `fst(t)`\n  function parse_fst(nams) {\n    var init = idx;\n    if (match(\"fst(\")) {\n      var eras = 0;\n    } else if (match(\"~fst(\")) {\n      var eras = 1;\n    } else if (match(\"fst~(\")) {\n      var eras = 2;\n    } else if (match(\"~fst~(\")) {\n      var eras = 3;\n    } else {\n      return;\n    }\n    var pair = parse_term(nams);\n    var skip = parse_exact(\")\");\n    return Fst(pair, eras, loc(idx - init));\n  }\n\n  // Parses a snd accessor, `snd(t)`\n  function parse_snd(nams) {\n    var init = idx;\n    if (match(\"snd(\")) {\n      var eras = 0;\n    } else if (match(\"~snd(\")) {\n      var eras = 1;\n    } else if (match(\"snd~(\")) {\n      var eras = 2;\n    } else if (match(\"~snd~(\")) {\n      var eras = 3;\n    } else {\n      return;\n    }\n    var pair = parse_term(nams);\n    var skip = parse_exact(\")\");\n    return Snd(pair, eras, loc(idx - init));\n  }\n\n  // Parses a projection, `get [x, y] = t`\n  function parse_get(nams) {\n    var init = idx;\n    if (match(\"get \")) {\n      var skip = parse_exact(\"[\");\n      var erass = [];\n      var names = [];\n      while (idx < code.length) {\n        var era1 = match(\"~\");\n        var name = parse_string();\n        var era2 = match(\"~\");\n        erass.push(era1 ? 1 : era2 ? 2 : 0);\n        names.push(name);\n        if (match(\"]\")) break;\n        if (!era2) parse_exact(\",\");\n      }\n      var skip = parse_exact(\"=\");\n      var pair = parse_term(nams);\n      var parsed = parse_term(nams.concat(names));\n      for (var i = names.length - 2; i >= 0; --i) {\n        var nam1 = names[i];\n        var nam2 = i === names.length - 2 ? names[i + 1] : \"aux\";\n        var expr = i === 0 ? pair : Var(0);\n        var body = i === 0 ? parsed : shift(parsed, 1, 2);\n        var parsed = Prj(nam1, nam2, expr, body, erass[i], loc(idx - init));\n      }\n      return parsed;\n    }\n  }\n\n  // Parses log, `log(t)`\n  function parse_log(nams) {\n    var init = idx;\n    if (match(\"log(\")) {\n      var msge = parse_term(nams);\n      var skip = parse_exact(\")\");\n      var expr = parse_term(nams);\n      return Log(msge, expr, loc(idx - init));\n    }\n  }\n\n  // Parses a self type, `$x P(x)`\n  function parse_slf(nams) {\n    var init = idx;\n    if (match(\"${\")) {\n      var name = parse_string();\n      var skip = parse_exact(\"}\");\n      var type = parse_term(nams.concat([name]));\n      return Slf(name, type, loc(idx - init));\n    }\n  }\n\n  // Parses a self intro, `new(A) t`\n  function parse_new(nams) {\n    var init = idx;\n    if (match(\"new(~\")) {\n      var type = parse_term(nams);\n      var skip = parse_exact(\")\");\n      var expr = parse_term(nams);\n      return New(type, expr, loc(idx - init));\n    }\n  }\n\n  // Parses a self elim, `%t`\n  function parse_use(nams) {\n    var init = idx;\n    if (match(\"use(\")) {\n      var expr = parse_term(nams);\n      var skip = parse_exact(\")\");\n      return Use(expr, loc(idx - init));\n    }\n  }\n\n  // Parses a case expression, `case/T | A => <term> | B => <term> : <term>`\n  function parse_case(nams) {\n    if (match(\"case \")) {\n      // Attempts to parse this case expression with each ADTs in scope\n      for (var adt_name in adts) {\n        var parse_state = save_parse_state();\n\n        try {\n          // Parses matched name, if available\n          var [term_name, term] = parse_named_term(nams);\n\n          // Finds ADT\n          if (!adt_name || !adts[ref_path(adt_name)]) {\n            error(\"Used case-syntax on undefined type `\" + (adt_name || \"?\") + \"`.\");\n          }\n          var {adt_name, adt_pram, adt_indx, adt_ctor} = adts[ref_path(adt_name)];\n\n          // Parses 'move' expressions\n          var moves = [];\n          while (match(\"+\")) {\n            var move_init = idx;\n            var [move_name, move_term] = parse_named_term(nams);\n            var move_skip = parse_exact(\":\");\n            var move_type = parse_term(nams\n              .concat(adt_indx.map(([name,type]) => term_name + \".\" + name))\n              .concat([term_name])\n              .concat(moves.map(([name,term,type]) => name)));\n            moves.push([move_name, move_term, move_type, loc(idx - init)]);\n          }\n\n          // Parses matched cases\n          var case_term = [];\n          var case_loc  = [];\n          for (var c = 0; c < adt_ctor.length; ++c) {\n            var init = idx;\n            try {\n              var skip = parse_exact(\"|\");\n              var skip = parse_exact(adt_ctor[c][0]);\n              var skip = parse_exact(\"=>\");\n            } catch (e) {\n              throw \"WRONG_ADT\";\n            }\n            var ctors = adt_ctor[c][1];\n            case_term[c] = parse_term(nams\n              .concat(adt_ctor[c][1].map(([name,type]) => term_name + \".\" + name))\n              .concat(moves.map(([name,term,type]) => name)));\n            for (var i = moves.length - 1; i >= 0; --i) {\n              case_term[c] = Lam(moves[i][0], null, case_term[c], false);\n            }\n            for (var i = 0; i < ctors.length; ++i) {\n              case_term[c] = Lam(term_name + \".\" + ctors[ctors.length - i - 1][0], null, case_term[c], ctors[ctors.length - i - 1][2]);\n            }\n            case_loc[c] = loc(idx - init);\n          }\n\n          // Parses matched motive\n          var moti_init = idx;\n          try {\n            var moti_skip = parse_exact(\":\");\n          } catch (e) {\n            throw \"WRONG_ADT\";\n          }\n          var moti_term = parse_term(nams\n            .concat(adt_indx.map(([name,type]) => term_name + \".\" + name))\n            .concat([term_name])\n            .concat(moves.map(([name,term,type]) => name)));\n          var moti_loc = loc(idx - moti_init);\n          for (var i = moves.length - 1; i >= 0; --i) {\n            var moti_term = All(moves[i][0], moves[i][2], moti_term, false, moves[i][3]);\n          }\n          var moti_term = Tid(moti_term, moti_loc);\n          var moti_term = Lam(term_name, null, moti_term, false, moti_loc);\n          for (var i = adt_indx.length - 1; i >= 0; --i) {\n            var moti_term = Lam(term_name + \".\" + adt_indx[i][0], null, moti_term, false, moti_loc);\n          }\n\n          // Builds the matched term using self-elim (\"Use\")\n          var targ = term;\n          var term = Use(term);\n          var term = App(term, moti_term, true, moti_loc);\n          for (var i = 0; i < case_term.length; ++i) {\n            var term = App(term, case_term[i], false, case_loc[i]);\n          }\n          for (var i = 0; i < moves.length; ++i) {\n            var term = App(term, moves[i][1], false, moves[i][3]);\n          }\n\n          return term;\n        } catch (e) {\n          if (e !== \"WRONG_ADT\") {\n            throw e;\n          } else {\n            load_parse_state(parse_state);\n          }\n        }\n      }\n      // If no ADT matches this pattern-match, raise error\n      error(\"Couldn't find the ADT for this pattern-match.\\n\"\n          + \"Make sure the cases have the correct name and order.\");\n    }\n  }\n\n  // Parses a Number bitwise-not, `.!.(t)`\n  function parse_op2_not(nams) {\n    var init = idx;\n    if (match(\".!.(\")) {\n      var argm = parse_term(nams);\n      var skip = parse_exact(\")\");\n      return Op2(\".!.\", Val(0), argm, loc(idx - init));\n    }\n  }\n\n  // Parses an application, `f(x, y, z...)`\n  function parse_app(parsed, init, nams) {\n    if (match(\"(\", is_space)) {\n      var term = parsed;\n      while (idx < code.length) {\n        if (match(\"_\")) {\n          var term = App(term, Hol(new_hole_name()), true, loc(idx - init));\n          if (match(\")\")) break;\n        } else {\n          var eras = match(\"~\");\n          var argm = parse_term(nams);\n          var term = App(term, argm, eras, loc(idx - init));\n          if (match(\")\")) break;\n          parse_exact(\",\");\n        }\n      }\n      return term;\n    }\n  }\n\n  // Parses a list literal, `A$[t, u, v, ...]`\n  function parse_list_literal(nams) {\n    var init = idx;\n    if (match(\"<\", is_space)) {\n      var type = parse_term(nams);\n      var skip = parse_exact(\">\");\n      var list = [];\n      var skip = parse_exact(\"[\");\n      while (idx < code.length && !match(\"]\")) {\n        list.push(parse_term(nams));\n        if (match(\"]\")) break; else parse_exact(\",\");\n      }\n      var term = App(base_ref(\"nil\"), type, true, loc(idx - init));\n      for (var i = list.length - 1; i >= 0; --i) {\n        var term = App(App(App(base_ref(\"cons\"), type, true), list[i], false), term, false, loc(idx - init));\n      }\n      return term;\n    }\n  }\n\n  // Parses an annotation `t :: T`\n  function parse_ann(parsed, init, nams) {\n    if (match(\"::\", is_space)) {\n      //if (match(\"Type\")) {\n        //return Tid(parsed);\n      //} else {\n        var type = parse_term(nams);\n        return Ann(type, parsed, false, loc(idx - init));\n      //}\n    }\n  }\n\n  // Parses operators, including:\n  // - Numeric operators: `t .+. u`, `t .*. u`, etc.\n  // - Arrow notation: `A -> B`\n  // - User-defined operators: `t .foo. u`\n  function parse_ops(parsed, init, nams) {\n    var matched_op_init = null;\n    if (matched_op_init = match_op_init(is_space)) {\n      if (tokens) tokens.pop();\n      var func = matched_op_init + parse_string_here(x => !is_space(x));\n      if (tokens) tokens.push([\"txt\", \"\"]);\n      var argm = parse_term(nams);\n      if (is_native_op[func]) {\n        return Op2(func, parsed, argm, loc(idx - init));\n      } else if (func === \"->\") {\n        return All(\"\", parsed, shift(argm, 1, 0), false, loc(idx - init));\n      } else {\n        return App(App(ref(func), parsed, false), argm, false, loc(idx - init));\n      }\n    }\n  }\n\n  // Parses a free variable\n  function parse_var(nams) {\n    var init = idx;\n    if (match(\"^\")) {\n      var idx = Number(parse_name());\n      return Var(idx, loc(idx - init));\n    }\n  }\n\n  // Parses a term\n  function parse_term(nams) {\n    var parsed;\n\n    skip_spaces();\n    var init = idx;\n\n    // Parses base term\n    if (parsed = parse_lam_or_all(nams));\n    else if (parsed = parse_parens(nams));\n    else if (parsed = parse_typ(nams));\n    else if (parsed = parse_tid(nams));\n    else if (parsed = parse_slf(nams));\n    else if (parsed = parse_new(nams));\n    else if (parsed = parse_use(nams));\n    else if (parsed = parse_scope(nams));\n    else if (parsed = parse_hol(nams));\n    else if (parsed = parse_dup(nams));\n    else if (parsed = parse_box(nams));\n    else if (parsed = parse_put(nams));\n    else if (parsed = parse_tak(nams));\n    else if (parsed = parse_let(nams));\n    else if (parsed = parse_wrd(nams));\n    else if (parsed = parse_str(nams));\n    else if (parsed = parse_chr(nams));\n    else if (parsed = parse_ite(nams));\n    else if (parsed = parse_cpy(nams));\n    else if (parsed = parse_sig_or_par(nams));\n    else if (parsed = parse_fst(nams));\n    else if (parsed = parse_snd(nams));\n    else if (parsed = parse_get(nams));\n    else if (parsed = parse_utt(nams));\n    else if (parsed = parse_utv(nams));\n    else if (parsed = parse_ute(nams));\n    else if (parsed = parse_log(nams));\n    else if (parsed = parse_case(nams));\n    else if (parsed = parse_op2_not(nams));\n    else if (parsed = parse_var(nams));\n    else if (parsed = parse_list_literal(nams));\n    else     parsed = parse_atom(nams);\n\n    // Parses spaced operators\n    var new_parsed = true;\n    while (new_parsed) {\n      if      (new_parsed = parse_app(parsed, init, nams));\n      else if (new_parsed = parse_ann(parsed, init, nams));\n      else if (new_parsed = parse_ops(parsed, init, nams));\n      if (new_parsed) {\n        parsed = new_parsed;\n      }\n    }\n\n    return parsed;\n  }\n\n  // Parses a top-level import\n  async function do_parse_import() {\n    if (match(\"import \")) {\n      if (tokens) tokens.push([\"imp\", \"\"]);\n      var impf = parse_string();\n      if (tokens) tokens.push([\"txt\", \"\"]);\n      var qual = match(\"as\") ? parse_string() : null;\n      var open = match(\"open\");\n      if (open) {\n        error(\"The `open` keyword is obsolete. Remove it.\");\n      }\n      if (qual) qual_imports[qual] = impf;\n      qual_imports[impf] = impf;\n      open_imports[impf] = true;\n      await do_import(impf);\n      return true;\n    }\n  }\n\n  // Parses a top-level datatype:\n  // T name {param0 : A, ...} (index0 : B, ...)\n  // | ctor0 {field0 : C, ...} (index0, ...)\n  // | ctor1 {field0 : C, ...} (index0, ...)\n  async function do_parse_datatype() {\n    if (match(\"T \")) {\n      var adt_pram = [];\n      var adt_indx = [];\n      var adt_ctor = [];\n      var adt_name = parse_string();\n      var adt_nams = [adt_name];\n      var adt_typs = [null];\n\n      // Datatype parameters\n      if (match(\"<\")) {\n        while (idx < code.length) {\n          var eras = false;\n          var name = parse_string();\n          if (match(\":\")) {\n            var type = await parse_term(adt_pram.map((([name,type]) => name)));\n          } else {\n            var type = Typ();\n          }\n          adt_pram.push([name, type, eras]);\n          if (match(\">\")) break;\n          else parse_exact(\",\");\n        }\n      }\n\n      // Datatype indices\n      var adt_nams = adt_nams.concat(adt_pram.map(([name,type]) => name));\n      var adt_typs = adt_typs.concat(adt_pram.map(([name,type]) => type));\n      if (match(\"(\")) {\n        while (idx < code.length) {\n          //var eras = match(\"~\");\n          var eras = false;\n          var name = parse_string();\n          if (match(\":\")) {\n            var type = await parse_term(adt_nams.concat(adt_indx.map((([name,type]) => name))));\n          } else {\n            var type = Hol(new_hole_name());\n          }\n          adt_indx.push([name, type, eras]);\n          if (match(\")\")) break; else parse_exact(\",\");\n        }\n      }\n\n      // Datatype constructors\n      while (match(\"|\")) {\n        // Constructor name\n        var ctor_name = parse_string();\n        // Constructor fields\n        var ctor_flds = [];\n        if (match(\"(\")) {\n          while (idx < code.length) {\n            var eras = match(\"~\");\n            var name = parse_string();\n            if (match(\":\")) {\n              var type = await parse_term(adt_nams.concat(ctor_flds.map(([name,type]) => name)));\n            } else {\n              var type = Hol(new_hole_name());\n            }\n            ctor_flds.push([name, type, eras]);\n            if (match(\")\")) break; else parse_exact(\",\");\n          }\n        }\n        // Constructor type (written)\n        if (match(\":\")) {\n          var ctor_type = await parse_term(adt_nams.concat(ctor_flds.map(([name,type]) => name)));\n        // Constructor type (auto-filled)\n        } else {\n          var ctor_indx = [];\n          //if (match(\"(\")) {\n            //while (idx < code.length) {\n              //ctor_indx.push(await parse_term(adt_nams.concat(ctor_flds.map(([name,type]) => name))));\n              //if (match(\")\")) break; else parse_exact(\",\");\n            //}\n          //}\n          var ctor_type = Var(-1 + ctor_flds.length + adt_pram.length + 1);\n          for (var p = 0; p < adt_pram.length; ++p) {\n            ctor_type = App(ctor_type, Var(-1 + ctor_flds.length + adt_pram.length - p), false);\n          }\n          for (var i = 0; i < ctor_indx.length; ++i) {\n            ctor_type = App(ctor_type, ctor_indx[i], false);\n          }\n        }\n        adt_ctor.push([ctor_name, ctor_flds, ctor_type]);\n      }\n      var adt = {adt_pram, adt_indx, adt_ctor, adt_name};\n      define(file+\"/\"+adt_name, derive_adt_type(file, adt));\n      for (var c = 0; c < adt_ctor.length; ++c) {\n        define(file+\"/\"+adt_ctor[c][0], derive_adt_ctor(file, adt, c));\n      }\n      adts[file+\"/\"+adt_name] = adt;\n\n      return true;\n    }\n  }\n\n  // Parses a top-level `?defs` util\n  async function do_parse_defs_util() {\n    if (match(\"?defs\")) {\n      var filt = match(\"/\") ? parse_string(x => x !== \"/\") : \"\";\n      var regx = new RegExp(filt, \"i\");\n      console.log(\"Definitions:\");\n      for (var def in defs) {\n        if (def[0] !== \"$\" && regx.test(def)) {\n          console.log(\"- \" + def);\n        }\n      }\n      return true;\n    }\n  }\n\n  // Parses a top-level definition:\n  //\n  //    name(arg0 : A, arg1 : B, ...) : RetType\n  //      <body>\n  //\n  async function do_parse_def() {\n    // Parses box annotation\n    var boxed = match(\"#\");\n\n    // Parses definition name\n    if (tokens) tokens.push([\"def\", \"\"]);\n    var name = parse_name();\n\n    if (name.length === 0) {\n      error(\"Expected a definition.\");\n    }\n    if (tokens) tokens[tokens.length - 1][2] = file+\"/\"+name;\n    if (tokens) tokens.push([\"txt\", \"\"]);\n\n    // If name is empty, stop\n    if (name.length === 0) return false;\n\n    // Parses argument names and types\n    var erass = [];\n    var names = [];\n    var types = [];\n    if (match_here(\"(\")) {\n      while (idx < code.length) {\n        var arg_eras = match(\"~\");\n        var arg_name = parse_string();\n        var arg_type = match(\":\") ? await parse_term(names) : Typ();\n        erass.push(arg_eras);\n        names.push(arg_name);\n        types.push(arg_type);\n        if (match(\")\")) break;\n        else parse_exact(\",\");\n      }\n    }\n\n    // Parses return type, if any\n    var type = match(\":\") ? await parse_term(names) : null;\n    var term = await parse_term(names);\n\n    // Fills foralls and lambdas of arguments\n    for (var i = names.length - 1; i >= 0; --i) {\n      var type = type && All(names[i], types[i], type, erass[i]);\n      var term = Lam(names[i], type ? null : types[i], term, erass[i]);\n    }\n\n    // Defines the top-level term\n    define(file+\"/\"+name, type ? Ann(type, term, false) : term);\n\n    return true;\n  }\n\n  function save_parse_state() {\n    return {idx, row, col, tokens_length: tokens && tokens.length};\n  }\n\n  function load_parse_state(state) {\n    idx = state.idx;\n    row = state.row;\n    col = state.col;\n    while (state.tokens_length && tokens.length > state.tokens_length) {\n      tokens.pop();\n    }\n  }\n\n  // Parses all definitions\n  var open_imports = {};\n  var qual_imports = {};\n  var local_imports = {};\n  var file_version = {};\n  var used_hole_name = {};\n  var hole_count = 0;\n  var tokens = tokenify ? [[\"txt\",\"\"]] : null;\n  var idx = 0;\n  var row = 0;\n  var col = 0;\n  var defs = {};\n  var adts = {};\n  while (idx < code.length) {\n    next_char();\n    if (await do_parse_import());\n    else if (await do_parse_datatype());\n    else if (await do_parse_defs_util());\n    else if (!(await do_parse_def())) break;\n    next_char();\n  }\n\n  return {\n    defs,\n    adts,\n    tokens,\n    local_imports,\n    qual_imports,\n    open_imports\n  };\n}\n\n// :::::::::::\n// :: Utils ::\n// :::::::::::\n\n// Generates a name\nconst gen_name = (n) => {\n  var str = \"\";\n  ++n;\n  while (n > 0) {\n    --n;\n    str += String.fromCharCode(97 + n % 26);\n    n = Math.floor(n / 26);\n  }\n  return str;\n};\n\n// :::::::::::::::::::\n// :: Syntax Sugars ::\n// :::::::::::::::::::\n\n// Syntax sugars for datatypes. They transform a statement like:\n//\n//   data ADT <p0 : Param0, p1 : Param1...> {i0 : Index0, i1 : Index1}\n//   | ctr0 {ctr_fld0 : Ctr0_Fld0, ctr0_fld1 : Ctr0_Fld1, ...} : Cr0Type\n//   | ctr1 {ctr_fld0 : Ctr0_Fld0, ctr0_fld1 : Ctr0_Fld1, ...} : Cr0Type\n//   | ...\n//\n// on its corresponding self-encoded datatype:\n//\n//   def ADT\n//   = {p0 : Param0, p1 : Param1, ..., i0 : Index0, i1 : Index1, ...} =>\n//     : Type\n//     $ self\n//     {~P   : {i0 : Index0, i1 : Index1, ..., wit : (ADT i0 i1...)} -> Type} ->\n//     {ctr0 : {ctr0_fld0 : Ctr0_Fld0, ctr0_fld1 : Ctr0_Fld1, ...} -> (Ctr0Type[ADT <- P] (ADT.ctr0 Param0 Param1... ctr0_fld0 ctr0_fld1 ...))} ->\n//     {ctr1 : {ctr1_fld0 : Ctr1_Fld0, ctr1_fld1 : Ctr1_Fld1, ...} -> (Ctr0Type[ADT <- P] (ADT.ctr1 Param0 Param1... ctr1_fld1 ctr0_fld1 ...))} ->\n//     ... ->\n//     (P i0 i1... self)\n//\n//   def ADT.ctr0\n//   = {~p0 : Param0, ~p1 : Param1, ..., ctr0_fld0 : Ctr0_Fld0, ctr1_fld1 : Ctr1_Fld1, ...} =>\n//     : Ctr0Type\n//     @ Ctr0Type\n//       {~P, ctr0, ctr1, ...} =>\n//       (ctr0 ctr0_fld0 ctr0_fld1 ...)\n//\n//   (...)\nconst derive_adt_type = (file, {adt_pram, adt_indx, adt_ctor, adt_name}) => {\n  return (function adt_arg(p, i) {\n    // ... {p0 : Param0, p1 : Param1...} ...\n    if (p < adt_pram.length) {\n      return Lam(adt_pram[p][0], adt_pram[p][1], adt_arg(p + 1, i), adt_pram[p][2]);\n    // ... {i0 : Index0, i1 : Index...} ...\n    } else if (i < adt_indx.length) {\n      var substs = [Ref(file+\"/\"+adt_name)];\n      for (var P = 0; P < p; ++P) {\n        substs.push(Var(-1 + i + p - P));\n      }\n      return Lam(adt_indx[i][0], subst_many(adt_indx[i][1], substs, i), adt_arg(p, i + 1), adt_indx[i][2]);\n    } else {\n      return (\n        // ... : Type ...\n        Ann(Typ(),\n        // ... $ self ...\n        Slf(\"self\",\n        // ... P : ...\n        All(\"P\",\n          (function motive(i) {\n            // ... {i0 : Index0, i1 : Index1...} ...\n            if (i < adt_indx.length) {\n              var substs = [Ref(file+\"/\"+adt_name)];\n              for (var P = 0; P < p; ++P) {\n                substs.push(Var(-1 + i + 1 + adt_indx.length + p - P));\n              }\n              return All(adt_indx[i][0], subst_many(adt_indx[i][1], substs, i), motive(i + 1), adt_indx[i][2]);\n            // ... {wit : (ADT i0 i1...)} -> Type ...\n            } else {\n              var wit_t = Ref(file+\"/\"+adt_name);\n              for (var P = 0; P < adt_pram.length; ++P) {\n                wit_t = App(wit_t, Var(-1 + i + 1 + i + adt_pram.length - P), adt_pram[P][2]);\n              }\n              for (var I = 0; I < i; ++I) {\n                wit_t = App(wit_t, Var(-1 + i - I), adt_indx[I][2]);\n              }\n              return All(\"wit\", wit_t, Typ(), false);\n            }\n          })(0),\n        (function ctor(i) {\n          if (i < adt_ctor.length) {\n            // ... ctrX : ...\n            return All(adt_ctor[i][0], (function field(j) {\n              var subst_prams = [];\n              for (var P = 0; P < adt_pram.length; ++P) {\n                subst_prams.push(Var(-1 + j + i + 1 + 1 + adt_indx.length + adt_pram.length - P));\n              }\n              // ... {ctrX_fldX : CtrX_FldX, ctrX_fld1 : CtrX_Fld1, ...} -> ...\n              if (j < adt_ctor[i][1].length) {\n                var sub = [Ref(file+\"/\"+adt_name)].concat(subst_prams);\n                var typ = subst_many(adt_ctor[i][1][j][1], sub, j);\n                return All(adt_ctor[i][1][j][0], typ, field(j + 1), adt_ctor[i][1][j][2]);\n              // ... (CtrXType[ADT <- P] (ADT.ctrX ParamX Param1... ctrX_fldX ctrX_fld1 ...)) -> ...\n              } else {\n                var typ = adt_ctor[i][2];\n                var sub = [Var(-1 + j + i + 1)].concat(subst_prams);\n                var typ = subst_many(adt_ctor[i][2], sub, j);\n                var rem = typ;\n                for (var I = 0; I < adt_indx.length; ++I) {\n                  rem = rem[1].func;\n                }\n                rem[0] = \"Var\";\n                rem[1] = {index: -1 + i + j + 1};\n                var wit = Ref(file+\"/\"+adt_ctor[i][0]);\n                for (var P = 0; P < adt_pram.length; ++P) {\n                  var wit = App(wit, Var(-1 + j + i + 1 + 1 + adt_indx.length + adt_pram.length - P), true);\n                }\n                for (var F = 0; F < adt_ctor[i][1].length; ++F) {\n                  var wit = App(wit, Var(-1 + j - F), adt_ctor[i][1][F][2]);\n                }\n                return App(typ, wit, false);\n              }\n            })(0),\n            ctor(i + 1),\n            false);\n          } else {\n            // ... (P i0 i1... self)\n            var ret = Var(adt_ctor.length + 1 - 1);\n            for (var i = 0; i < adt_indx.length; ++i) {\n              var ret = App(ret, Var(adt_ctor.length + 1 + 1 + adt_indx.length - i - 1), adt_indx[i][2]);\n            }\n            var ret = App(ret, Var(adt_ctor.length + 1 + 1 - 1), false);\n            return ret;\n          }\n        })(0),\n        true))));\n    }\n  })(0, 0);\n}\n\nconst derive_adt_ctor = (file, {adt_pram, adt_indx, adt_ctor, adt_name}, c) => {\n  return (function arg(p, i, f) {\n    var substs = [Ref(file+\"/\"+adt_name)];\n    for (var P = 0; P < p; ++P) {\n      substs.push(Var(-1 + f + p - P));\n    }\n    // {~p0 : Param0, ~p1 : Param1...} ...\n    if (p < adt_pram.length) {\n      return Lam(adt_pram[p][0], adt_pram[p][1], arg(p + 1, i, f), true);\n    // ... {ctr0_fld0 : Ctr0_Fld0, ctr1_fld1 : Ctr1_Fld1, ...} ...\n    } else if (f < adt_ctor[c][1].length) {\n      return Lam(adt_ctor[c][1][f][0], subst_many(adt_ctor[c][1][f][1], substs, f), arg(p, i, f + 1), adt_ctor[c][1][f][2]);\n    } else {\n      var type = subst_many(adt_ctor[c][2], substs, f);\n      // ... : CtrXType {~P} ...\n      return Ann(type, New(type, Lam(\"P\", null, (function opt(k) {\n        // ... {ctr0, ctr1...} ...\n        if (k < adt_ctor.length) {\n          return Lam(adt_ctor[k][0], null, opt(k + 1), false);\n        // (ctrX ctrX_fld0 ctrX_fld1 ...)\n        } else {\n          var sel = Var(-1 + adt_ctor.length - c);\n          for (var F = 0; F < adt_ctor[c][1].length; ++F) {\n            var fld = Var(-1 + adt_ctor.length + 1 + adt_ctor[c][1].length - F);\n            // Unrestricted field\n            if (adt_ctor[c][1][F][1][0] === \"Utt\") {\n              var fld = Utv(Ute(fld));\n            }\n            var sel = App(sel, fld, adt_ctor[c][1][F][2]);\n          }\n          return sel;\n        }\n      })(0), true)), false);\n    }\n  })(0, adt_indx.length, 0);\n}\n\nconst reduce = (term, opts) => {\n  return core_reduce(term, {...opts, show});\n};\n\nconst typecheck = (term, expect, opts) => {\n  return core_typecheck(term, expect, {...opts, show});\n};\n\n// Evaluates a term to normal form in different modes\n// run : String -> (String | Term) -> Opts -> Term\nconst run = (mode, term, opts = {}) => {\n  var eras = opts.erased ? erase : (x => x);\n  var defs = opts.defs || {};\n  if (typeof term === \"string\") {\n    term = defs[term] || Ref(term);\n  }\n\n  switch (mode) {\n\n    case \"REDUCE_DEBUG\":\n      term = eras(term);\n      try {\n        opts.unbox = true;\n        opts.undup = true;\n        term = reduce(term, opts);\n      } catch (e) {\n        term = reduce(term, {...opts, weak: true});\n      }\n      break;\n\n    case \"REDUCE_DEBUG\":\n    case \"REDUCE_NATIVE\":\n      term = eras(term);\n      term = to_js.decompile(to_js.compile(term, defs));\n      break;\n\n    case \"REDUCE_OPTIMAL\":\n      term = eras(term);\n      var net = to_net.compile(term, defs);\n      if (opts.stats && opts.stats.input_net === null) {\n        opts.stats.input_net = JSON.parse(JSON.stringify(net));\n      }\n      if (opts.strict) {\n        var new_stats = net.reduce_strict(opts.stats || {});\n      } else {\n        var new_stats = net.reduce_lazy(opts.stats || {});\n      }\n      if (opts.stats && opts.stats.output_net !== undefined) {\n        opts.stats.output_net = JSON.parse(JSON.stringify(net));\n      }\n      term = to_net.decompile(net);\n      break;\n\n    case \"TYPECHECK\":\n      term = typecheck(term, null, opts);\n      break;\n  }\n\n  return term;\n};\n\nmodule.exports = {\n  Var, Typ, Tid, Utt, Utv, Ute, All, Lam,\n  App, Box, Put, Tak, Dup, Num, Val, Op1,\n  Op2, Ite, Cpy, Sig, Par, Fst, Snd, Prj,\n  Slf, New, Use, Ann, Log, Hol, Ref,\n  derive_adt_ctor,\n  derive_adt_type,\n  equal,\n  erase,\n  gen_name,\n  parse,\n  reduce,\n  run,\n  shift,\n  show,\n  subst,\n  subst_many,\n  typecheck,\n  haltcheck,\n  version,\n};\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-lang.js?");
+// WARNING: here shall be dragons!
+// This is the parser for Formality-Lang. This is NOT fm-core, which is meant
+// to be small, elegant and portable. Instead, it is our user-facing language,
+// which is meant to be big and fully-featured, including several syntax-sugars
+// meant to make programming easier. As such, this file is complex and involves
+// hard transformations of terms, Bruijn-index shifts, crazy parsing flows.
+// You've been warned (:
+
+const {
+  Var, Typ, Tid, Utt, Utv, Ute, All, Lam,
+  App, Box, Put, Tak, Dup, Num, Val, Op1,
+  Op2, Ite, Cpy, Sig, Par, Fst, Snd, Prj,
+  Slf, New, Use, Ann, Log, Hol, Ref,
+  reduce: core_reduce,
+  typecheck: core_typecheck,
+  haltcheck,
+  ctx_ext,
+  ctx_get,
+  ctx_names,
+  ctx_new,
+  ctx_str,
+  equal,
+  erase,
+  shift,
+  subst,
+  subst_many,
+} = __webpack_require__(/*! ./fm-core.js */ "./node_modules/formality-lang/src/fm-core.js");
+
+const version = __webpack_require__(/*! ./../package.json */ "./node_modules/formality-lang/package.json").version;
+const to_net = __webpack_require__(/*! ./fm-to-net.js */ "./node_modules/formality-lang/src/fm-to-net.js");
+const to_js = __webpack_require__(/*! ./fm-to-js.js */ "./node_modules/formality-lang/src/fm-to-js.js");
+const net = __webpack_require__(/*! ./fm-net.js */ "./node_modules/formality-lang/src/fm-net.js");
+const {load_file} = __webpack_require__(/*! ./forall.js */ "./node_modules/formality-lang/src/forall.js");
+const {marked_code, random_excuse} = __webpack_require__(/*! ./fm-error.js */ "./node_modules/formality-lang/src/fm-error.js");
+
+// :::::::::::::::::::::
+// :: Stringification ::
+// :::::::::::::::::::::
+
+// Converts a term to a string
+const show = ([ctor, args], nams = [], opts = {}) => {
+  const print_output = (term) => {
+    try {
+      if (term[1].val0[1].numb === 0x53484f57) {
+        term = term[1].val1;
+        var nums = [];
+        while (term[1].body[1].body[0] !== "Var") {
+          term = term[1].body[1].body;
+          nums.push(term[1].func[1].argm[1].numb);
+          term = term[1].argm;
+        }
+        var str = "";
+        for (var i = 0; i < nums.length; ++i) {
+          str += String.fromCharCode(nums[i]);
+        }
+        return str;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      return null;
+    }
+  }
+  switch (ctor) {
+    case "Var":
+      var name = nams[nams.length - args.index - 1];
+      if (!name) {
+        return "^" + args.index;
+      } else {
+        var suff = "";
+        for (var i = 0; i < args.index; ++i) {
+          if (nams[nams.length - i - 1] === name) {
+            var suff = suff + "^";
+          }
+        }
+        return name + suff;
+      }
+    case "Typ":
+      return "Type";
+    case "Tid":
+      var expr = show(args.expr, nams, opts);
+      return "&" + expr;
+    case "Utt":
+      var expr = show(args.expr, nams, opts);
+      return "-" + expr;
+    case "Utv":
+      var expr = show(args.expr, nams, opts);
+      return "%" + expr;
+    case "Ute":
+      var expr = show(args.expr, nams, opts);
+      return "+" + expr;
+    case "All":
+      var term = [ctor, args];
+      var erase = [];
+      var names = [];
+      var types = [];
+      while (term[0] === "All") {
+        erase.push(term[1].eras);
+        names.push(term[1].name);
+        types.push(show(term[1].bind, nams.concat(names.slice(0,-1)), opts));
+        term = term[1].body;
+      }
+      var text = "(";
+      for (var i = 0; i < names.length; ++i) {
+        text += erase[i] ? "~" : "";
+        text += names[i] + (names[i].length > 0 ? " : " : ":") + types[i];
+        text += i < names.length - 1 ? ", " : "";
+      }
+      text += ") -> ";
+      text += show(term, nams.concat(names), opts);
+      return text;
+    case "Lam":
+      var term = [ctor, args];
+      var erase = [];
+      var names = [];
+      var types = [];
+      while (term[0] === "Lam") {
+        erase.push(term[1].eras);
+        names.push(term[1].name);
+        types.push(term[1].bind && term[1].bind[0] !== "Hol" ? show(term[1].bind, nams.concat(names.slice(0,-1)), opts) : null);
+        term = term[1].body;
+      }
+      var text = "(";
+      for (var i = 0; i < names.length; ++i) {
+        text += erase[i] ? "~" : "";
+        text += names[i] + (types[i] !== null ? " : " + types[i] : "");
+        text += i < names.length - 1 ? ", " : "";
+      }
+      text += ") => ";
+      text += show(term, nams.concat(names), opts);
+      return text;
+    case "App":
+      var text = ")";
+      var term = [ctor, args];
+      while (term[0] === "App") {
+        text = (term[1].func[0] === "App" ? ", " : "")
+             + (term[1].eras ? "~" : "")
+             + show(term[1].argm, nams, opts)
+             + text;
+        term = term[1].func;
+      }
+      if (term[0] === "Ref" || term[0] === "Var" || term[0] === "Tak") {
+        var func = show(term, nams, opts);
+      } else {
+        var func = "(" + show(term,nams, opts) + ")";
+      }
+      return func + "(" + text;
+    case "Box":
+      var expr = show(args.expr, nams, opts);
+      return "!" + expr;
+    case "Put":
+      var expr = show(args.expr, nams, opts);
+      return "#" + expr;
+    case "Tak":
+      var expr = show(args.expr, nams, opts);
+      return "$" + expr;
+    case "Dup":
+      var name = args.name;
+      var expr = show(args.expr, nams, opts);
+      if (args.body[0] === "Var" && args.body[1].index === 0) {
+        return "$" + expr;
+      } else {
+        var body = show(args.body, nams.concat([name]), opts);
+        return "dup " + name + " = " + expr + "; " + body;
+      }
+    case "Num":
+      return "Number";
+    case "Val":
+      return args.numb.toString();
+    case "Op1":
+    case "Op2":
+      var func = args.func;
+      var num0 = show(args.num0, nams, opts);
+      var num1 = show(args.num1, nams, opts);
+      return num0 + " " + func + " " + num1;
+    case "Ite":
+      var cond = show(args.cond, nams, opts);
+      var pair = show(args.pair, nams, opts);
+      return "if " + cond + " " + pair;
+    case "Cpy":
+      var name = args.name;
+      var numb = show(args.numb, nams, opts);
+      var body = show(args.body, nams.concat([name]), opts);
+      return "cpy " + name + " = " + numb + "; " + body;
+    case "Sig":
+      var term = [ctor, args];
+      var erase = [];
+      var names = [];
+      var types = [];
+      while (term[0] === "Sig") {
+        erase.push(term[1].eras);
+        names.push(term[1].name);
+        types.push(show(term[1].typ0, nams.concat(names.slice(0,-1)), opts));
+        term = term[1].typ1;
+      }
+      var text = "[";
+      for (var i = 0; i < names.length; ++i) {
+        text += erase[i] === 1 ? "~" : "";
+        text += names[i] + " : " + types[i];
+        text += erase[i] === 2 ? " ~ " : ", ";
+      }
+      text += show(term, nams.concat(names), opts);
+      text += "]";
+      return text;
+    case "Par":
+      var output;
+      var term  = [ctor, args];
+      var erase = [];
+      var terms = [];
+      while (term[0] === "Par") {
+        if (output = print_output(term)) {
+          break;
+        } else {
+          erase.push(term[1].eras);
+          terms.push(show(term[1].val0, nams, opts));
+          term = term[1].val1;
+        }
+      }
+      if (terms.length > 0) {
+        var text = "[";
+      } else {
+        var text = "";
+      }
+      for (var i = 0; i < terms.length; ++i) {
+        text += erase[i] === 1 ? "~" : "";
+        text += terms[i];
+        text += erase[i] === 2 ? " ~ " : ", ";
+      }
+      if (output) {
+        text += output;
+      } else {
+        text += show(term, nams, opts);
+      }
+      if (terms.length > 0) {
+        text += "]";
+      }
+      return text;
+    case "Fst":
+      var pair = show(args.pair, nams, opts);
+      switch (args.eras) {
+        case 0: return "fst(" + pair + ")";
+        case 1: return "~fst(" + pair + ")";
+        case 2: return "fst~(" + pair + ")";
+        case 3: return "~fst~(" + pair + ")";
+      }
+    case "Snd":
+      var pair = show(args.pair, nams, opts);
+      switch (args.eras) {
+        case 0: return "snd(" + pair + ")";
+        case 1: return "~snd(" + pair + ")";
+        case 2: return "snd~(" + pair + ")";
+        case 3: return "~snd~(" + pair + ")";
+      }
+    case "Prj":
+      var nam0 = args.nam0;
+      var nam1 = args.nam1;
+      var pair = show(args.pair, nams, opts);
+      var body = show(args.body, nams.concat([nam0, nam1]), opts);
+      var era1 = args.eras === 1 ? "~" : "";
+      var era2 = args.eras === 2 ? "~" : "";
+      return "get [" + era1 + nam0 + "," + era2 + nam1 + "] = " + pair + "; " + body;
+    case "Slf":
+      var name = args.name;
+      var type = show(args.type, nams.concat([name]), opts);
+      return "${" + name + "} " + type;
+    case "New":
+      var type = show(args.type, nams, opts);
+      var expr = show(args.expr, nams, opts);
+      return "new(~" + type + ") " + expr;
+    case "Use":
+      var expr = show(args.expr, nams, opts);
+      return "use(" + expr + ")";
+    case "Ann":
+      var expr = show(args.expr, nams, opts);
+      return expr;
+    case "Log":
+      var expr = show(args.expr, nams, opts);
+      return expr;
+    case "Hol":
+      return "?" + args.name;
+    case "Ref":
+      return !opts.full_refs ? args.name.replace(new RegExp(".*/", "g"), "") : args.name;
+  }
+};
+
+// :::::::::::::
+// :: Parsing ::
+// :::::::::::::
+
+// Converts a string to a term
+const parse = async (code, opts, root = true, loaded = {}) => {
+  const file = opts.file || "main";
+  const loader = opts.loader || load_file;
+  const tokenify = opts.tokenify;
+
+  // Imports a local/global file, merging its definitions
+  async function do_import(import_file) {
+    if (import_file.indexOf("@") === -1) {
+      local_imports[import_file] = true;
+    }
+    if (!loaded[import_file]) {
+      try {
+        var file_code = await loader(import_file);
+        loaded[import_file] = await parse(file_code, {file: import_file, tokenify, loader}, false, loaded);
+      } catch (e) {
+        throw e;
+      }
+    }
+    var {defs: file_defs
+      , adts: file_adts
+      , open_imports: file_open_imports
+      } = loaded[import_file];
+    for (let term_path in file_defs) {
+      defs[term_path] = file_defs[term_path];
+    }
+    for (let term_path in file_adts) {
+      adts[term_path] = file_adts[term_path];
+    }
+    for (let open_import in file_open_imports) {
+      open_imports[open_import] = true;
+    }
+    return true;
+  }
+
+  // Finds all imports with a given name
+  function find_name_in_imports(name) {
+    var found = [];
+    for (var open_import in open_imports) {
+      if (defs[open_import + "/" + name]) {
+        found.push(open_import + "/" + name);
+      }
+    }
+    return found;
+  }
+
+  // Returns current location
+  function loc(len = 1) {
+    return {idx: idx - len, col, row, len, file, code};
+  }
+
+  // Attempts to resolve a name into a full path
+  function ref_path(str) {
+    var result = (function () {
+      if (str.indexOf("/") === -1) {
+        var [str_file, str_name] = [null, str];
+      } else {
+        var [str_file, str_name] = str.split("/");
+      }
+      // If the reference includes the file...
+      if (str_file) {
+        // If it points to a qualified import, expand it
+        if (qual_imports[str_file]) {
+          return qual_imports[str_file] + "/" + str_name;
+        // Otherwise, return an undefined reference, as written
+        } else {
+          return str_file + "/" + str_name;
+        }
+      // Otherwise, if the reference is missing the file...
+      } else {
+        // If there is a local definition with that name, point to it
+        if (defs[file + "/" + str_name]) {
+          return file + "/" + str_name;
+        }
+        // Otherwise, if there are many defs with that name, it is ambiguous
+        var found = find_name_in_imports(str_name);
+        if (found.length > 1) {
+          var err_str = "Ambiguous reference: '" + str + "' could refer to:";
+          for (var i = 0; i < found.length; ++i) {
+            err_str += "\n- " + found[i];
+          }
+          err_str += "\nType its full name to prevent this error.";
+          error(err_str);
+        }
+        // Otherwise, if there is exactly 1 open def with that name, point to it
+        if (found.length === 1) {
+          return found[0];
+        }
+      }
+      // Otherwise, return an undefined reference to hte same file
+      return file + "/" + str_name;
+    })();
+    return result;
+  }
+
+  // Makes a ref given a name
+  function ref(str) {
+    return Ref(ref_path(str), false, loc(str.length));
+  }
+
+  // Attempts to make a `ref` to a known base-lib term
+  function base_ref(str) {
+    var path = ref_path(str);
+    if (defs[path]) {
+      return Ref(path, false, loc(str.length));
+    } else {
+      error("Attempted to use a syntax-sugar which requires `" + str + "` to be in scope, but it isn't.\n"
+          + "To solve that, add `import Base@0` to the start of your file.\n"
+          + "See http://docs.formality-lang.org/en/latest/language/Hello,-world!.html for more info.");
+    }
+  }
+
+  // Defines a top-level term
+  function define(path, term) {
+    if (root) {
+      var name = path.replace(new RegExp("^[\\w.]*\/"), "");
+      var found = find_name_in_imports(name);
+      if (found.length > 0 || defs[ref_path(name)]) {
+        var err_str = "Attempted to re-define '" + name + "', which is already defined";
+        if (found.length > 0) {
+          err_str += " as:";
+          for (var i = 0; i < found.length; ++i) {
+            err_str += "\n- " + found[i];
+          }
+        } else {
+          err_str += " on this file.";
+        }
+        error(err_str);
+      }
+    }
+    defs[path] = term;
+  }
+
+  // Creates a new hole name
+  function new_hole_name() {
+    return "h" + (hole_count++);
+  }
+
+  // Builds a lookup table
+  function build_charset(chars) {
+    var set = {};
+    for (var i = 0; i < chars.length; ++i) {
+      set[chars[i]] = 1;
+    }
+    return chr => set[chr] === 1;
+  }
+
+  // Some handy lookup tables
+  const is_native_op =
+    { ".+."   : 1
+    , ".-."   : 1
+    , ".*."   : 1
+    , "./."   : 1
+    , ".%."   : 1
+    , ".**."  : 1
+    , ".&."   : 1
+    , ".|."   : 1
+    , ".^."   : 1
+    , ".~."   : 1
+    , ".>>>." : 1
+    , ".<<."  : 1
+    , ".>."   : 1
+    , ".<."   : 1
+    , ".==."  : 1
+  };
+
+  const op_inits     = [".", "=", "->"];
+  const is_op_init   = str => { for (var k of op_inits) if (str === k || str[0] === k) return str; return null; };
+  const is_num_char  = build_charset("0123456789");
+  const is_name_char = build_charset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-@/");
+  const is_op_char   = build_charset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-@+*/%^!<>=&|");
+  const is_spacy     = build_charset(" \t\n\r;");
+  const is_space     = build_charset(" ");
+  const is_newline   = build_charset("\n");
+
+  // Advances the cursor 1 step forward
+  function next() {
+    if (tokens) {
+      tokens[tokens.length - 1][1] += code[idx];
+    }
+    if (is_newline(code[idx])) {
+      row += 1;
+      col = 0;
+    } else {
+      col += 1;
+    }
+    idx += 1;
+  }
+
+  // Advances the cursor until it finds a parseable char, skipping spaces and comments
+  function next_char(is_space = is_spacy) {
+    skip_spaces(is_space);
+    var head = code.slice(idx, idx + 2);
+    // Skips comments
+    while (head === "//" || head === "--" || head === "/*" || head === "{-") {
+      // Single-line comments
+      if (head === "//" || head === "--") {
+        if (tokens) tokens.push(["cmm", ""]);
+        while (code[idx] !== "\n" && idx < code.length) {
+          next();
+        }
+        next();
+      // Multi-line comments (docs)
+      } else {
+        if (tokens) tokens.push(["doc", ""]);
+        while (code.slice(idx, idx + 2) !== "*/" && code.slice(idx, idx + 2) !== "-}" && idx < code.length) {
+          next();
+        }
+        next();
+        next();
+      }
+      if (tokens) tokens.push(["txt", ""]);
+      skip_spaces(is_space);
+      var head = code.slice(idx, idx + 2);
+    }
+  }
+
+  // Skips space chars
+  function skip_spaces(is_space = is_spacy) {
+    while (idx < code.length && is_space(code[idx])) {
+      next();
+    }
+  }
+
+  // Attempts to match a specific string
+  function match_here(string) {
+    if (code.slice(idx, idx + 2) === "//" || code.slice(idx, idx + 2) === "--") {
+      return false;
+    } else {
+      var sliced = code.slice(idx, idx + string.length);
+      if (sliced === string) {
+        if (tokens) tokens.push(["sym", ""]);
+        for (var i = 0; i < string.length; ++i) {
+          next();
+        }
+        if (tokens) tokens.push(["txt", ""]);
+        return true;
+      }
+      return false;
+    }
+  }
+
+  // Skips spaces, calls `match_here`
+  function match(string, is_space = is_spacy) {
+    next_char(is_space);
+    return match_here(string);
+  }
+
+  // Attempts to match a character that is a valid operator initiator
+  function match_op_init(is_space = is_spacy) {
+    for (var i = 0; i < op_inits.length; ++i) {
+      var op_init = op_inits[i];
+      if (match(op_init, is_space)) {
+        return op_init;
+      }
+    };
+    return null;
+  };
+
+  // Throws a parse error at this location
+  function error(error_message) {
+    var part = "";
+    var text = "";
+    text += "[PARSE-ERROR]\n";
+    text += error_message;
+    text += "\n\nI noticed the problem on line " + (row+1) + ", col " + col + ", file \x1b[4m" + file + ".fm\x1b[0m:\n\n";
+    text += marked_code(loc());
+    text += "\nBut it could have happened a little earlier.\n";
+    text += random_excuse();
+    throw text;
+  }
+
+  // Constructs an Ind
+  function build_ind(name) {
+    if (!defs[name+"i"]) {
+      var numb = name === "" ? Math.pow(2,48) - 1 : Number(name);
+      var bits = numb.toString(2);
+      var bits = bits === "0" ? "" : bits;
+      var term = base_ref("base");
+      for (var i = 0; i < bits.length; ++i) {
+        term = App(base_ref("twice"), term, false);
+        if (bits[i] === "1") {
+          term = App(base_ref("step"), term, false);
+        }
+      }
+      define(name+"i", term);
+    }
+    return Ref(name+"i", false, loc(name.length + 1));
+  }
+
+  // Constructs a nat
+  function build_nat(name) {
+    if (!defs[name+"n"]) {
+      var term = base_ref("zero");
+      var numb = Number(name);
+      for (var i = 0; i < numb; ++i) {
+        term = App(base_ref("succ"), term, false);
+      }
+      define(name+"n", term);
+    }
+    return Ref(name+"n", false, loc(name.length + 1));
+  }
+
+  // Constructs a nat
+  function build_nat(name) {
+    if (!defs["n"+name]) {
+      var term = base_ref("zero");
+      var numb = Number(name);
+      for (var i = 0; i < numb; ++i) {
+        term = App(base_ref("succ"), term, false);
+      }
+      define("n"+name, term);
+    }
+    return Ref("n"+name, false, loc(name.length + 1));
+  }
+
+  // Parses an exact string, errors if it isn't there
+  function parse_exact(string) {
+    if (!match(string)) {
+      var text = "";
+      var part = "";
+      error("Expected '" + string + "', but found '" + (code[idx] || "(end of file)") + "' instead.");
+    }
+  }
+
+  // Parses characters until `fn` is false
+  function parse_string_here(fn = is_name_char) {
+    var name = "";
+    while (idx < code.length && fn(code[idx])) {
+      name = name + code[idx];
+      next();
+    }
+    return name;
+  }
+
+  // Skips spaces and calls parse_string_here
+  function parse_string(fn = is_name_char) {
+    next_char();
+    return parse_string_here(fn);
+  }
+
+  // Parses an alphanumeric name
+  function parse_name() {
+    var op_init = null;
+    if (op_init = is_op_init(code[idx] + (code[idx+1] || " "))) {
+      match(op_init);
+      return op_init + parse_string_here(is_op_char);
+    } else {
+      return parse_string();
+    }
+  }
+
+  // Parses a term that demands a name
+  function parse_named_term(nams) {
+    // Parses matched term
+    var term = parse_term(nams);
+
+    // If no name given, attempts to infer it from term
+    if (match("as")) {
+      var name = parse_string();
+    } else if (term[0] === "Var" && term[1].__name) {
+      var name = term[1].__name;
+    } else {
+      var name = "self";
+      //error("The term \x1b[2m" + show(term, nams) + "\x1b[0m requires an explicit name.\n"
+          //+ "Provide it with the 'as' keyword. Example: \x1b[2m" + show(term, nams) + " as x\x1b[0m");
+    }
+
+    return [name, term]
+  }
+
+  // Parses a number, variable, inline operator or reference
+  function parse_atom(nams) {
+    var term = null;
+    if (tokens) tokens.push(["???", ""]);
+    var name = parse_name();
+    var last = name[name.length - 1];
+    if (is_num_char(name[0])) {
+      var numb = Number(is_num_char(last) ? name : name.slice(0, -1));
+    } else {
+      var numb = NaN;
+    }
+    if (name.length === 0) {
+      next();
+      error("Unexpected symbol.");
+    }
+    // Not a var but a number
+    if (!isNaN(numb)) {
+      if (last === "i") {
+        var term = build_ind(name.slice(0,-1));
+      } else if (last === "n") {
+        var term = build_nat(name.slice(0,-1));
+      } else {
+        var term = Val(numb, loc(name.length));
+      }
+      if (tokens) tokens[tokens.length - 1][0] = "num";
+    } else {
+      // Parses bruijn index
+      var skip = 0;
+      while (match_here("^")) {
+        skip += 1;
+      }
+      // Finds variable in context
+      for (var i = nams.length - 1; i >= 0; --i) {
+        if (nams[i] === name) {
+          if (skip === 0) break;
+          else skip -= 1;
+        }
+      }
+      // Variable
+      if (i !== -1) {
+        term = Var(nams.length - i - 1, loc(name.length));
+        term[1].__name = name;
+        if (tokens) tokens[tokens.length - 1][0] = "var";
+      // Inline binary operator 
+      } else if (is_native_op[name]) {
+          term = Lam("x", Num(), Lam("y", Num(), Op2(name, Var(1), Var(0)), false), false);
+          if (tokens) tokens[tokens.length - 1][0] = "nop";
+      // Reference
+      } else {
+        term = Ref(ref_path(name), false, loc(name.length));
+        if (tokens) {
+          tokens[tokens.length - 1][0] = "ref";
+          tokens[tokens.length - 1][2] = term[1].name;
+        }
+      }
+    }
+    if (tokens) tokens.push(["txt", ""]);
+    return term;
+  }
+
+  // Parses a grouping parens, `(...)`
+  function parse_parens(nams) {
+    if (match("(")) {
+      var term = parse_term(nams);
+      var skip = parse_exact(")");
+      return term;
+    }
+  }
+
+  // Parses the type of types, `Type`
+  function parse_typ(nams) {
+    if (match("Type")) {
+      return Typ(loc(4));
+    }
+  }
+
+  // Parses a type-level identity, `~A`
+  function parse_tid(nams) {
+    var init = idx;
+    if (match("&")) {
+      var expr = parse_term(nams);
+      return Tid(expr, loc(idx - init));
+    }
+  }
+
+  // Parses an unrestricted type, `-A`
+  function parse_utt(nams) {
+    var init = idx;
+    if (match("-")) {
+      var expr = parse_term(nams);
+      return Utt(expr, loc(idx - init));
+    }
+  }
+
+  // Parses an unrestricted term, `%t`
+  function parse_utv(nams) {
+    var init = idx;
+    if (match("%")) {
+      var expr = parse_term(nams);
+      return Utv(expr, loc(idx - init));
+    }
+  }
+
+  // Parses an unrestricted elim, `+t`
+  function parse_ute(nams) {
+    var init = idx;
+    if (match("+")) {
+      var expr = parse_term(nams);
+      return Ute(expr, loc(idx - init));
+    }
+  }
+
+  // Parses the `?scope?` utility
+  function parse_scope(nams) {
+    if (match("?scope?")) {
+      console.log("Scope:");
+      for (var i = 0; i < nams.length; ++i) {
+        console.log("- " + nams[i]);
+      }
+      return parse_term(nams);
+    }
+  }
+
+  // Parses a hole, `?name`
+  function parse_hol(nams) {
+    var init = idx;
+    if (match("?")) {
+      var name = parse_string_here();
+      if (name === "") {
+        name = new_hole_name();
+      }
+      if (used_hole_name[name]) {
+        error("Reused hole name: " + name);
+      } else {
+        used_hole_name[name] = true;
+      }
+      return Hol(name, loc(idx - init));
+    }
+  }
+
+  // Parses a lambda `{x : A} t` or a forall `{x : A} -> B`
+  function parse_lam_or_all(nams) {
+    function is_lam_or_all() {
+      // TODO: this is ugly, improve
+      var i = idx;
+      if (i < code.length && code[i] === "(")          { ++i; } // skips `(`
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      if (code[i] === "~")                             { ++i; } // skips `~`
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      while (i < code.length && is_name_char(code[i])) { ++i; } // skips `x`
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      if (code[i] === ":")                             { ++i; } // skips `:`
+      if (code[i] === " ") return true;                         // found ` `
+      if (code[i] === ",") return true;                         // found `,`
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      if (code[i] === ")")                             { ++i; } // skips `)`
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      if (code[i] === "=")                             { ++i; } // skips `=`
+      if (code[i] === ">") return true;                         // finds `>`
+      return false;
+    }
+    var init = idx;
+    if (is_lam_or_all() && match("(")) {
+      var erass = [];
+      var names = [];
+      var types = [];
+      while (idx < code.length) {
+        var eras = match("~");
+        var name = parse_string();
+        var type = match(":") ? parse_term(nams.concat(names)) : null;
+        erass.push(eras);
+        names.push(name);
+        types.push(type);
+        if (match(")")) break;
+        else parse_exact(",");
+      }
+      var isall = match("->");
+      if (!isall) {
+        var skip = parse_exact("=>");
+      }
+      var parsed = parse_term(nams.concat(names));
+      for (var i = names.length - 1; i >= 0; --i) {
+        if (isall) {
+          parsed = All(names[i], types[i] || Typ(), parsed, erass[i], loc(idx - init));
+        } else {
+          parsed = Lam(names[i], types[i] || null, parsed, erass[i], loc(idx - init));
+        }
+      }
+      return parsed;
+    }
+  }
+
+  // Parses a duplication, `dup x = t; u`
+  function parse_dup(nams) {
+    var init = idx;
+    if (match("dup ")) {
+      var name = parse_string();
+      var skip = parse_exact("=");
+      var expr = parse_term(nams);
+      var body = parse_term(nams.concat([name]));
+      return Dup(name, expr, body, loc(idx - init));
+    }
+  }
+
+  // Parses a boxed type, `!A`
+  function parse_box(nams) {
+    var init = idx;
+    if (match("!")) {
+      var expr = parse_term(nams);
+      return Box(expr, loc(idx - init));
+    }
+  }
+
+  // Parses a boxed term, `#t`
+  function parse_put(nams) {
+    var init = idx;
+    if (match("#")) {
+      var expr = parse_term(nams);
+      return Put(expr, loc(idx - init));
+    }
+  }
+
+  // Parses an unboxing, `^t`
+  function parse_tak(nams) {
+    var init = idx;
+    if (match("$")) {
+      var expr = parse_term(nams);
+      return Tak(expr, loc(idx - init));
+    }
+  }
+
+  // Parses a let, `let x = t; u`
+  function parse_let(nams) {
+    if (match("let ")) {
+      var name = parse_string();
+      var skip = parse_exact("=");
+      var copy = parse_term(nams);
+      var body = parse_term(nams.concat([name]));
+      return subst(body, copy, 0);
+    }
+  }
+
+  // Parses the type of numbers, `Number`
+  function parse_wrd(nams) {
+    if (match("Number")) {
+      return Num(loc(4));
+    }
+  }
+
+  // Parses a string literal, `"foo"`
+  function parse_str(nams) {
+    var init = idx;
+    if (match("\"")) {
+      // Parses text
+      var text = "";
+      while (idx < code.length && code[idx] !== "\"") {
+        text += code[idx];
+        next();
+      }
+      next();
+      var nums = [];
+      for (var i = 0; i < text.length; ++i) {
+        nums.push(text.charCodeAt(i));
+      }
+      var term = App(base_ref("nil"), Num(), true);
+      for (var i = nums.length - 1; i >= 0; --i) {
+        var term = App(App(App(base_ref("cons"), Num(), true), Val(nums[i]), false), term, false);
+      }
+      return Ann(base_ref("String"), term, false, loc(idx - init));
+    }
+  }
+
+  // Parses a char literal, `'x'`
+  function parse_chr(nams) {
+    var init = idx;
+    if (match("'")) {
+      var name = parse_name();
+      var skip = parse_exact("'");
+      return Val(name.charCodeAt(0));
+    }
+  }
+
+  // Parses an if-then-else, `if: t else: u`
+  function parse_ite(nams) {
+    var init = idx;
+    if (match("if ")) {
+      var cond = parse_term(nams);
+      var skip = match("then:") || parse_exact(":");
+      var val0 = parse_term(nams);
+      var skip = parse_exact("else:");
+      var val1 = parse_term(nams);
+      return Ite(cond, Par(val0, val1, 0), loc(idx - init));
+    }
+  }
+
+  // Parses a Number copy, `cpy x = t; u`
+  function parse_cpy(nams) {
+    var init = idx;
+    if (match("cpy ")) {
+      var name = parse_string();
+      var skip = parse_exact("=");
+      var numb = parse_term(nams);
+      var body = parse_term(nams.concat([name]));
+      return Cpy(name, numb, body, loc(idx - init));
+    }
+  }
+
+  // Parses a sigma, `[x : A, P(x)]`, or a pair, `[t, u]`
+  function parse_sig_or_par(nams) {
+    function is_sigma() {
+      // TODO: this is ugly, improve
+      var i = idx;
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      if (code[i] === "~")                             { ++i; } // skips `~`
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      while (i < code.length && is_name_char(code[i])) { ++i; } // skips `x`
+      while (i < code.length && is_space(code[i]))     { ++i; } // skips ` `
+      return code[i] === ":";                                   // finds `:`
+    }
+    var init = idx;
+    if (match("[")) {
+      if (match("]")) {
+        error("Empty pair.");
+      }
+      // Sigma
+      if (is_sigma()) {
+        var erass = [];
+        var names = [];
+        var types = [];
+        while (idx < code.length && is_sigma()) {
+          var era1 = match("~");
+          var name = parse_string();
+          var skip = parse_exact(":");
+          var type = parse_term(nams.concat(names));
+          var era2 = match("~");
+          erass.push(era1 ? 1 : era2 ? 2 : 0);
+          names.push(name);
+          types.push(type);
+          if (!era2) parse_exact(",");
+        }
+        var parsed = parse_term(nams.concat(names));
+        var skip = parse_exact("]");
+        for (var i = names.length - 1; i >= 0; --i) {
+          var parsed = Sig(names[i], types[i], parsed, erass[i], loc(idx - init));
+        }
+      // Pair
+      } else {
+        var erass = [];
+        var terms = [];
+        while (idx < code.length) {
+          var era1 = match("~");
+          var term = parse_term(nams);
+          var era2 = match("~");
+          erass.push(era1 ? 1 : era2 ? 2 : 0);
+          terms.push(term);
+          if (match("]")) break;
+          if (!era2) parse_exact(",");
+        }
+        var parsed = terms.pop();
+        for (var i = terms.length - 1; i >= 0; --i) {
+          var parsed = Par(terms[i], parsed, erass[i], loc(idx - init));
+        }
+      }
+      return parsed;
+    }
+  }
+
+  // Parses a fst accessor, `fst(t)`
+  function parse_fst(nams) {
+    var init = idx;
+    if (match("fst(")) {
+      var eras = 0;
+    } else if (match("~fst(")) {
+      var eras = 1;
+    } else if (match("fst~(")) {
+      var eras = 2;
+    } else if (match("~fst~(")) {
+      var eras = 3;
+    } else {
+      return;
+    }
+    var pair = parse_term(nams);
+    var skip = parse_exact(")");
+    return Fst(pair, eras, loc(idx - init));
+  }
+
+  // Parses a snd accessor, `snd(t)`
+  function parse_snd(nams) {
+    var init = idx;
+    if (match("snd(")) {
+      var eras = 0;
+    } else if (match("~snd(")) {
+      var eras = 1;
+    } else if (match("snd~(")) {
+      var eras = 2;
+    } else if (match("~snd~(")) {
+      var eras = 3;
+    } else {
+      return;
+    }
+    var pair = parse_term(nams);
+    var skip = parse_exact(")");
+    return Snd(pair, eras, loc(idx - init));
+  }
+
+  // Parses a projection, `get [x, y] = t`
+  function parse_get(nams) {
+    var init = idx;
+    if (match("get ")) {
+      var skip = parse_exact("[");
+      var erass = [];
+      var names = [];
+      while (idx < code.length) {
+        var era1 = match("~");
+        var name = parse_string();
+        var era2 = match("~");
+        erass.push(era1 ? 1 : era2 ? 2 : 0);
+        names.push(name);
+        if (match("]")) break;
+        if (!era2) parse_exact(",");
+      }
+      var skip = parse_exact("=");
+      var pair = parse_term(nams);
+      var parsed = parse_term(nams.concat(names));
+      for (var i = names.length - 2; i >= 0; --i) {
+        var nam1 = names[i];
+        var nam2 = i === names.length - 2 ? names[i + 1] : "aux";
+        var expr = i === 0 ? pair : Var(0);
+        var body = i === 0 ? parsed : shift(parsed, 1, 2);
+        var parsed = Prj(nam1, nam2, expr, body, erass[i], loc(idx - init));
+      }
+      return parsed;
+    }
+  }
+
+  // Parses log, `log(t)`
+  function parse_log(nams) {
+    var init = idx;
+    if (match("log(")) {
+      var msge = parse_term(nams);
+      var skip = parse_exact(")");
+      var expr = parse_term(nams);
+      return Log(msge, expr, loc(idx - init));
+    }
+  }
+
+  // Parses a self type, `$x P(x)`
+  function parse_slf(nams) {
+    var init = idx;
+    if (match("${")) {
+      var name = parse_string();
+      var skip = parse_exact("}");
+      var type = parse_term(nams.concat([name]));
+      return Slf(name, type, loc(idx - init));
+    }
+  }
+
+  // Parses a self intro, `new(A) t`
+  function parse_new(nams) {
+    var init = idx;
+    if (match("new(~")) {
+      var type = parse_term(nams);
+      var skip = parse_exact(")");
+      var expr = parse_term(nams);
+      return New(type, expr, loc(idx - init));
+    }
+  }
+
+  // Parses a self elim, `%t`
+  function parse_use(nams) {
+    var init = idx;
+    if (match("use(")) {
+      var expr = parse_term(nams);
+      var skip = parse_exact(")");
+      return Use(expr, loc(idx - init));
+    }
+  }
+
+  // Parses a case expression, `case/T | A => <term> | B => <term> : <term>`
+  function parse_case(nams) {
+    if (match("case ")) {
+      // Attempts to parse this case expression with each ADTs in scope
+      for (var adt_name in adts) {
+        var parse_state = save_parse_state();
+
+        try {
+          // Parses matched name, if available
+          var [term_name, term] = parse_named_term(nams);
+
+          // Finds ADT
+          if (!adt_name || !adts[ref_path(adt_name)]) {
+            error("Used case-syntax on undefined type `" + (adt_name || "?") + "`.");
+          }
+          var {adt_name, adt_pram, adt_indx, adt_ctor} = adts[ref_path(adt_name)];
+
+          // Parses 'move' expressions
+          var moves = [];
+          while (match("+")) {
+            var move_init = idx;
+            var [move_name, move_term] = parse_named_term(nams);
+            var move_skip = parse_exact(":");
+            var move_type = parse_term(nams
+              .concat(adt_indx.map(([name,type]) => term_name + "." + name))
+              .concat([term_name])
+              .concat(moves.map(([name,term,type]) => name)));
+            moves.push([move_name, move_term, move_type, loc(idx - init)]);
+          }
+
+          // Parses matched cases
+          var case_term = [];
+          var case_loc  = [];
+          for (var c = 0; c < adt_ctor.length; ++c) {
+            var init = idx;
+            try {
+              var skip = parse_exact("|");
+              var skip = parse_exact(adt_ctor[c][0]);
+              var skip = parse_exact("=>");
+            } catch (e) {
+              throw "WRONG_ADT";
+            }
+            var ctors = adt_ctor[c][1];
+            case_term[c] = parse_term(nams
+              .concat(adt_ctor[c][1].map(([name,type]) => term_name + "." + name))
+              .concat(moves.map(([name,term,type]) => name)));
+            for (var i = moves.length - 1; i >= 0; --i) {
+              case_term[c] = Lam(moves[i][0], null, case_term[c], false);
+            }
+            for (var i = 0; i < ctors.length; ++i) {
+              case_term[c] = Lam(term_name + "." + ctors[ctors.length - i - 1][0], null, case_term[c], ctors[ctors.length - i - 1][2]);
+            }
+            case_loc[c] = loc(idx - init);
+          }
+
+          // Parses matched motive
+          var moti_init = idx;
+          try {
+            var moti_skip = parse_exact(":");
+          } catch (e) {
+            throw "WRONG_ADT";
+          }
+          var moti_term = parse_term(nams
+            .concat(adt_indx.map(([name,type]) => term_name + "." + name))
+            .concat([term_name])
+            .concat(moves.map(([name,term,type]) => name)));
+          var moti_loc = loc(idx - moti_init);
+          for (var i = moves.length - 1; i >= 0; --i) {
+            var moti_term = All(moves[i][0], moves[i][2], moti_term, false, moves[i][3]);
+          }
+          var moti_term = Tid(moti_term, moti_loc);
+          var moti_term = Lam(term_name, null, moti_term, false, moti_loc);
+          for (var i = adt_indx.length - 1; i >= 0; --i) {
+            var moti_term = Lam(term_name + "." + adt_indx[i][0], null, moti_term, false, moti_loc);
+          }
+
+          // Builds the matched term using self-elim ("Use")
+          var targ = term;
+          var term = Use(term);
+          var term = App(term, moti_term, true, moti_loc);
+          for (var i = 0; i < case_term.length; ++i) {
+            var term = App(term, case_term[i], false, case_loc[i]);
+          }
+          for (var i = 0; i < moves.length; ++i) {
+            var term = App(term, moves[i][1], false, moves[i][3]);
+          }
+
+          return term;
+        } catch (e) {
+          if (e !== "WRONG_ADT") {
+            throw e;
+          } else {
+            load_parse_state(parse_state);
+          }
+        }
+      }
+      // If no ADT matches this pattern-match, raise error
+      error("Couldn't find the ADT for this pattern-match.\n"
+          + "Make sure the cases have the correct name and order.");
+    }
+  }
+
+  // Parses a Number bitwise-not, `.!.(t)`
+  function parse_op2_not(nams) {
+    var init = idx;
+    if (match(".!.(")) {
+      var argm = parse_term(nams);
+      var skip = parse_exact(")");
+      return Op2(".!.", Val(0), argm, loc(idx - init));
+    }
+  }
+
+  // Parses an application, `f(x, y, z...)`
+  function parse_app(parsed, init, nams) {
+    if (match("(", is_space)) {
+      var term = parsed;
+      while (idx < code.length) {
+        if (match("_")) {
+          var term = App(term, Hol(new_hole_name()), true, loc(idx - init));
+          if (match(")")) break;
+        } else {
+          var eras = match("~");
+          var argm = parse_term(nams);
+          var term = App(term, argm, eras, loc(idx - init));
+          if (match(")")) break;
+          parse_exact(",");
+        }
+      }
+      return term;
+    }
+  }
+
+  // Parses a list literal, `A$[t, u, v, ...]`
+  function parse_list_literal(nams) {
+    var init = idx;
+    if (match("<", is_space)) {
+      var type = parse_term(nams);
+      var skip = parse_exact(">");
+      var list = [];
+      var skip = parse_exact("[");
+      while (idx < code.length && !match("]")) {
+        list.push(parse_term(nams));
+        if (match("]")) break; else parse_exact(",");
+      }
+      var term = App(base_ref("nil"), type, true, loc(idx - init));
+      for (var i = list.length - 1; i >= 0; --i) {
+        var term = App(App(App(base_ref("cons"), type, true), list[i], false), term, false, loc(idx - init));
+      }
+      return term;
+    }
+  }
+
+  // Parses an annotation `t :: T`
+  function parse_ann(parsed, init, nams) {
+    if (match("::", is_space)) {
+      //if (match("Type")) {
+        //return Tid(parsed);
+      //} else {
+        var type = parse_term(nams);
+        return Ann(type, parsed, false, loc(idx - init));
+      //}
+    }
+  }
+
+  // Parses operators, including:
+  // - Numeric operators: `t .+. u`, `t .*. u`, etc.
+  // - Arrow notation: `A -> B`
+  // - User-defined operators: `t .foo. u`
+  function parse_ops(parsed, init, nams) {
+    var matched_op_init = null;
+    if (matched_op_init = match_op_init(is_space)) {
+      if (tokens) tokens.pop();
+      var func = matched_op_init + parse_string_here(x => !is_space(x));
+      if (tokens) tokens.push(["txt", ""]);
+      var argm = parse_term(nams);
+      if (is_native_op[func]) {
+        return Op2(func, parsed, argm, loc(idx - init));
+      } else if (func === "->") {
+        return All("", parsed, shift(argm, 1, 0), false, loc(idx - init));
+      } else {
+        return App(App(ref(func), parsed, false), argm, false, loc(idx - init));
+      }
+    }
+  }
+
+  // Parses a free variable
+  function parse_var(nams) {
+    var init = idx;
+    if (match("^")) {
+      var idx = Number(parse_name());
+      return Var(idx, loc(idx - init));
+    }
+  }
+
+  // Parses a term
+  function parse_term(nams) {
+    var parsed;
+
+    skip_spaces();
+    var init = idx;
+
+    // Parses base term
+    if (parsed = parse_lam_or_all(nams));
+    else if (parsed = parse_parens(nams));
+    else if (parsed = parse_typ(nams));
+    else if (parsed = parse_tid(nams));
+    else if (parsed = parse_slf(nams));
+    else if (parsed = parse_new(nams));
+    else if (parsed = parse_use(nams));
+    else if (parsed = parse_scope(nams));
+    else if (parsed = parse_hol(nams));
+    else if (parsed = parse_dup(nams));
+    else if (parsed = parse_box(nams));
+    else if (parsed = parse_put(nams));
+    else if (parsed = parse_tak(nams));
+    else if (parsed = parse_let(nams));
+    else if (parsed = parse_wrd(nams));
+    else if (parsed = parse_str(nams));
+    else if (parsed = parse_chr(nams));
+    else if (parsed = parse_ite(nams));
+    else if (parsed = parse_cpy(nams));
+    else if (parsed = parse_sig_or_par(nams));
+    else if (parsed = parse_fst(nams));
+    else if (parsed = parse_snd(nams));
+    else if (parsed = parse_get(nams));
+    else if (parsed = parse_utt(nams));
+    else if (parsed = parse_utv(nams));
+    else if (parsed = parse_ute(nams));
+    else if (parsed = parse_log(nams));
+    else if (parsed = parse_case(nams));
+    else if (parsed = parse_op2_not(nams));
+    else if (parsed = parse_var(nams));
+    else if (parsed = parse_list_literal(nams));
+    else     parsed = parse_atom(nams);
+
+    // Parses spaced operators
+    var new_parsed = true;
+    while (new_parsed) {
+      if      (new_parsed = parse_app(parsed, init, nams));
+      else if (new_parsed = parse_ann(parsed, init, nams));
+      else if (new_parsed = parse_ops(parsed, init, nams));
+      if (new_parsed) {
+        parsed = new_parsed;
+      }
+    }
+
+    return parsed;
+  }
+
+  // Parses a top-level import
+  async function do_parse_import() {
+    if (match("import ")) {
+      if (tokens) tokens.push(["imp", ""]);
+      var impf = parse_string();
+      if (tokens) tokens.push(["txt", ""]);
+      var qual = match("as") ? parse_string() : null;
+      var open = match("open");
+      if (open) {
+        error("The `open` keyword is obsolete. Remove it.");
+      }
+      if (qual) qual_imports[qual] = impf;
+      qual_imports[impf] = impf;
+      open_imports[impf] = true;
+      await do_import(impf);
+      return true;
+    }
+  }
+
+  // Parses a top-level datatype:
+  // T name {param0 : A, ...} (index0 : B, ...)
+  // | ctor0 {field0 : C, ...} (index0, ...)
+  // | ctor1 {field0 : C, ...} (index0, ...)
+  async function do_parse_datatype() {
+    if (match("T ")) {
+      var adt_pram = [];
+      var adt_indx = [];
+      var adt_ctor = [];
+      var adt_name = parse_string();
+      var adt_nams = [adt_name];
+      var adt_typs = [null];
+
+      // Datatype parameters
+      if (match("<")) {
+        while (idx < code.length) {
+          var eras = false;
+          var name = parse_string();
+          if (match(":")) {
+            var type = await parse_term(adt_pram.map((([name,type]) => name)));
+          } else {
+            var type = Typ();
+          }
+          adt_pram.push([name, type, eras]);
+          if (match(">")) break;
+          else parse_exact(",");
+        }
+      }
+
+      // Datatype indices
+      var adt_nams = adt_nams.concat(adt_pram.map(([name,type]) => name));
+      var adt_typs = adt_typs.concat(adt_pram.map(([name,type]) => type));
+      if (match("(")) {
+        while (idx < code.length) {
+          //var eras = match("~");
+          var eras = false;
+          var name = parse_string();
+          if (match(":")) {
+            var type = await parse_term(adt_nams.concat(adt_indx.map((([name,type]) => name))));
+          } else {
+            var type = Hol(new_hole_name());
+          }
+          adt_indx.push([name, type, eras]);
+          if (match(")")) break; else parse_exact(",");
+        }
+      }
+
+      // Datatype constructors
+      while (match("|")) {
+        // Constructor name
+        var ctor_name = parse_string();
+        // Constructor fields
+        var ctor_flds = [];
+        if (match("(")) {
+          while (idx < code.length) {
+            var eras = match("~");
+            var name = parse_string();
+            if (match(":")) {
+              var type = await parse_term(adt_nams.concat(ctor_flds.map(([name,type]) => name)));
+            } else {
+              var type = Hol(new_hole_name());
+            }
+            ctor_flds.push([name, type, eras]);
+            if (match(")")) break; else parse_exact(",");
+          }
+        }
+        // Constructor type (written)
+        if (match(":")) {
+          var ctor_type = await parse_term(adt_nams.concat(ctor_flds.map(([name,type]) => name)));
+        // Constructor type (auto-filled)
+        } else {
+          var ctor_indx = [];
+          //if (match("(")) {
+            //while (idx < code.length) {
+              //ctor_indx.push(await parse_term(adt_nams.concat(ctor_flds.map(([name,type]) => name))));
+              //if (match(")")) break; else parse_exact(",");
+            //}
+          //}
+          var ctor_type = Var(-1 + ctor_flds.length + adt_pram.length + 1);
+          for (var p = 0; p < adt_pram.length; ++p) {
+            ctor_type = App(ctor_type, Var(-1 + ctor_flds.length + adt_pram.length - p), false);
+          }
+          for (var i = 0; i < ctor_indx.length; ++i) {
+            ctor_type = App(ctor_type, ctor_indx[i], false);
+          }
+        }
+        adt_ctor.push([ctor_name, ctor_flds, ctor_type]);
+      }
+      var adt = {adt_pram, adt_indx, adt_ctor, adt_name};
+      define(file+"/"+adt_name, derive_adt_type(file, adt));
+      for (var c = 0; c < adt_ctor.length; ++c) {
+        define(file+"/"+adt_ctor[c][0], derive_adt_ctor(file, adt, c));
+      }
+      adts[file+"/"+adt_name] = adt;
+
+      return true;
+    }
+  }
+
+  // Parses a top-level `?defs` util
+  async function do_parse_defs_util() {
+    if (match("?defs")) {
+      var filt = match("/") ? parse_string(x => x !== "/") : "";
+      var regx = new RegExp(filt, "i");
+      console.log("Definitions:");
+      for (var def in defs) {
+        if (def[0] !== "$" && regx.test(def)) {
+          console.log("- " + def);
+        }
+      }
+      return true;
+    }
+  }
+
+  // Parses a top-level definition:
+  //
+  //    name(arg0 : A, arg1 : B, ...) : RetType
+  //      <body>
+  //
+  async function do_parse_def() {
+    // Parses box annotation
+    var boxed = match("#");
+
+    // Parses definition name
+    if (tokens) tokens.push(["def", ""]);
+    var name = parse_name();
+
+    if (name.length === 0) {
+      error("Expected a definition.");
+    }
+    if (tokens) tokens[tokens.length - 1][2] = file+"/"+name;
+    if (tokens) tokens.push(["txt", ""]);
+
+    // If name is empty, stop
+    if (name.length === 0) return false;
+
+    // Parses argument names and types
+    var erass = [];
+    var names = [];
+    var types = [];
+    if (match_here("(")) {
+      while (idx < code.length) {
+        var arg_eras = match("~");
+        var arg_name = parse_string();
+        var arg_type = match(":") ? await parse_term(names) : Typ();
+        erass.push(arg_eras);
+        names.push(arg_name);
+        types.push(arg_type);
+        if (match(")")) break;
+        else parse_exact(",");
+      }
+    }
+
+    // Parses return type, if any
+    var type = match(":") ? await parse_term(names) : null;
+    var term = await parse_term(names);
+
+    // Fills foralls and lambdas of arguments
+    for (var i = names.length - 1; i >= 0; --i) {
+      var type = type && All(names[i], types[i], type, erass[i]);
+      var term = Lam(names[i], type ? null : types[i], term, erass[i]);
+    }
+
+    // Defines the top-level term
+    define(file+"/"+name, type ? Ann(type, term, false) : term);
+
+    return true;
+  }
+
+  function save_parse_state() {
+    return {idx, row, col, tokens_length: tokens && tokens.length};
+  }
+
+  function load_parse_state(state) {
+    idx = state.idx;
+    row = state.row;
+    col = state.col;
+    while (state.tokens_length && tokens.length > state.tokens_length) {
+      tokens.pop();
+    }
+  }
+
+  // Parses all definitions
+  var open_imports = {};
+  var qual_imports = {};
+  var local_imports = {};
+  var file_version = {};
+  var used_hole_name = {};
+  var hole_count = 0;
+  var tokens = tokenify ? [["txt",""]] : null;
+  var idx = 0;
+  var row = 0;
+  var col = 0;
+  var defs = {};
+  var adts = {};
+  while (idx < code.length) {
+    next_char();
+    if (await do_parse_import());
+    else if (await do_parse_datatype());
+    else if (await do_parse_defs_util());
+    else if (!(await do_parse_def())) break;
+    next_char();
+  }
+
+  return {
+    defs,
+    adts,
+    tokens,
+    local_imports,
+    qual_imports,
+    open_imports
+  };
+}
+
+// :::::::::::
+// :: Utils ::
+// :::::::::::
+
+// Generates a name
+const gen_name = (n) => {
+  var str = "";
+  ++n;
+  while (n > 0) {
+    --n;
+    str += String.fromCharCode(97 + n % 26);
+    n = Math.floor(n / 26);
+  }
+  return str;
+};
+
+// :::::::::::::::::::
+// :: Syntax Sugars ::
+// :::::::::::::::::::
+
+// Syntax sugars for datatypes. They transform a statement like:
+//
+//   data ADT <p0 : Param0, p1 : Param1...> {i0 : Index0, i1 : Index1}
+//   | ctr0 {ctr_fld0 : Ctr0_Fld0, ctr0_fld1 : Ctr0_Fld1, ...} : Cr0Type
+//   | ctr1 {ctr_fld0 : Ctr0_Fld0, ctr0_fld1 : Ctr0_Fld1, ...} : Cr0Type
+//   | ...
+//
+// on its corresponding self-encoded datatype:
+//
+//   def ADT
+//   = {p0 : Param0, p1 : Param1, ..., i0 : Index0, i1 : Index1, ...} =>
+//     : Type
+//     $ self
+//     {~P   : {i0 : Index0, i1 : Index1, ..., wit : (ADT i0 i1...)} -> Type} ->
+//     {ctr0 : {ctr0_fld0 : Ctr0_Fld0, ctr0_fld1 : Ctr0_Fld1, ...} -> (Ctr0Type[ADT <- P] (ADT.ctr0 Param0 Param1... ctr0_fld0 ctr0_fld1 ...))} ->
+//     {ctr1 : {ctr1_fld0 : Ctr1_Fld0, ctr1_fld1 : Ctr1_Fld1, ...} -> (Ctr0Type[ADT <- P] (ADT.ctr1 Param0 Param1... ctr1_fld1 ctr0_fld1 ...))} ->
+//     ... ->
+//     (P i0 i1... self)
+//
+//   def ADT.ctr0
+//   = {~p0 : Param0, ~p1 : Param1, ..., ctr0_fld0 : Ctr0_Fld0, ctr1_fld1 : Ctr1_Fld1, ...} =>
+//     : Ctr0Type
+//     @ Ctr0Type
+//       {~P, ctr0, ctr1, ...} =>
+//       (ctr0 ctr0_fld0 ctr0_fld1 ...)
+//
+//   (...)
+const derive_adt_type = (file, {adt_pram, adt_indx, adt_ctor, adt_name}) => {
+  return (function adt_arg(p, i) {
+    // ... {p0 : Param0, p1 : Param1...} ...
+    if (p < adt_pram.length) {
+      return Lam(adt_pram[p][0], adt_pram[p][1], adt_arg(p + 1, i), adt_pram[p][2]);
+    // ... {i0 : Index0, i1 : Index...} ...
+    } else if (i < adt_indx.length) {
+      var substs = [Ref(file+"/"+adt_name)];
+      for (var P = 0; P < p; ++P) {
+        substs.push(Var(-1 + i + p - P));
+      }
+      return Lam(adt_indx[i][0], subst_many(adt_indx[i][1], substs, i), adt_arg(p, i + 1), adt_indx[i][2]);
+    } else {
+      return (
+        // ... : Type ...
+        Ann(Typ(),
+        // ... $ self ...
+        Slf("self",
+        // ... P : ...
+        All("P",
+          (function motive(i) {
+            // ... {i0 : Index0, i1 : Index1...} ...
+            if (i < adt_indx.length) {
+              var substs = [Ref(file+"/"+adt_name)];
+              for (var P = 0; P < p; ++P) {
+                substs.push(Var(-1 + i + 1 + adt_indx.length + p - P));
+              }
+              return All(adt_indx[i][0], subst_many(adt_indx[i][1], substs, i), motive(i + 1), adt_indx[i][2]);
+            // ... {wit : (ADT i0 i1...)} -> Type ...
+            } else {
+              var wit_t = Ref(file+"/"+adt_name);
+              for (var P = 0; P < adt_pram.length; ++P) {
+                wit_t = App(wit_t, Var(-1 + i + 1 + i + adt_pram.length - P), adt_pram[P][2]);
+              }
+              for (var I = 0; I < i; ++I) {
+                wit_t = App(wit_t, Var(-1 + i - I), adt_indx[I][2]);
+              }
+              return All("wit", wit_t, Typ(), false);
+            }
+          })(0),
+        (function ctor(i) {
+          if (i < adt_ctor.length) {
+            // ... ctrX : ...
+            return All(adt_ctor[i][0], (function field(j) {
+              var subst_prams = [];
+              for (var P = 0; P < adt_pram.length; ++P) {
+                subst_prams.push(Var(-1 + j + i + 1 + 1 + adt_indx.length + adt_pram.length - P));
+              }
+              // ... {ctrX_fldX : CtrX_FldX, ctrX_fld1 : CtrX_Fld1, ...} -> ...
+              if (j < adt_ctor[i][1].length) {
+                var sub = [Ref(file+"/"+adt_name)].concat(subst_prams);
+                var typ = subst_many(adt_ctor[i][1][j][1], sub, j);
+                return All(adt_ctor[i][1][j][0], typ, field(j + 1), adt_ctor[i][1][j][2]);
+              // ... (CtrXType[ADT <- P] (ADT.ctrX ParamX Param1... ctrX_fldX ctrX_fld1 ...)) -> ...
+              } else {
+                var typ = adt_ctor[i][2];
+                var sub = [Var(-1 + j + i + 1)].concat(subst_prams);
+                var typ = subst_many(adt_ctor[i][2], sub, j);
+                var rem = typ;
+                for (var I = 0; I < adt_indx.length; ++I) {
+                  rem = rem[1].func;
+                }
+                rem[0] = "Var";
+                rem[1] = {index: -1 + i + j + 1};
+                var wit = Ref(file+"/"+adt_ctor[i][0]);
+                for (var P = 0; P < adt_pram.length; ++P) {
+                  var wit = App(wit, Var(-1 + j + i + 1 + 1 + adt_indx.length + adt_pram.length - P), true);
+                }
+                for (var F = 0; F < adt_ctor[i][1].length; ++F) {
+                  var wit = App(wit, Var(-1 + j - F), adt_ctor[i][1][F][2]);
+                }
+                return App(typ, wit, false);
+              }
+            })(0),
+            ctor(i + 1),
+            false);
+          } else {
+            // ... (P i0 i1... self)
+            var ret = Var(adt_ctor.length + 1 - 1);
+            for (var i = 0; i < adt_indx.length; ++i) {
+              var ret = App(ret, Var(adt_ctor.length + 1 + 1 + adt_indx.length - i - 1), adt_indx[i][2]);
+            }
+            var ret = App(ret, Var(adt_ctor.length + 1 + 1 - 1), false);
+            return ret;
+          }
+        })(0),
+        true))));
+    }
+  })(0, 0);
+}
+
+const derive_adt_ctor = (file, {adt_pram, adt_indx, adt_ctor, adt_name}, c) => {
+  return (function arg(p, i, f) {
+    var substs = [Ref(file+"/"+adt_name)];
+    for (var P = 0; P < p; ++P) {
+      substs.push(Var(-1 + f + p - P));
+    }
+    // {~p0 : Param0, ~p1 : Param1...} ...
+    if (p < adt_pram.length) {
+      return Lam(adt_pram[p][0], adt_pram[p][1], arg(p + 1, i, f), true);
+    // ... {ctr0_fld0 : Ctr0_Fld0, ctr1_fld1 : Ctr1_Fld1, ...} ...
+    } else if (f < adt_ctor[c][1].length) {
+      return Lam(adt_ctor[c][1][f][0], subst_many(adt_ctor[c][1][f][1], substs, f), arg(p, i, f + 1), adt_ctor[c][1][f][2]);
+    } else {
+      var type = subst_many(adt_ctor[c][2], substs, f);
+      // ... : CtrXType {~P} ...
+      return Ann(type, New(type, Lam("P", null, (function opt(k) {
+        // ... {ctr0, ctr1...} ...
+        if (k < adt_ctor.length) {
+          return Lam(adt_ctor[k][0], null, opt(k + 1), false);
+        // (ctrX ctrX_fld0 ctrX_fld1 ...)
+        } else {
+          var sel = Var(-1 + adt_ctor.length - c);
+          for (var F = 0; F < adt_ctor[c][1].length; ++F) {
+            var fld = Var(-1 + adt_ctor.length + 1 + adt_ctor[c][1].length - F);
+            // Unrestricted field
+            if (adt_ctor[c][1][F][1][0] === "Utt") {
+              var fld = Utv(Ute(fld));
+            }
+            var sel = App(sel, fld, adt_ctor[c][1][F][2]);
+          }
+          return sel;
+        }
+      })(0), true)), false);
+    }
+  })(0, adt_indx.length, 0);
+}
+
+const reduce = (term, opts) => {
+  return core_reduce(term, {...opts, show});
+};
+
+const typecheck = (term, expect, opts) => {
+  return core_typecheck(term, expect, {...opts, show});
+};
+
+// Evaluates a term to normal form in different modes
+// run : String -> (String | Term) -> Opts -> Term
+const run = (mode, term, opts = {}) => {
+  var eras = opts.erased ? erase : (x => x);
+  var defs = opts.defs || {};
+  if (typeof term === "string") {
+    term = defs[term] || Ref(term);
+  }
+
+  switch (mode) {
+
+    case "REDUCE_DEBUG":
+      term = eras(term);
+      try {
+        opts.unbox = true;
+        opts.undup = true;
+        term = reduce(term, opts);
+      } catch (e) {
+        term = reduce(term, {...opts, weak: true});
+      }
+      break;
+
+    case "REDUCE_DEBUG":
+    case "REDUCE_NATIVE":
+      term = eras(term);
+      term = to_js.decompile(to_js.compile(term, defs));
+      break;
+
+    case "REDUCE_OPTIMAL":
+      term = eras(term);
+      var net = to_net.compile(term, defs);
+      if (opts.stats && opts.stats.input_net === null) {
+        opts.stats.input_net = JSON.parse(JSON.stringify(net));
+      }
+      if (opts.strict) {
+        var new_stats = net.reduce_strict(opts.stats || {});
+      } else {
+        var new_stats = net.reduce_lazy(opts.stats || {});
+      }
+      if (opts.stats && opts.stats.output_net !== undefined) {
+        opts.stats.output_net = JSON.parse(JSON.stringify(net));
+      }
+      term = to_net.decompile(net);
+      break;
+
+    case "TYPECHECK":
+      term = typecheck(term, null, opts);
+      break;
+  }
+
+  return term;
+};
+
+module.exports = {
+  Var, Typ, Tid, Utt, Utv, Ute, All, Lam,
+  App, Box, Put, Tak, Dup, Num, Val, Op1,
+  Op2, Ite, Cpy, Sig, Par, Fst, Snd, Prj,
+  Slf, New, Use, Ann, Log, Hol, Ref,
+  derive_adt_ctor,
+  derive_adt_type,
+  equal,
+  erase,
+  gen_name,
+  parse,
+  reduce,
+  run,
+  shift,
+  show,
+  subst,
+  subst_many,
+  typecheck,
+  haltcheck,
+  version,
+};
+
 
 /***/ }),
 
@@ -160,7 +3519,16 @@ eval("// WARNING: here shall be dragons!\n// This is the parser for Formality-La
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("var fm = module.exports = {\n  core   : __webpack_require__(/*! ./fm-core */ \"./node_modules/formality-lang/src/fm-core.js\"),\n  json   : __webpack_require__(/*! ./fm-json */ \"./node_modules/formality-lang/src/fm-json.js\"),\n  lang   : __webpack_require__(/*! ./fm-lang */ \"./node_modules/formality-lang/src/fm-lang.js\"),\n  net    : __webpack_require__(/*! ./fm-net */ \"./node_modules/formality-lang/src/fm-net.js\"),\n  to_js  : __webpack_require__(/*! ./fm-to-js */ \"./node_modules/formality-lang/src/fm-to-js.js\"),\n  to_net : __webpack_require__(/*! ./fm-to-net */ \"./node_modules/formality-lang/src/fm-to-net.js\"),\n  forall : __webpack_require__(/*! ./forall */ \"./node_modules/formality-lang/src/forall.js\"),\n};\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-lib.js?");
+var fm = module.exports = {
+  core   : __webpack_require__(/*! ./fm-core */ "./node_modules/formality-lang/src/fm-core.js"),
+  json   : __webpack_require__(/*! ./fm-json */ "./node_modules/formality-lang/src/fm-json.js"),
+  lang   : __webpack_require__(/*! ./fm-lang */ "./node_modules/formality-lang/src/fm-lang.js"),
+  net    : __webpack_require__(/*! ./fm-net */ "./node_modules/formality-lang/src/fm-net.js"),
+  to_js  : __webpack_require__(/*! ./fm-to-js */ "./node_modules/formality-lang/src/fm-to-js.js"),
+  to_net : __webpack_require__(/*! ./fm-to-net */ "./node_modules/formality-lang/src/fm-to-net.js"),
+  forall : __webpack_require__(/*! ./forall */ "./node_modules/formality-lang/src/forall.js"),
+};
+
 
 /***/ }),
 
@@ -171,7 +3539,442 @@ eval("var fm = module.exports = {\n  core   : __webpack_require__(/*! ./fm-core 
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("// ~~ Formality Interaction Net System ~~\n\n// PtrNum types\nconst PTR = 0;\nconst NUM = 1;\n\n// Node types\nconst NOD = 0;\nconst OP1 = 1;\nconst OP2 = 2;\nconst ITE = 3;\n\n// Base types\nconst Pointer = (addr, port) => ({typ: PTR, val: (addr << 2) + (port & 3)});\nconst addr_of = (ptrn) => ptrn.val >>> 2;\nconst slot_of = (ptrn) => ptrn.val & 3;\nconst Numeric = (numb) => ({typ: NUM, val: numb});\nconst numb_of = (ptrn) => ptrn.val;\nconst type_of = (ptrn) => ptrn.typ;\nconst ptrn_eq = (a, b) => a.typ === b.typ && a.val === b.val;\nconst ptrn_st = a => a.typ + \":\" + a.val;\n\nclass Net {\n  // A net stores nodes (this.nodes), reclaimable memory addrs (this.freed) and active pairs (this.redex)\n  constructor() {\n    this.nodes = []; // nodes\n    this.freed = []; // integers\n    this.redex = []; // array of (integer, integer) tuples representing addrs\n    this.find_redex = true;\n  }\n\n  // Allocates a new node, return its addr\n  alloc_node(type, kind) {\n\n    // If there is reclaimable memory, use it\n    if (this.freed.length > 0) {\n      var addr = this.freed.pop();\n\n    // Otherwise, extend the array of nodes\n    } else {\n      var addr = this.nodes.length / 4;\n    }\n\n    // Fill the memory with an empty node without pointers\n    this.nodes[addr * 4 + 0] = addr * 4 + 0;\n    this.nodes[addr * 4 + 1] = addr * 4 + 1;\n    this.nodes[addr * 4 + 2] = addr * 4 + 2;\n    this.nodes[addr * 4 + 3] = (kind << 6) + ((type & 0x7) << 3);\n    return addr;\n  }\n\n  // Deallocates a node, allowing its space to be reclaimed\n  free_node(addr) {\n    this.nodes[addr * 4 + 0] = addr * 4 + 0;\n    this.nodes[addr * 4 + 1] = addr * 4 + 1;\n    this.nodes[addr * 4 + 2] = addr * 4 + 2;\n    this.nodes[addr * 4 + 3] = 0;\n    this.freed.push(addr);\n  }\n\n  is_free(addr) {\n    return this.nodes[addr * 4 + 0] === addr * 4 + 0\n        && this.nodes[addr * 4 + 1] === addr * 4 + 1\n        && this.nodes[addr * 4 + 2] === addr * 4 + 2\n        && this.nodes[addr * 4 + 3] === 0;\n  }\n\n  // Returns if given slot holds a number\n  is_numeric(addr, slot) {\n    return (this.nodes[addr * 4 + 3] >>> slot) & 1; \n  }\n\n  set_port(addr, slot, ptrn) {\n    if (type_of(ptrn) === NUM) {\n      this.nodes[addr * 4 + slot] = numb_of(ptrn);\n      this.nodes[addr * 4 + 3] = this.nodes[addr * 4 + 3] | (1 << slot);\n    } else {\n      this.nodes[addr * 4 + slot] = (addr_of(ptrn) << 2) + (slot_of(ptrn) & 3);\n      this.nodes[addr * 4 + 3] = this.nodes[addr * 4 + 3] & ~(1 << slot);\n    }\n  }\n\n  get_port(addr, slot) {\n    var val = this.nodes[addr * 4 + slot];\n    return !this.is_numeric(addr, slot) ? Pointer(val >>> 2, val & 3) : Numeric(val);\n  }\n\n  type_of(addr) {\n    return (this.nodes[addr * 4 + 3] >>> 3) & 0x7;\n  }\n\n  set_type(addr, type) {\n    this.nodes[addr * 4 + 3] = (this.nodes[addr * 4 + 3] & ~0b111000) | (type << 3);\n  }\n\n  kind_of(addr) {\n    return this.nodes[addr * 4 + 3] >>> 6;\n  }\n\n  // Given a pointer to a port, returns a pointer to the opposing port\n  enter_port(ptrn) {\n    if (type_of(ptrn) === NUM) { \n      throw \"Can't enter a numeric pointer.\";\n    } else {\n      return this.get_port(addr_of(ptrn), slot_of(ptrn));\n    }\n  }\n\n  // Connects two ports\n  link_ports(a_ptrn, b_ptrn) {\n    var a_numb = type_of(a_ptrn) === NUM;\n    var b_numb = type_of(b_ptrn) === NUM;\n\n    // Point ports to each-other\n    if (!a_numb) this.set_port(addr_of(a_ptrn), slot_of(a_ptrn), b_ptrn);\n    if (!b_numb) this.set_port(addr_of(b_ptrn), slot_of(b_ptrn), a_ptrn);\n\n    // If both are main ports, add this to the list of active pairs\n    if (this.find_redex && !(a_numb && b_numb) && (a_numb || slot_of(a_ptrn) === 0) && (b_numb || slot_of(b_ptrn) === 0)) {\n      this.redex.push(a_numb ? addr_of(b_ptrn) : addr_of(a_ptrn));\n    }\n  }\n\n  // Disconnects a port, causing both sides to point to themselves\n  unlink_port(a_ptrn) {\n    if (type_of(a_ptrn) === PTR) {\n      var b_ptrn = this.enter_port(a_ptrn);\n      if (type_of(b_ptrn) === PTR && ptrn_eq(this.enter_port(b_ptrn), a_ptrn)) {\n        this.set_port(addr_of(a_ptrn), slot_of(a_ptrn), a_ptrn);\n        this.set_port(addr_of(b_ptrn), slot_of(b_ptrn), b_ptrn);\n      }\n    }\n  }\n\n  // Rewrites an active pair\n  rewrite(a_addr) {\n    var a_ptrn = Pointer(a_addr, 0);\n    var b_ptrn = this.get_port(a_addr, 0);\n    if (type_of(b_ptrn) === NUM) {\n      var a_type = this.type_of(a_addr);\n      var a_kind = this.kind_of(a_addr);\n\n      // UnaryOperation\n      if (a_type === OP1) {\n        var dst = this.enter_port(Pointer(a_addr, 2));\n        var fst = numb_of(b_ptrn);\n        var snd = numb_of(this.enter_port(Pointer(a_addr, 1)));\n        switch (a_kind) {\n          case  0: var res = Numeric(fst + snd); break;\n          case  1: var res = Numeric(fst - snd); break;\n          case  2: var res = Numeric(fst * snd); break;\n          case  3: var res = Numeric(fst / snd); break;\n          case  4: var res = Numeric(fst % snd); break;\n          case  5: var res = Numeric(fst ** snd); break;\n          case  6: var res = Numeric(fst & snd); break;\n          case  7: var res = Numeric(fst | snd); break;\n          case  8: var res = Numeric(fst ^ snd); break;\n          case  9: var res = Numeric(~snd); break;\n          case 10: var res = Numeric(fst >>> snd); break;\n          case 11: var res = Numeric(fst << snd); break;\n          case 12: var res = Numeric(fst > snd ? 1 : 0); break;\n          case 13: var res = Numeric(fst < snd ? 1 : 0); break;\n          case 14: var res = Numeric(fst === snd ? 1 : 0); break;\n          default: throw \"[ERROR]\\nInvalid interaction.\";\n        }\n        this.link_ports(dst, res);\n        this.unlink_port(Pointer(a_addr, 0));\n        this.unlink_port(Pointer(a_addr, 2));\n        this.free_node(a_addr);\n      \n      // BinaryOperation\n      } else if (a_type === OP2) {\n        this.set_type(a_addr, OP1);\n        this.link_ports(Pointer(a_addr, 0), this.enter_port(Pointer(a_addr, 1)));\n        this.unlink_port(Pointer(a_addr, 1));\n        this.link_ports(Pointer(a_addr, 1), b_ptrn);\n    \n      // NumberDuplication\n      } else if (a_type === NOD) {\n        this.link_ports(b_ptrn, this.enter_port(Pointer(a_addr, 1)));\n        this.link_ports(b_ptrn, this.enter_port(Pointer(a_addr, 2)));\n        this.free_node(a_addr);\n\n      // IfThenElse\n      } else if (a_type === ITE) {\n        var cond_val = numb_of(b_ptrn) === 0;\n        var pair_ptr = this.enter_port(Pointer(a_addr, 1));\n        this.set_type(a_addr, NOD);\n        this.link_ports(Pointer(a_addr, 0), pair_ptr);\n        this.unlink_port(Pointer(a_addr, 1));\n        var dest_ptr = this.enter_port(Pointer(a_addr, 2));\n        this.link_ports(Pointer(a_addr, cond_val ? 2 : 1), dest_ptr);\n        if (!cond_val) this.unlink_port(Pointer(a_addr, 2));\n        this.link_ports(Pointer(a_addr, cond_val ? 1 : 2), Pointer(a_addr, cond_val ? 1 : 2));\n\n      } else {\n        throw \"[ERROR]\\nInvalid interaction.\";\n      }\n\n    } else {\n      var b_addr = addr_of(b_ptrn);\n      var a_type = this.type_of(a_addr);\n      var b_type = this.type_of(b_addr);\n      var a_kind = this.kind_of(a_addr);\n      var b_kind = this.kind_of(b_addr);\n\n      // NodeAnnihilation, UnaryAnnihilation, BinaryAnnihilation\n      if ( a_type === NOD && b_type === NOD && a_kind === b_kind\n        || a_type === OP1 && b_type === OP1\n        || a_type === OP2 && b_type === OP2\n        || a_type === ITE && b_type === ITE) {\n        var a_aux1_dest = this.enter_port(Pointer(a_addr, 1));\n        var b_aux1_dest = this.enter_port(Pointer(b_addr, 1));\n        this.link_ports(a_aux1_dest, b_aux1_dest);\n        var a_aux2_dest = this.enter_port(Pointer(a_addr, 2));\n        var b_aux2_dest = this.enter_port(Pointer(b_addr, 2));\n        this.link_ports(a_aux2_dest, b_aux2_dest);\n        for (var i = 0; i < 3; i++) {\n          this.unlink_port(Pointer(a_addr, i));\n          this.unlink_port(Pointer(b_addr, i));\n        }\n        this.free_node(a_addr);\n        if (a_addr !== b_addr) {\n          this.free_node(b_addr);\n        }\n\n      // NodeDuplication, BinaryDuplication\n      } else if\n        (  a_type === NOD && b_type === NOD && a_kind !== b_kind\n        || a_type === NOD && b_type === OP2\n        || a_type === NOD && b_type === ITE) {\n        var p_addr = this.alloc_node(b_type, b_kind);\n        var q_addr = this.alloc_node(b_type, b_kind);\n        var r_addr = this.alloc_node(a_type, a_kind);\n        var s_addr = this.alloc_node(a_type, a_kind);\n        this.link_ports(Pointer(r_addr, 1), Pointer(p_addr, 1));\n        this.link_ports(Pointer(s_addr, 1), Pointer(p_addr, 2));\n        this.link_ports(Pointer(r_addr, 2), Pointer(q_addr, 1));\n        this.link_ports(Pointer(s_addr, 2), Pointer(q_addr, 2));\n        this.link_ports(Pointer(p_addr, 0), this.enter_port(Pointer(a_addr, 1)));\n        this.link_ports(Pointer(q_addr, 0), this.enter_port(Pointer(a_addr, 2)));\n        this.link_ports(Pointer(r_addr, 0), this.enter_port(Pointer(b_addr, 1)));\n        this.link_ports(Pointer(s_addr, 0), this.enter_port(Pointer(b_addr, 2)));\n        for (var i = 0; i < 3; i++) {\n          this.unlink_port(Pointer(a_addr, i));\n          this.unlink_port(Pointer(b_addr, i));\n        }\n        this.free_node(a_addr);\n        if (a_addr !== b_addr) {\n          this.free_node(b_addr);\n        }\n\n      // UnaryDuplication\n      } else if\n        (  a_type === NOD && b_type === OP1\n        || a_type === ITE && b_type === OP1) {\n        var p_addr = this.alloc_node(b_type, b_kind);\n        var q_addr = this.alloc_node(b_type, b_kind);\n        var s_addr = this.alloc_node(a_type, a_kind);\n        this.link_ports(Pointer(p_addr, 1), this.enter_port(Pointer(b_addr, 1)));\n        this.link_ports(Pointer(q_addr, 1), this.enter_port(Pointer(b_addr, 1)));\n        this.link_ports(Pointer(s_addr, 1), Pointer(p_addr, 2));\n        this.link_ports(Pointer(s_addr, 2), Pointer(q_addr, 2));\n        this.link_ports(Pointer(p_addr, 0), this.enter_port(Pointer(a_addr, 1)));\n        this.link_ports(Pointer(q_addr, 0), this.enter_port(Pointer(a_addr, 2)));\n        this.link_ports(Pointer(s_addr, 0), this.enter_port(Pointer(b_addr, 2)));\n        for (var i = 0; i < 3; i++) {\n          this.unlink_port(Pointer(a_addr, i));\n          this.unlink_port(Pointer(b_addr, i));\n        }\n        this.free_node(a_addr);\n        if (a_addr !== b_addr) {\n          this.free_node(b_addr);\n        }\n      \n      // Permutations\n      } else if (a_type === OP1 && b_type === NOD) {\n        return this.rewrite(b_addr);\n      } else if (a_type === OP2 && b_type === NOD) {\n        return this.rewrite(b_addr);\n      } else if (a_type === ITE && b_type === NOD) {\n        return this.rewrite(b_addr);\n\n      // InvalidInteraction\n      } else {\n        throw \"[ERROR]\\nInvalid interaction.\";\n      }\n    }\n  }\n\n  // Rewrites active pairs until none is left, reducing the graph to normal form.\n  // This could be performed in parallel and doesn't need GC.\n  reduce_strict(stats) {\n    var rewrites = 0;\n    var loops = 0;\n    var max_len = 0;\n    while (this.redex.length > 0) {\n      for (var i = 0, l = this.redex.length; i < l; ++i) {\n        this.rewrite(this.redex.pop());\n        stats.max_len = Math.max(stats.max_len, this.nodes.length / 4);\n        ++stats.rewrites;\n      }\n      ++stats.loops;\n    }\n  }\n\n  // Rewrites active pairs until none is left, reducing the graph to normal form.\n  // This avoids unecessary computations, but is sequential and would need GC.\n  reduce_lazy(stats) {\n    this.find_redex = false;\n    var warp = [];\n    var back = [];\n    var prev = Pointer(0, 1);\n    var next = this.enter_port(prev);\n    var rwts = 0;\n    while (true) {\n      ++stats.loops;\n      if (type_of(next) === PTR && (addr_of(next) === 0 || this.is_free(addr_of(next)))) {\n        if (warp.length === 0) {\n          break;\n        } else {\n          prev = warp.pop();\n          next = this.enter_port(prev);\n        }\n      } else {\n        if (slot_of(prev) === 0 && (type_of(next) === NUM || slot_of(next) === 0)) {\n          try {\n            this.rewrite(addr_of(prev));\n          } catch (e) {\n            return;\n          }\n          stats.rewrites += 1;\n          stats.max_len = Math.max(stats.max_len, this.nodes.length / 4);\n          do { prev = back.pop(); } while (type_of(prev) !== PTR);\n          next = this.enter_port(prev);\n          ++rwts;\n        } else if (type_of(next) === NUM) {\n          [prev,next] = [next,prev];\n        } else if (slot_of(next) === 0) {\n          if (this.type_of(addr_of(next)) !== OP1) {\n            warp.push(Pointer(addr_of(next), 1));\n          }\n          prev = Pointer(addr_of(next), 2);\n          next = this.enter_port(prev);\n        } else {\n          back.push(prev);\n          prev = Pointer(addr_of(next), 0);\n          next = this.enter_port(prev);\n        }\n      }\n    }\n    this.find_redex = true;\n  }\n\n  // Returns a string that is preserved on reduction, good for debugging\n  denote(ptrn = this.enter_port(Pointer(0, 1)), exit = []) {\n    function path_to_string(path) {\n      var str = \"<\";\n      while (path) {\n        str += path.head === 1 ? \"a\" : \"b\";\n        path = path.tail; \n      }\n      str += \">\";\n      return str;\n    }\n    while (true) {\n      if (type_of(ptrn) === PTR) {\n        var ai = addr_of(ptrn);\n        var as = slot_of(ptrn)\n        var ak = this.kind_of(ai);\n        switch (this.type_of(ai)) {\n          case NOD:\n            if (slot_of(ptrn) === 0) {\n              if (exit[ak]) {\n                var new_exit = exit.slice(0);\n                new_exit[ak] = new_exit[ak].tail;\n                ptrn = this.enter_port(Pointer(ai, Number(exit[ak].head)));\n                exit = new_exit;\n                continue; // tail-call: denote(ptrn, exit)\n              } else {\n                var lft = this.denote(this.enter_port(Pointer(ai, 1)), exit);\n                var rgt = this.denote(this.enter_port(Pointer(ai, 2)), exit);\n                return \"(\" + ak + \" \" + lft + \" \" + rgt + \")\";\n              }\n            } else {\n              if (ai === 0) {\n                while (exit[exit.length - 1] === null) exit.pop();\n                return exit.map(path_to_string).join(\":\");\n              } else {\n                var new_exit = exit.slice(0);\n                new_exit[ak] = {head: as, tail: new_exit[ak] || null};\n                ptrn = this.enter_port(Pointer(ai, 0));\n                exit = new_exit;\n                continue; // tail-call: denote(ptrn, exit)\n              }\n            }\n            break;\n          default:\n            return \"<TODO>\";\n        }\n      } else {\n        return \"#\" + numb_of(ptrn);\n      }\n    }\n  }\n\n  to_string() {\n    const pointer = (ptrn) => {\n      if (type_of(ptrn) === NUM) {\n        return \"#\" + numb_of(ptrn);\n      } else {\n        return addr_of(ptrn) + \"abc\"[slot_of(ptrn)];\n      }\n    };\n    var text = '';\n    for (var i = 0; i < this.nodes.length / 4; i++) {\n      if (this.is_free(i)) {\n        text += i + \": ~\\n\";\n      } else {\n        var type = this.type_of(i);\n        var kind = this.kind_of(i);\n        text += i + ': ';\n        text += \"[\" + type + \":\" + kind + \"| \";\n        text += pointer(this.get_port(i, 0)) + \" \";\n        text += pointer(this.get_port(i, 1)) + \" \";\n        text += pointer(this.get_port(i, 2)) + \"]\";\n        text += \" ... \" + this.is_numeric(i,0) + \" \" + this.is_numeric(i,1) + \" \" + this.is_numeric(i,2);\n        text += \"\\n\";\n      }\n    }\n    return text;\n  }\n}\n\nmodule.exports = {Pointer, addr_of, slot_of, Numeric, numb_of, type_of, ptrn_eq, ptrn_st, Net, NUM, PTR, NOD, OP1, OP2, ITE};\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-net.js?");
+// ~~ Formality Interaction Net System ~~
+
+// PtrNum types
+const PTR = 0;
+const NUM = 1;
+
+// Node types
+const NOD = 0;
+const OP1 = 1;
+const OP2 = 2;
+const ITE = 3;
+
+// Base types
+const Pointer = (addr, port) => ({typ: PTR, val: (addr << 2) + (port & 3)});
+const addr_of = (ptrn) => ptrn.val >>> 2;
+const slot_of = (ptrn) => ptrn.val & 3;
+const Numeric = (numb) => ({typ: NUM, val: numb});
+const numb_of = (ptrn) => ptrn.val;
+const type_of = (ptrn) => ptrn.typ;
+const ptrn_eq = (a, b) => a.typ === b.typ && a.val === b.val;
+const ptrn_st = a => a.typ + ":" + a.val;
+
+class Net {
+  // A net stores nodes (this.nodes), reclaimable memory addrs (this.freed) and active pairs (this.redex)
+  constructor() {
+    this.nodes = []; // nodes
+    this.freed = []; // integers
+    this.redex = []; // array of (integer, integer) tuples representing addrs
+    this.find_redex = true;
+  }
+
+  // Allocates a new node, return its addr
+  alloc_node(type, kind) {
+
+    // If there is reclaimable memory, use it
+    if (this.freed.length > 0) {
+      var addr = this.freed.pop();
+
+    // Otherwise, extend the array of nodes
+    } else {
+      var addr = this.nodes.length / 4;
+    }
+
+    // Fill the memory with an empty node without pointers
+    this.nodes[addr * 4 + 0] = addr * 4 + 0;
+    this.nodes[addr * 4 + 1] = addr * 4 + 1;
+    this.nodes[addr * 4 + 2] = addr * 4 + 2;
+    this.nodes[addr * 4 + 3] = (kind << 6) + ((type & 0x7) << 3);
+    return addr;
+  }
+
+  // Deallocates a node, allowing its space to be reclaimed
+  free_node(addr) {
+    this.nodes[addr * 4 + 0] = addr * 4 + 0;
+    this.nodes[addr * 4 + 1] = addr * 4 + 1;
+    this.nodes[addr * 4 + 2] = addr * 4 + 2;
+    this.nodes[addr * 4 + 3] = 0;
+    this.freed.push(addr);
+  }
+
+  is_free(addr) {
+    return this.nodes[addr * 4 + 0] === addr * 4 + 0
+        && this.nodes[addr * 4 + 1] === addr * 4 + 1
+        && this.nodes[addr * 4 + 2] === addr * 4 + 2
+        && this.nodes[addr * 4 + 3] === 0;
+  }
+
+  // Returns if given slot holds a number
+  is_numeric(addr, slot) {
+    return (this.nodes[addr * 4 + 3] >>> slot) & 1; 
+  }
+
+  set_port(addr, slot, ptrn) {
+    if (type_of(ptrn) === NUM) {
+      this.nodes[addr * 4 + slot] = numb_of(ptrn);
+      this.nodes[addr * 4 + 3] = this.nodes[addr * 4 + 3] | (1 << slot);
+    } else {
+      this.nodes[addr * 4 + slot] = (addr_of(ptrn) << 2) + (slot_of(ptrn) & 3);
+      this.nodes[addr * 4 + 3] = this.nodes[addr * 4 + 3] & ~(1 << slot);
+    }
+  }
+
+  get_port(addr, slot) {
+    var val = this.nodes[addr * 4 + slot];
+    return !this.is_numeric(addr, slot) ? Pointer(val >>> 2, val & 3) : Numeric(val);
+  }
+
+  type_of(addr) {
+    return (this.nodes[addr * 4 + 3] >>> 3) & 0x7;
+  }
+
+  set_type(addr, type) {
+    this.nodes[addr * 4 + 3] = (this.nodes[addr * 4 + 3] & ~0b111000) | (type << 3);
+  }
+
+  kind_of(addr) {
+    return this.nodes[addr * 4 + 3] >>> 6;
+  }
+
+  // Given a pointer to a port, returns a pointer to the opposing port
+  enter_port(ptrn) {
+    if (type_of(ptrn) === NUM) { 
+      throw "Can't enter a numeric pointer.";
+    } else {
+      return this.get_port(addr_of(ptrn), slot_of(ptrn));
+    }
+  }
+
+  // Connects two ports
+  link_ports(a_ptrn, b_ptrn) {
+    var a_numb = type_of(a_ptrn) === NUM;
+    var b_numb = type_of(b_ptrn) === NUM;
+
+    // Point ports to each-other
+    if (!a_numb) this.set_port(addr_of(a_ptrn), slot_of(a_ptrn), b_ptrn);
+    if (!b_numb) this.set_port(addr_of(b_ptrn), slot_of(b_ptrn), a_ptrn);
+
+    // If both are main ports, add this to the list of active pairs
+    if (this.find_redex && !(a_numb && b_numb) && (a_numb || slot_of(a_ptrn) === 0) && (b_numb || slot_of(b_ptrn) === 0)) {
+      this.redex.push(a_numb ? addr_of(b_ptrn) : addr_of(a_ptrn));
+    }
+  }
+
+  // Disconnects a port, causing both sides to point to themselves
+  unlink_port(a_ptrn) {
+    if (type_of(a_ptrn) === PTR) {
+      var b_ptrn = this.enter_port(a_ptrn);
+      if (type_of(b_ptrn) === PTR && ptrn_eq(this.enter_port(b_ptrn), a_ptrn)) {
+        this.set_port(addr_of(a_ptrn), slot_of(a_ptrn), a_ptrn);
+        this.set_port(addr_of(b_ptrn), slot_of(b_ptrn), b_ptrn);
+      }
+    }
+  }
+
+  // Rewrites an active pair
+  rewrite(a_addr) {
+    var a_ptrn = Pointer(a_addr, 0);
+    var b_ptrn = this.get_port(a_addr, 0);
+    if (type_of(b_ptrn) === NUM) {
+      var a_type = this.type_of(a_addr);
+      var a_kind = this.kind_of(a_addr);
+
+      // UnaryOperation
+      if (a_type === OP1) {
+        var dst = this.enter_port(Pointer(a_addr, 2));
+        var fst = numb_of(b_ptrn);
+        var snd = numb_of(this.enter_port(Pointer(a_addr, 1)));
+        switch (a_kind) {
+          case  0: var res = Numeric(fst + snd); break;
+          case  1: var res = Numeric(fst - snd); break;
+          case  2: var res = Numeric(fst * snd); break;
+          case  3: var res = Numeric(fst / snd); break;
+          case  4: var res = Numeric(fst % snd); break;
+          case  5: var res = Numeric(fst ** snd); break;
+          case  6: var res = Numeric(fst & snd); break;
+          case  7: var res = Numeric(fst | snd); break;
+          case  8: var res = Numeric(fst ^ snd); break;
+          case  9: var res = Numeric(~snd); break;
+          case 10: var res = Numeric(fst >>> snd); break;
+          case 11: var res = Numeric(fst << snd); break;
+          case 12: var res = Numeric(fst > snd ? 1 : 0); break;
+          case 13: var res = Numeric(fst < snd ? 1 : 0); break;
+          case 14: var res = Numeric(fst === snd ? 1 : 0); break;
+          default: throw "[ERROR]\nInvalid interaction.";
+        }
+        this.link_ports(dst, res);
+        this.unlink_port(Pointer(a_addr, 0));
+        this.unlink_port(Pointer(a_addr, 2));
+        this.free_node(a_addr);
+      
+      // BinaryOperation
+      } else if (a_type === OP2) {
+        this.set_type(a_addr, OP1);
+        this.link_ports(Pointer(a_addr, 0), this.enter_port(Pointer(a_addr, 1)));
+        this.unlink_port(Pointer(a_addr, 1));
+        this.link_ports(Pointer(a_addr, 1), b_ptrn);
+    
+      // NumberDuplication
+      } else if (a_type === NOD) {
+        this.link_ports(b_ptrn, this.enter_port(Pointer(a_addr, 1)));
+        this.link_ports(b_ptrn, this.enter_port(Pointer(a_addr, 2)));
+        this.free_node(a_addr);
+
+      // IfThenElse
+      } else if (a_type === ITE) {
+        var cond_val = numb_of(b_ptrn) === 0;
+        var pair_ptr = this.enter_port(Pointer(a_addr, 1));
+        this.set_type(a_addr, NOD);
+        this.link_ports(Pointer(a_addr, 0), pair_ptr);
+        this.unlink_port(Pointer(a_addr, 1));
+        var dest_ptr = this.enter_port(Pointer(a_addr, 2));
+        this.link_ports(Pointer(a_addr, cond_val ? 2 : 1), dest_ptr);
+        if (!cond_val) this.unlink_port(Pointer(a_addr, 2));
+        this.link_ports(Pointer(a_addr, cond_val ? 1 : 2), Pointer(a_addr, cond_val ? 1 : 2));
+
+      } else {
+        throw "[ERROR]\nInvalid interaction.";
+      }
+
+    } else {
+      var b_addr = addr_of(b_ptrn);
+      var a_type = this.type_of(a_addr);
+      var b_type = this.type_of(b_addr);
+      var a_kind = this.kind_of(a_addr);
+      var b_kind = this.kind_of(b_addr);
+
+      // NodeAnnihilation, UnaryAnnihilation, BinaryAnnihilation
+      if ( a_type === NOD && b_type === NOD && a_kind === b_kind
+        || a_type === OP1 && b_type === OP1
+        || a_type === OP2 && b_type === OP2
+        || a_type === ITE && b_type === ITE) {
+        var a_aux1_dest = this.enter_port(Pointer(a_addr, 1));
+        var b_aux1_dest = this.enter_port(Pointer(b_addr, 1));
+        this.link_ports(a_aux1_dest, b_aux1_dest);
+        var a_aux2_dest = this.enter_port(Pointer(a_addr, 2));
+        var b_aux2_dest = this.enter_port(Pointer(b_addr, 2));
+        this.link_ports(a_aux2_dest, b_aux2_dest);
+        for (var i = 0; i < 3; i++) {
+          this.unlink_port(Pointer(a_addr, i));
+          this.unlink_port(Pointer(b_addr, i));
+        }
+        this.free_node(a_addr);
+        if (a_addr !== b_addr) {
+          this.free_node(b_addr);
+        }
+
+      // NodeDuplication, BinaryDuplication
+      } else if
+        (  a_type === NOD && b_type === NOD && a_kind !== b_kind
+        || a_type === NOD && b_type === OP2
+        || a_type === NOD && b_type === ITE) {
+        var p_addr = this.alloc_node(b_type, b_kind);
+        var q_addr = this.alloc_node(b_type, b_kind);
+        var r_addr = this.alloc_node(a_type, a_kind);
+        var s_addr = this.alloc_node(a_type, a_kind);
+        this.link_ports(Pointer(r_addr, 1), Pointer(p_addr, 1));
+        this.link_ports(Pointer(s_addr, 1), Pointer(p_addr, 2));
+        this.link_ports(Pointer(r_addr, 2), Pointer(q_addr, 1));
+        this.link_ports(Pointer(s_addr, 2), Pointer(q_addr, 2));
+        this.link_ports(Pointer(p_addr, 0), this.enter_port(Pointer(a_addr, 1)));
+        this.link_ports(Pointer(q_addr, 0), this.enter_port(Pointer(a_addr, 2)));
+        this.link_ports(Pointer(r_addr, 0), this.enter_port(Pointer(b_addr, 1)));
+        this.link_ports(Pointer(s_addr, 0), this.enter_port(Pointer(b_addr, 2)));
+        for (var i = 0; i < 3; i++) {
+          this.unlink_port(Pointer(a_addr, i));
+          this.unlink_port(Pointer(b_addr, i));
+        }
+        this.free_node(a_addr);
+        if (a_addr !== b_addr) {
+          this.free_node(b_addr);
+        }
+
+      // UnaryDuplication
+      } else if
+        (  a_type === NOD && b_type === OP1
+        || a_type === ITE && b_type === OP1) {
+        var p_addr = this.alloc_node(b_type, b_kind);
+        var q_addr = this.alloc_node(b_type, b_kind);
+        var s_addr = this.alloc_node(a_type, a_kind);
+        this.link_ports(Pointer(p_addr, 1), this.enter_port(Pointer(b_addr, 1)));
+        this.link_ports(Pointer(q_addr, 1), this.enter_port(Pointer(b_addr, 1)));
+        this.link_ports(Pointer(s_addr, 1), Pointer(p_addr, 2));
+        this.link_ports(Pointer(s_addr, 2), Pointer(q_addr, 2));
+        this.link_ports(Pointer(p_addr, 0), this.enter_port(Pointer(a_addr, 1)));
+        this.link_ports(Pointer(q_addr, 0), this.enter_port(Pointer(a_addr, 2)));
+        this.link_ports(Pointer(s_addr, 0), this.enter_port(Pointer(b_addr, 2)));
+        for (var i = 0; i < 3; i++) {
+          this.unlink_port(Pointer(a_addr, i));
+          this.unlink_port(Pointer(b_addr, i));
+        }
+        this.free_node(a_addr);
+        if (a_addr !== b_addr) {
+          this.free_node(b_addr);
+        }
+      
+      // Permutations
+      } else if (a_type === OP1 && b_type === NOD) {
+        return this.rewrite(b_addr);
+      } else if (a_type === OP2 && b_type === NOD) {
+        return this.rewrite(b_addr);
+      } else if (a_type === ITE && b_type === NOD) {
+        return this.rewrite(b_addr);
+
+      // InvalidInteraction
+      } else {
+        throw "[ERROR]\nInvalid interaction.";
+      }
+    }
+  }
+
+  // Rewrites active pairs until none is left, reducing the graph to normal form.
+  // This could be performed in parallel and doesn't need GC.
+  reduce_strict(stats) {
+    var rewrites = 0;
+    var loops = 0;
+    var max_len = 0;
+    while (this.redex.length > 0) {
+      for (var i = 0, l = this.redex.length; i < l; ++i) {
+        this.rewrite(this.redex.pop());
+        stats.max_len = Math.max(stats.max_len, this.nodes.length / 4);
+        ++stats.rewrites;
+      }
+      ++stats.loops;
+    }
+  }
+
+  // Rewrites active pairs until none is left, reducing the graph to normal form.
+  // This avoids unecessary computations, but is sequential and would need GC.
+  reduce_lazy(stats) {
+    this.find_redex = false;
+    var warp = [];
+    var back = [];
+    var prev = Pointer(0, 1);
+    var next = this.enter_port(prev);
+    var rwts = 0;
+    while (true) {
+      ++stats.loops;
+      if (type_of(next) === PTR && (addr_of(next) === 0 || this.is_free(addr_of(next)))) {
+        if (warp.length === 0) {
+          break;
+        } else {
+          prev = warp.pop();
+          next = this.enter_port(prev);
+        }
+      } else {
+        if (slot_of(prev) === 0 && (type_of(next) === NUM || slot_of(next) === 0)) {
+          try {
+            this.rewrite(addr_of(prev));
+          } catch (e) {
+            return;
+          }
+          stats.rewrites += 1;
+          stats.max_len = Math.max(stats.max_len, this.nodes.length / 4);
+          do { prev = back.pop(); } while (type_of(prev) !== PTR);
+          next = this.enter_port(prev);
+          ++rwts;
+        } else if (type_of(next) === NUM) {
+          [prev,next] = [next,prev];
+        } else if (slot_of(next) === 0) {
+          if (this.type_of(addr_of(next)) !== OP1) {
+            warp.push(Pointer(addr_of(next), 1));
+          }
+          prev = Pointer(addr_of(next), 2);
+          next = this.enter_port(prev);
+        } else {
+          back.push(prev);
+          prev = Pointer(addr_of(next), 0);
+          next = this.enter_port(prev);
+        }
+      }
+    }
+    this.find_redex = true;
+  }
+
+  // Returns a string that is preserved on reduction, good for debugging
+  denote(ptrn = this.enter_port(Pointer(0, 1)), exit = []) {
+    function path_to_string(path) {
+      var str = "<";
+      while (path) {
+        str += path.head === 1 ? "a" : "b";
+        path = path.tail; 
+      }
+      str += ">";
+      return str;
+    }
+    while (true) {
+      if (type_of(ptrn) === PTR) {
+        var ai = addr_of(ptrn);
+        var as = slot_of(ptrn)
+        var ak = this.kind_of(ai);
+        switch (this.type_of(ai)) {
+          case NOD:
+            if (slot_of(ptrn) === 0) {
+              if (exit[ak]) {
+                var new_exit = exit.slice(0);
+                new_exit[ak] = new_exit[ak].tail;
+                ptrn = this.enter_port(Pointer(ai, Number(exit[ak].head)));
+                exit = new_exit;
+                continue; // tail-call: denote(ptrn, exit)
+              } else {
+                var lft = this.denote(this.enter_port(Pointer(ai, 1)), exit);
+                var rgt = this.denote(this.enter_port(Pointer(ai, 2)), exit);
+                return "(" + ak + " " + lft + " " + rgt + ")";
+              }
+            } else {
+              if (ai === 0) {
+                while (exit[exit.length - 1] === null) exit.pop();
+                return exit.map(path_to_string).join(":");
+              } else {
+                var new_exit = exit.slice(0);
+                new_exit[ak] = {head: as, tail: new_exit[ak] || null};
+                ptrn = this.enter_port(Pointer(ai, 0));
+                exit = new_exit;
+                continue; // tail-call: denote(ptrn, exit)
+              }
+            }
+            break;
+          default:
+            return "<TODO>";
+        }
+      } else {
+        return "#" + numb_of(ptrn);
+      }
+    }
+  }
+
+  to_string() {
+    const pointer = (ptrn) => {
+      if (type_of(ptrn) === NUM) {
+        return "#" + numb_of(ptrn);
+      } else {
+        return addr_of(ptrn) + "abc"[slot_of(ptrn)];
+      }
+    };
+    var text = '';
+    for (var i = 0; i < this.nodes.length / 4; i++) {
+      if (this.is_free(i)) {
+        text += i + ": ~\n";
+      } else {
+        var type = this.type_of(i);
+        var kind = this.kind_of(i);
+        text += i + ': ';
+        text += "[" + type + ":" + kind + "| ";
+        text += pointer(this.get_port(i, 0)) + " ";
+        text += pointer(this.get_port(i, 1)) + " ";
+        text += pointer(this.get_port(i, 2)) + "]";
+        text += " ... " + this.is_numeric(i,0) + " " + this.is_numeric(i,1) + " " + this.is_numeric(i,2);
+        text += "\n";
+      }
+    }
+    return text;
+  }
+}
+
+module.exports = {Pointer, addr_of, slot_of, Numeric, numb_of, type_of, ptrn_eq, ptrn_st, Net, NUM, PTR, NOD, OP1, OP2, ITE};
+
 
 /***/ }),
 
@@ -182,7 +3985,122 @@ eval("// ~~ Formality Interaction Net System ~~\n\n// PtrNum types\nconst PTR = 
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("const fm = __webpack_require__(/*! ./fm-core.js */ \"./node_modules/formality-lang/src/fm-core.js\");\n\n// Converts a Formality-Core Term to a native JavaScript function\nconst compile = (term, opts, vars = null) => {\n  var [ctor, term] = term;\n  switch (ctor) {\n    case \"Var\":\n      for (var i = 0; i < term.index; ++i) {\n        vars = vars[1];\n      }\n      return vars[0];\n    case \"Lam\":\n      return x => compile(term.body, opts, [x, vars]);\n    case \"App\":\n      var func = compile(term.func, opts, vars);\n      var argm = compile(term.argm, opts, vars);\n      return func(argm);\n    case \"Put\":\n      return compile(term.expr, opts, vars);\n    case \"Dup\": \n      var expr = compile(term.expr, opts, vars);\n      var body = x => compile(term.body, opts, [x,vars]);\n      return body(expr);\n    case \"Val\":\n      return term.numb;\n    case \"Op1\":\n    case \"Op2\":\n      var func = term.func;\n      var num0 = compile(term.num0, opts, vars);\n      var num1 = compile(term.num1, opts, vars);\n      switch (func) {\n        case \".+.\"  : return num0 + num1;\n        case \".-.\"  : return num0 - num1;\n        case \".*.\"  : return num0 * num1;\n        case \"./.\"  : return num0 / num1;\n        case \".%.\"  : return num0 % num1;\n        case \".**.\" : return num0 ** num1;\n        case \".&.\"  : return num0 & num1;\n        case \".|.\"  : return num0 | num1;\n        case \".^.\"  : return num0 ^ num1;\n        case \".~.\"  : return ~ num1;\n        case \".>>.\" : return num0 >>> num1;\n        case \".<<.\" : return num0 << num1;\n        case \".>.\"  : return num0 > num1;\n        case \".<.\"  : return num0 < num1;\n        default: throw \"TODO: implement operator \"\n      }\n    case \"Ite\":\n      var cond = compile(term.cond, opts, vars);\n      var pair = compile(term.pair, opts, vars);\n      return cond ? pair[0] : pair[1];\n    case \"Cpy\":\n      var numb = compile(term.numb, opts, vars);\n      var body = x => compile(term.body, opts, [x,vars]);\n      return body(numb);\n    case \"Par\":\n      var val0 = compile(term.val0, opts, vars);\n      var val1 = compile(term.val1, opts, vars);\n      return [val0, val1];\n    case \"Fst\":\n      var pair = compile(term.pair, opts, vars);\n      return pair[0];\n    case \"Snd\":\n      var pair = compile(term.pair, opts, vars);\n      return pair[1];\n    case \"Prj\":\n      var nam0 = term.nam0;\n      var nam1 = term.nam1;\n      var pair = compile(term.pair, opts, vars);\n      var body = (x,y) => compile(term.body, opts, [y,[x,vars]]);\n      return body(pair[0], pair[1]);\n    case \"Log\":\n      return compile(term.expr, opts, vars);\n    case \"Ref\":\n      return compile(fm.erase((opts.defs||{})[term.name]), opts, vars);\n  }\n};\n\n// Converts a native JavaScript function back to a Formality-Core term\nconst decompile = (func) => {\n  return (function go(term, depth) {\n    function APP(variable) {\n      return function FM_DECOMPILE_GET(arg){\n        if (arg === null) {\n          return variable;\n        } else {\n          return APP(d => fm.App(variable(d), go(arg, d), false));\n        }\n      };\n    };\n    function VAR(d) {\n      return fm.Var(d - 1 - depth);\n    };\n    if (typeof term === \"function\" && term.name === \"FM_DECOMPILE_GET\") {\n      return term(null)(depth);\n    } else if (typeof term === \"object\") {\n      var val0 = go(term[0], depth);\n      var val1 = go(term[1], depth);\n      return fm.Par(val0, val1);\n    } else if (typeof term === \"number\") {\n      return fm.Val(term);\n    } else if (typeof term === \"function\") {\n      var body = go(term(APP(VAR)), depth + 1);\n      return fm.Lam(\"x\" + depth, null, body, false);\n    } else if (typeof term === \"string\") {\n      throw \"[ERROR]\\nThis native JS function can't be decompiled to Formality:\\n\\n\"\n        + func.toString()\n        + \"\\n\\nIt possibly uses numeric operators on free variables, which can't be decompiled yet.\";\n    } else {\n      return term;\n    }\n  })(func, 0);\n};\n\nmodule.exports = {compile, decompile};\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-to-js.js?");
+const fm = __webpack_require__(/*! ./fm-core.js */ "./node_modules/formality-lang/src/fm-core.js");
+
+// Converts a Formality-Core Term to a native JavaScript function
+const compile = (term, opts, vars = null) => {
+  var [ctor, term] = term;
+  switch (ctor) {
+    case "Var":
+      for (var i = 0; i < term.index; ++i) {
+        vars = vars[1];
+      }
+      return vars[0];
+    case "Lam":
+      return x => compile(term.body, opts, [x, vars]);
+    case "App":
+      var func = compile(term.func, opts, vars);
+      var argm = compile(term.argm, opts, vars);
+      return func(argm);
+    case "Put":
+      return compile(term.expr, opts, vars);
+    case "Dup": 
+      var expr = compile(term.expr, opts, vars);
+      var body = x => compile(term.body, opts, [x,vars]);
+      return body(expr);
+    case "Val":
+      return term.numb;
+    case "Op1":
+    case "Op2":
+      var func = term.func;
+      var num0 = compile(term.num0, opts, vars);
+      var num1 = compile(term.num1, opts, vars);
+      switch (func) {
+        case ".+."  : return num0 + num1;
+        case ".-."  : return num0 - num1;
+        case ".*."  : return num0 * num1;
+        case "./."  : return num0 / num1;
+        case ".%."  : return num0 % num1;
+        case ".**." : return num0 ** num1;
+        case ".&."  : return num0 & num1;
+        case ".|."  : return num0 | num1;
+        case ".^."  : return num0 ^ num1;
+        case ".~."  : return ~ num1;
+        case ".>>." : return num0 >>> num1;
+        case ".<<." : return num0 << num1;
+        case ".>."  : return num0 > num1;
+        case ".<."  : return num0 < num1;
+        default: throw "TODO: implement operator "
+      }
+    case "Ite":
+      var cond = compile(term.cond, opts, vars);
+      var pair = compile(term.pair, opts, vars);
+      return cond ? pair[0] : pair[1];
+    case "Cpy":
+      var numb = compile(term.numb, opts, vars);
+      var body = x => compile(term.body, opts, [x,vars]);
+      return body(numb);
+    case "Par":
+      var val0 = compile(term.val0, opts, vars);
+      var val1 = compile(term.val1, opts, vars);
+      return [val0, val1];
+    case "Fst":
+      var pair = compile(term.pair, opts, vars);
+      return pair[0];
+    case "Snd":
+      var pair = compile(term.pair, opts, vars);
+      return pair[1];
+    case "Prj":
+      var nam0 = term.nam0;
+      var nam1 = term.nam1;
+      var pair = compile(term.pair, opts, vars);
+      var body = (x,y) => compile(term.body, opts, [y,[x,vars]]);
+      return body(pair[0], pair[1]);
+    case "Log":
+      return compile(term.expr, opts, vars);
+    case "Ref":
+      return compile(fm.erase((opts.defs||{})[term.name]), opts, vars);
+  }
+};
+
+// Converts a native JavaScript function back to a Formality-Core term
+const decompile = (func) => {
+  return (function go(term, depth) {
+    function APP(variable) {
+      return function FM_DECOMPILE_GET(arg){
+        if (arg === null) {
+          return variable;
+        } else {
+          return APP(d => fm.App(variable(d), go(arg, d), false));
+        }
+      };
+    };
+    function VAR(d) {
+      return fm.Var(d - 1 - depth);
+    };
+    if (typeof term === "function" && term.name === "FM_DECOMPILE_GET") {
+      return term(null)(depth);
+    } else if (typeof term === "object") {
+      var val0 = go(term[0], depth);
+      var val1 = go(term[1], depth);
+      return fm.Par(val0, val1);
+    } else if (typeof term === "number") {
+      return fm.Val(term);
+    } else if (typeof term === "function") {
+      var body = go(term(APP(VAR)), depth + 1);
+      return fm.Lam("x" + depth, null, body, false);
+    } else if (typeof term === "string") {
+      throw "[ERROR]\nThis native JS function can't be decompiled to Formality:\n\n"
+        + func.toString()
+        + "\n\nIt possibly uses numeric operators on free variables, which can't be decompiled yet.";
+    } else {
+      return term;
+    }
+  })(func, 0);
+};
+
+module.exports = {compile, decompile};
+
 
 /***/ }),
 
@@ -193,7 +4111,292 @@ eval("const fm = __webpack_require__(/*! ./fm-core.js */ \"./node_modules/formal
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// ~~ Compiles Formality Core to Formality Net ~~\n\nconst {Var, App, Lam, Val, Op1, Op2, Ite, Par, Fst, Snd, Hol, erase} = __webpack_require__(/*! ./fm-core.js */ \"./node_modules/formality-lang/src/fm-core.js\");\nconst {Net, Pointer, Numeric, addr_of, slot_of, type_of, numb_of, ptrn_eq, ptrn_st, NOD, OP1, OP2, NUM, ITE, PTR, FOR} = __webpack_require__(/*! ./fm-net.js */ \"./node_modules/formality-lang/src/fm-net.js\");\n\nconst op_kind = {\n   0 : \".+.\"   , \".+.\"   : 0 ,\n   1 : \".-.\"   , \".-.\"   : 1 ,\n   2 : \".*.\"   , \".*.\"   : 2 ,\n   3 : \"./.\"   , \"./.\"   : 3 ,\n   4 : \".%.\"   , \".%.\"   : 4 ,\n   5 : \".**.\"  , \".**.\"  : 5 ,\n   6 : \".&.\"   , \".&.\"   : 6 ,\n   7 : \".|.\"   , \".|.\"   : 7 ,\n   8 : \".^.\"   , \".^.\"   : 8 ,\n   9 : \".~.\"   , \".~.\"   : 9 ,\n  10 : \".>>>.\" , \".>>>.\" : 10 ,\n  11 : \".<<.\"  , \".<<.\"  : 11 ,\n  12 : \".>.\"   , \".>.\"   : 12 ,\n  13 : \".<.\"   , \".<.\"   : 13 ,\n  14 : \".==.\"  , \".==.\"  : 14 ,\n};\n\nconst compile = (term, defs = {}) => {\n  const ref_ptrs = {};\n  const build_net = (term, net, var_ptrs, level) => {\n    const get_var = (ptrn) => {\n      if (type_of(ptrn) === NUM) {\n        return ptrn;\n      } else {\n        if (ptrn_eq(net.enter_port(ptrn), ptrn)) {\n          return ptrn;\n        } else {\n          var dups_ptrn = net.enter_port(ptrn);\n          var dup_addr = net.alloc_node(NOD, level_of[ptrn_st(ptrn)] + 1);\n          net.link_ports(Pointer(dup_addr, 0), ptrn);\n          net.link_ports(Pointer(dup_addr, 1), dups_ptrn);\n          return Pointer(dup_addr, 2);\n        }\n      }\n    };\n    switch (term[0]) {\n      case \"Dup\":\n        var expr_ptr = build_net(term[1].expr, net, var_ptrs, level);\n        level_of[ptrn_st(expr_ptr)] = level;\n        var_ptrs.push(expr_ptr);\n        var body_ptr = build_net(term[1].body, net, var_ptrs, level);\n        var_ptrs.pop();\n        return body_ptr;\n      case \"Put\":\n        var expr_ptr = build_net(term[1].expr, net, var_ptrs, level + 1);\n        return expr_ptr;\n      case \"Lam\":\n        var lam_addr = net.alloc_node(NOD, 0);\n        net.link_ports(Pointer(lam_addr, 1), Pointer(lam_addr, 1));\n        level_of[ptrn_st(Pointer(lam_addr, 1))] = level;\n        var_ptrs.push(Pointer(lam_addr, 1));\n        var body_ptr = build_net(term[1].body, net, var_ptrs, level);\n        var_ptrs.pop();\n        net.link_ports(Pointer(lam_addr, 2), body_ptr);\n        return Pointer(lam_addr, 0);\n      case \"App\":\n        var app_addr = net.alloc_node(NOD, 0);\n        var func_ptr = build_net(term[1].func, net, var_ptrs, level);\n        net.link_ports(Pointer(app_addr, 0), func_ptr);\n        var argm_ptr = build_net(term[1].argm, net, var_ptrs, level);\n        net.link_ports(Pointer(app_addr, 1), argm_ptr)\n        return Pointer(app_addr, 2);\n      case \"Val\":\n        return Numeric(term[1].numb);\n      case \"Op1\":\n        var op1_addr = net.alloc_node(OP1, op_kind[term[1].func]);\n        net.link_ports(Numeric(term[1].num1[1].numb), Pointer(op1_addr, 1));\n        var num0_ptr = build_net(term[1].num0, net, var_ptrs, level);\n        net.link_ports(num0_ptr, Pointer(op1_addr, 0));\n        return Pointer(op1_addr, 2);\n      case \"Op2\":\n        var op2_addr = net.alloc_node(OP2, op_kind[term[1].func]);\n        var num0_ptr = build_net(term[1].num0, net, var_ptrs, level);\n        net.link_ports(Pointer(op2_addr, 1), num0_ptr);\n        var num1_ptr = build_net(term[1].num1, net, var_ptrs, level);\n        net.link_ports(Pointer(op2_addr, 0), num1_ptr);\n        return Pointer(op2_addr, 2);\n      case \"Par\":\n        var par_addr = net.alloc_node(NOD, 0xFFFF);\n        var val0_ptr = build_net(term[1].val0, net, var_ptrs, level);\n        net.link_ports(Pointer(par_addr, 1), val0_ptr);\n        var val1_ptr = build_net(term[1].val1, net, var_ptrs, level);\n        net.link_ports(Pointer(par_addr, 2), val1_ptr);\n        return Pointer(par_addr, 0);\n      case \"Fst\":\n        var fst_addr = net.alloc_node(NOD, 0xFFFF);\n        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);\n        net.link_ports(Pointer(fst_addr, 0), pair_ptr);\n        net.link_ports(Pointer(fst_addr, 2), Pointer(fst_addr, 2));\n        return Pointer(fst_addr, 1);\n      case \"Snd\":\n        var snd_addr = net.alloc_node(NOD, 0xFFFF);\n        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);\n        net.link_ports(Pointer(snd_addr, 0), pair_ptr);\n        net.link_ports(Pointer(snd_addr, 1), Pointer(snd_addr, 1));\n        return Pointer(snd_addr, 2);\n      case \"Prj\":\n        var prj_addr = net.alloc_node(NOD, 0xFFFF);\n        level_of[ptrn_st(Pointer(prj_addr, 1))] = level;\n        level_of[ptrn_st(Pointer(prj_addr, 2))] = level;\n        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);\n        var_ptrs.push(Pointer(prj_addr, 1));\n        var_ptrs.push(Pointer(prj_addr, 2));\n        var body_ptr = build_net(term[1].body, net, var_ptrs, level);\n        var_ptrs.pop();\n        var_ptrs.pop();\n        net.link_ports(Pointer(prj_addr, 0), pair_ptr);\n        return body_ptr;\n      case \"Ite\":\n        var ite_addr = net.alloc_node(ITE, 0xFFFF);\n        var cond_ptr = build_net(term[1].cond, net, var_ptrs, level);\n        net.link_ports(Pointer(ite_addr, 0), cond_ptr);\n        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);\n        net.link_ports(Pointer(ite_addr, 1), pair_ptr);\n        return Pointer(ite_addr, 2);\n      case \"Cpy\":\n        var numb_ptr = build_net(term[1].numb, net, var_ptrs, level);\n        level_of[ptrn_st(numb_ptr)] = 0xFFFE;\n        var_ptrs.push(numb_ptr);\n        var body_ptr = build_net(term[1].body, net, var_ptrs, level);\n        var_ptrs.pop();\n        return body_ptr;\n      case \"Log\":\n        return build_net(term[1].expr, net, var_ptrs, level);\n      case \"Var\":\n        return get_var(var_ptrs[var_ptrs.length - term[1].index - 1]);\n      case \"Hol\":\n        throw \"[ERROR]\\nCan't compile a hole.\";\n      case \"Utv\":\n        throw \"[ERROR]\\nCan't compile an unrestricted term.\";\n      case \"Ref\":\n        var ref_ptrn = ref_ptrs[term[1].name];\n        // First time seeing this ref\n        if (!ref_ptrn) {\n          // Create a dup node for it and recurse\n          var dup_addr = net.alloc_node(NOD, 0xFFFD);\n          var ref_ptrn = Pointer(dup_addr, 1);\n          ref_ptrs[term[1].name] = ref_ptrn;\n          var dref = erase(defs[term[1].name]);\n          var dref_ptr = build_net(dref, net, var_ptrs, level);\n          net.link_ports(Pointer(dup_addr, 0), dref_ptr);\n          return Pointer(dup_addr, 2);\n        // Already created the dup node for this ref\n        } else {\n          // First use: just connect to the port 1 of the dup node\n          if (ptrn_eq(net.enter_port(ref_ptrn), ref_ptrn)) {\n            return ref_ptrn;\n          // Other uses: extend with another dup node and connect\n          } else {\n            var dups_ptrn = net.enter_port(ref_ptrn);\n            var dup_addr = net.alloc_node(NOD, 0xFFFD);\n            net.link_ports(Pointer(dup_addr, 0), ref_ptrn);\n            net.link_ports(Pointer(dup_addr, 1), dups_ptrn);\n            return Pointer(dup_addr, 2);\n          }\n        }\n      default:\n        return build_net(Lam(\"\", null, Var(0), false), net, var_ptrs, level);\n    }\n  };\n  var level_of = {};\n  var net = new Net();\n  var root_addr = net.alloc_node(NOD, 0);\n  var term_ptr = build_net(term, net, [], 0);\n  net.link_ports(Pointer(root_addr, 0), Pointer(root_addr, 2));\n  net.link_ports(Pointer(root_addr, 1), term_ptr);\n  // Removes invalid redexes. They can be created by the\n  // compiler when duplicating variables more than once.\n  net.redex = net.redex.filter((a_addr) => {\n    var b_ptrn = net.enter_port(Pointer(a_addr, 0));\n    if (type_of(b_ptrn) !== NUM) {\n      var b_addr = addr_of(b_ptrn);\n      var a_p0 = Pointer(a_addr, 0);\n      var b_p0 = Pointer(b_addr, 0);\n      var a_ok = ptrn_eq(net.enter_port(a_p0), b_p0);\n      var b_ok = ptrn_eq(net.enter_port(b_p0), a_p0);\n      return a_ok && b_ok;\n    } else {\n      return true;\n    }\n  });\n  // Optimization: if a ref is only used once, remove the unecessary dup node\n  for (var name in ref_ptrs) {\n    var ref_ptrn = ref_ptrs[name];\n    if (ptrn_eq(net.enter_port(ref_ptrn), ref_ptrn)) {\n      var dup_addr = addr_of(ref_ptrn);\n      var ref_ptrn = net.enter_port(Pointer(dup_addr, 0));\n      var loc_ptrn = net.enter_port(Pointer(dup_addr, 2));\n      net.link_ports(ref_ptrn, loc_ptrn);\n      net.free_node(dup_addr);\n    }\n  }\n  return net;\n};\n\nconst decompile = (net) => {\n  const build_term = (net, ptrn, var_ptrs, dup_exit) => {\n    if (type_of(ptrn) === NUM) {\n      return Val(numb_of(ptrn));\n    } else {\n      var addr = addr_of(ptrn);\n      var type = net.type_of(addr);\n      var kind = net.kind_of(addr);\n      if (type === NOD) {\n        if (kind === 0) {\n          switch (slot_of(ptrn)) {\n            case 0:\n              var_ptrs.push(Pointer(addr, 1));\n              var body = build_term(net, net.enter_port(Pointer(addr, 2)), var_ptrs, dup_exit);\n              var_ptrs.pop();\n              return Lam(\"x\" + var_ptrs.length, null, body, false);\n            case 1:\n              for (var index = 0; index < var_ptrs.length; ++index) {\n                if (ptrn_eq(var_ptrs[var_ptrs.length - index - 1], ptrn)) {\n                  return Var(index);\n                }\n              }\n            case 2:\n              var argm = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);\n              var func = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);\n              return App(func, argm, false);\n          }\n        } else if (kind === 0xFFFF) {\n          switch (slot_of(ptrn)) {\n            case 0:\n              var val0 = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);\n              var val1 = build_term(net, net.enter_port(Pointer(addr, 2)), var_ptrs, dup_exit);\n              return Par(val0, val1);\n            case 1:\n              var pair = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);\n              return Fst(pair);\n            case 2:\n              var pair = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);\n              return Snd(pair);\n          }\n        } else {\n          switch (slot_of(ptrn)) {\n            case 0:\n              var exit = dup_exit.pop();\n              var term = build_term(net, net.enter_port(Pointer(addr, exit)), var_ptrs, dup_exit);\n              dup_exit.push(exit);\n              return term;\n            default:\n              dup_exit.push(slot_of(ptrn));\n              var term = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);\n              dup_exit.pop();\n              return term;\n          }\n        }\n      } else if (type === OP1) {\n        var num0 = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);\n        var num1 = Val(numb_of(net.enter_port(Pointer(addr, 1))));\n        return Op1(op_kind[kind], num0, num1);\n      } else if (type === OP2) {\n        var num0 = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);\n        var num1 = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);\n        return Op2(op_kind[kind], num0, num1);\n      } else if (type === ITE) {\n        var cond = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);\n        var pair = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);\n        return Ite(cond, pair);\n      }\n    }\n  };\n  return build_term(net, net.enter_port(Pointer(0, 1)), [], []);\n};\n\nconst norm_with_stats = (term, defs = {}, lazy = true) => {\n  var net = compile(term, defs);\n  var stats = lazy ? net.reduce_lazy() : net.reduce();\n  var norm = decompile(net);\n  return {norm, stats};\n};\n\nconst norm = (term, defs, lazy) => {\n  return norm_with_stats(term, defs, lazy).norm;\n};\n\nmodule.exports = {compile, decompile, norm_with_stats, norm};\n\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/fm-to-net.js?");
+// ~~ Compiles Formality Core to Formality Net ~~
+
+const {Var, App, Lam, Val, Op1, Op2, Ite, Par, Fst, Snd, Hol, erase} = __webpack_require__(/*! ./fm-core.js */ "./node_modules/formality-lang/src/fm-core.js");
+const {Net, Pointer, Numeric, addr_of, slot_of, type_of, numb_of, ptrn_eq, ptrn_st, NOD, OP1, OP2, NUM, ITE, PTR, FOR} = __webpack_require__(/*! ./fm-net.js */ "./node_modules/formality-lang/src/fm-net.js");
+
+const op_kind = {
+   0 : ".+."   , ".+."   : 0 ,
+   1 : ".-."   , ".-."   : 1 ,
+   2 : ".*."   , ".*."   : 2 ,
+   3 : "./."   , "./."   : 3 ,
+   4 : ".%."   , ".%."   : 4 ,
+   5 : ".**."  , ".**."  : 5 ,
+   6 : ".&."   , ".&."   : 6 ,
+   7 : ".|."   , ".|."   : 7 ,
+   8 : ".^."   , ".^."   : 8 ,
+   9 : ".~."   , ".~."   : 9 ,
+  10 : ".>>>." , ".>>>." : 10 ,
+  11 : ".<<."  , ".<<."  : 11 ,
+  12 : ".>."   , ".>."   : 12 ,
+  13 : ".<."   , ".<."   : 13 ,
+  14 : ".==."  , ".==."  : 14 ,
+};
+
+const compile = (term, defs = {}) => {
+  const ref_ptrs = {};
+  const build_net = (term, net, var_ptrs, level) => {
+    const get_var = (ptrn) => {
+      if (type_of(ptrn) === NUM) {
+        return ptrn;
+      } else {
+        if (ptrn_eq(net.enter_port(ptrn), ptrn)) {
+          return ptrn;
+        } else {
+          var dups_ptrn = net.enter_port(ptrn);
+          var dup_addr = net.alloc_node(NOD, level_of[ptrn_st(ptrn)] + 1);
+          net.link_ports(Pointer(dup_addr, 0), ptrn);
+          net.link_ports(Pointer(dup_addr, 1), dups_ptrn);
+          return Pointer(dup_addr, 2);
+        }
+      }
+    };
+    switch (term[0]) {
+      case "Dup":
+        var expr_ptr = build_net(term[1].expr, net, var_ptrs, level);
+        level_of[ptrn_st(expr_ptr)] = level;
+        var_ptrs.push(expr_ptr);
+        var body_ptr = build_net(term[1].body, net, var_ptrs, level);
+        var_ptrs.pop();
+        return body_ptr;
+      case "Put":
+        var expr_ptr = build_net(term[1].expr, net, var_ptrs, level + 1);
+        return expr_ptr;
+      case "Lam":
+        var lam_addr = net.alloc_node(NOD, 0);
+        net.link_ports(Pointer(lam_addr, 1), Pointer(lam_addr, 1));
+        level_of[ptrn_st(Pointer(lam_addr, 1))] = level;
+        var_ptrs.push(Pointer(lam_addr, 1));
+        var body_ptr = build_net(term[1].body, net, var_ptrs, level);
+        var_ptrs.pop();
+        net.link_ports(Pointer(lam_addr, 2), body_ptr);
+        return Pointer(lam_addr, 0);
+      case "App":
+        var app_addr = net.alloc_node(NOD, 0);
+        var func_ptr = build_net(term[1].func, net, var_ptrs, level);
+        net.link_ports(Pointer(app_addr, 0), func_ptr);
+        var argm_ptr = build_net(term[1].argm, net, var_ptrs, level);
+        net.link_ports(Pointer(app_addr, 1), argm_ptr)
+        return Pointer(app_addr, 2);
+      case "Val":
+        return Numeric(term[1].numb);
+      case "Op1":
+        var op1_addr = net.alloc_node(OP1, op_kind[term[1].func]);
+        net.link_ports(Numeric(term[1].num1[1].numb), Pointer(op1_addr, 1));
+        var num0_ptr = build_net(term[1].num0, net, var_ptrs, level);
+        net.link_ports(num0_ptr, Pointer(op1_addr, 0));
+        return Pointer(op1_addr, 2);
+      case "Op2":
+        var op2_addr = net.alloc_node(OP2, op_kind[term[1].func]);
+        var num0_ptr = build_net(term[1].num0, net, var_ptrs, level);
+        net.link_ports(Pointer(op2_addr, 1), num0_ptr);
+        var num1_ptr = build_net(term[1].num1, net, var_ptrs, level);
+        net.link_ports(Pointer(op2_addr, 0), num1_ptr);
+        return Pointer(op2_addr, 2);
+      case "Par":
+        var par_addr = net.alloc_node(NOD, 0xFFFF);
+        var val0_ptr = build_net(term[1].val0, net, var_ptrs, level);
+        net.link_ports(Pointer(par_addr, 1), val0_ptr);
+        var val1_ptr = build_net(term[1].val1, net, var_ptrs, level);
+        net.link_ports(Pointer(par_addr, 2), val1_ptr);
+        return Pointer(par_addr, 0);
+      case "Fst":
+        var fst_addr = net.alloc_node(NOD, 0xFFFF);
+        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);
+        net.link_ports(Pointer(fst_addr, 0), pair_ptr);
+        net.link_ports(Pointer(fst_addr, 2), Pointer(fst_addr, 2));
+        return Pointer(fst_addr, 1);
+      case "Snd":
+        var snd_addr = net.alloc_node(NOD, 0xFFFF);
+        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);
+        net.link_ports(Pointer(snd_addr, 0), pair_ptr);
+        net.link_ports(Pointer(snd_addr, 1), Pointer(snd_addr, 1));
+        return Pointer(snd_addr, 2);
+      case "Prj":
+        var prj_addr = net.alloc_node(NOD, 0xFFFF);
+        level_of[ptrn_st(Pointer(prj_addr, 1))] = level;
+        level_of[ptrn_st(Pointer(prj_addr, 2))] = level;
+        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);
+        var_ptrs.push(Pointer(prj_addr, 1));
+        var_ptrs.push(Pointer(prj_addr, 2));
+        var body_ptr = build_net(term[1].body, net, var_ptrs, level);
+        var_ptrs.pop();
+        var_ptrs.pop();
+        net.link_ports(Pointer(prj_addr, 0), pair_ptr);
+        return body_ptr;
+      case "Ite":
+        var ite_addr = net.alloc_node(ITE, 0xFFFF);
+        var cond_ptr = build_net(term[1].cond, net, var_ptrs, level);
+        net.link_ports(Pointer(ite_addr, 0), cond_ptr);
+        var pair_ptr = build_net(term[1].pair, net, var_ptrs, level);
+        net.link_ports(Pointer(ite_addr, 1), pair_ptr);
+        return Pointer(ite_addr, 2);
+      case "Cpy":
+        var numb_ptr = build_net(term[1].numb, net, var_ptrs, level);
+        level_of[ptrn_st(numb_ptr)] = 0xFFFE;
+        var_ptrs.push(numb_ptr);
+        var body_ptr = build_net(term[1].body, net, var_ptrs, level);
+        var_ptrs.pop();
+        return body_ptr;
+      case "Log":
+        return build_net(term[1].expr, net, var_ptrs, level);
+      case "Var":
+        return get_var(var_ptrs[var_ptrs.length - term[1].index - 1]);
+      case "Hol":
+        throw "[ERROR]\nCan't compile a hole.";
+      case "Utv":
+        throw "[ERROR]\nCan't compile an unrestricted term.";
+      case "Ref":
+        var ref_ptrn = ref_ptrs[term[1].name];
+        // First time seeing this ref
+        if (!ref_ptrn) {
+          // Create a dup node for it and recurse
+          var dup_addr = net.alloc_node(NOD, 0xFFFD);
+          var ref_ptrn = Pointer(dup_addr, 1);
+          ref_ptrs[term[1].name] = ref_ptrn;
+          var dref = erase(defs[term[1].name]);
+          var dref_ptr = build_net(dref, net, var_ptrs, level);
+          net.link_ports(Pointer(dup_addr, 0), dref_ptr);
+          return Pointer(dup_addr, 2);
+        // Already created the dup node for this ref
+        } else {
+          // First use: just connect to the port 1 of the dup node
+          if (ptrn_eq(net.enter_port(ref_ptrn), ref_ptrn)) {
+            return ref_ptrn;
+          // Other uses: extend with another dup node and connect
+          } else {
+            var dups_ptrn = net.enter_port(ref_ptrn);
+            var dup_addr = net.alloc_node(NOD, 0xFFFD);
+            net.link_ports(Pointer(dup_addr, 0), ref_ptrn);
+            net.link_ports(Pointer(dup_addr, 1), dups_ptrn);
+            return Pointer(dup_addr, 2);
+          }
+        }
+      default:
+        return build_net(Lam("", null, Var(0), false), net, var_ptrs, level);
+    }
+  };
+  var level_of = {};
+  var net = new Net();
+  var root_addr = net.alloc_node(NOD, 0);
+  var term_ptr = build_net(term, net, [], 0);
+  net.link_ports(Pointer(root_addr, 0), Pointer(root_addr, 2));
+  net.link_ports(Pointer(root_addr, 1), term_ptr);
+  // Removes invalid redexes. They can be created by the
+  // compiler when duplicating variables more than once.
+  net.redex = net.redex.filter((a_addr) => {
+    var b_ptrn = net.enter_port(Pointer(a_addr, 0));
+    if (type_of(b_ptrn) !== NUM) {
+      var b_addr = addr_of(b_ptrn);
+      var a_p0 = Pointer(a_addr, 0);
+      var b_p0 = Pointer(b_addr, 0);
+      var a_ok = ptrn_eq(net.enter_port(a_p0), b_p0);
+      var b_ok = ptrn_eq(net.enter_port(b_p0), a_p0);
+      return a_ok && b_ok;
+    } else {
+      return true;
+    }
+  });
+  // Optimization: if a ref is only used once, remove the unecessary dup node
+  for (var name in ref_ptrs) {
+    var ref_ptrn = ref_ptrs[name];
+    if (ptrn_eq(net.enter_port(ref_ptrn), ref_ptrn)) {
+      var dup_addr = addr_of(ref_ptrn);
+      var ref_ptrn = net.enter_port(Pointer(dup_addr, 0));
+      var loc_ptrn = net.enter_port(Pointer(dup_addr, 2));
+      net.link_ports(ref_ptrn, loc_ptrn);
+      net.free_node(dup_addr);
+    }
+  }
+  return net;
+};
+
+const decompile = (net) => {
+  const build_term = (net, ptrn, var_ptrs, dup_exit) => {
+    if (type_of(ptrn) === NUM) {
+      return Val(numb_of(ptrn));
+    } else {
+      var addr = addr_of(ptrn);
+      var type = net.type_of(addr);
+      var kind = net.kind_of(addr);
+      if (type === NOD) {
+        if (kind === 0) {
+          switch (slot_of(ptrn)) {
+            case 0:
+              var_ptrs.push(Pointer(addr, 1));
+              var body = build_term(net, net.enter_port(Pointer(addr, 2)), var_ptrs, dup_exit);
+              var_ptrs.pop();
+              return Lam("x" + var_ptrs.length, null, body, false);
+            case 1:
+              for (var index = 0; index < var_ptrs.length; ++index) {
+                if (ptrn_eq(var_ptrs[var_ptrs.length - index - 1], ptrn)) {
+                  return Var(index);
+                }
+              }
+            case 2:
+              var argm = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);
+              var func = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);
+              return App(func, argm, false);
+          }
+        } else if (kind === 0xFFFF) {
+          switch (slot_of(ptrn)) {
+            case 0:
+              var val0 = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);
+              var val1 = build_term(net, net.enter_port(Pointer(addr, 2)), var_ptrs, dup_exit);
+              return Par(val0, val1);
+            case 1:
+              var pair = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);
+              return Fst(pair);
+            case 2:
+              var pair = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);
+              return Snd(pair);
+          }
+        } else {
+          switch (slot_of(ptrn)) {
+            case 0:
+              var exit = dup_exit.pop();
+              var term = build_term(net, net.enter_port(Pointer(addr, exit)), var_ptrs, dup_exit);
+              dup_exit.push(exit);
+              return term;
+            default:
+              dup_exit.push(slot_of(ptrn));
+              var term = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);
+              dup_exit.pop();
+              return term;
+          }
+        }
+      } else if (type === OP1) {
+        var num0 = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);
+        var num1 = Val(numb_of(net.enter_port(Pointer(addr, 1))));
+        return Op1(op_kind[kind], num0, num1);
+      } else if (type === OP2) {
+        var num0 = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);
+        var num1 = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);
+        return Op2(op_kind[kind], num0, num1);
+      } else if (type === ITE) {
+        var cond = build_term(net, net.enter_port(Pointer(addr, 0)), var_ptrs, dup_exit);
+        var pair = build_term(net, net.enter_port(Pointer(addr, 1)), var_ptrs, dup_exit);
+        return Ite(cond, pair);
+      }
+    }
+  };
+  return build_term(net, net.enter_port(Pointer(0, 1)), [], []);
+};
+
+const norm_with_stats = (term, defs = {}, lazy = true) => {
+  var net = compile(term, defs);
+  var stats = lazy ? net.reduce_lazy() : net.reduce();
+  var norm = decompile(net);
+  return {norm, stats};
+};
+
+const norm = (term, defs, lazy) => {
+  return norm_with_stats(term, defs, lazy).norm;
+};
+
+module.exports = {compile, decompile, norm_with_stats, norm};
+
 
 /***/ }),
 
@@ -204,7 +4407,158 @@ eval("// ~~ Compiles Formality Core to Formality Net ~~\n\nconst {Var, App, Lam,
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("/* WEBPACK VAR INJECTION */(function(process) {// This module is responsible for loading and publishing files from the Forall repository\n// For now this is using the deprecated moonad.org/api repository, but will be updated to the newer\n// Forall API once the service is deployed and ready to be used.\n//\n// This also exports a few \"loader decorators\" to enable caching depending on the environment\n\nconst xhr = __webpack_require__(/*! xhr-request-promise */ \"./node_modules/xhr-request-promise/index.js\");\nconst version = __webpack_require__(/*! ./../package.json */ \"./node_modules/formality-lang/package.json\").version;\n\n// Load file related things only on node\nconst {fs, path, async_read_file, async_write_file} = (\n  typeof window === \"object\"\n  ? () => ({})\n  : () => {\n    const {promisify} = eval('require(\"util\")');\n    const path = eval('require(\"path\")');\n    const fs = eval('require(\"fs\")');\n\n    const async_read_file = promisify(fs.readFile)\n    const async_write_file = promisify(fs.writeFile)\n\n    return {fs, path, async_read_file, async_write_file}\n  }\n)()\n\n// load_file receives the name of the file and returns the code asyncronously\n//\n// load_file(file: String) -> Promise<String>\nconst load_file = (file) => {\n  return post(\"load_file\", {file});\n};\n\n// save_file receives the file name without the version, the code, and returns, asynchronously\n// the saved global file name (with the version after the @).\n//\n// save_file(file: String, code: String) -> Promise<String>\nconst save_file = (file, code) => post(\"save_file\", {file, code});\n\n// Receives a file name and returns a list of parents for that file\n//\n// load_file_parents(file: String) -> Promise<String[]>\nconst load_file_parents = (file) => post(\"load_file_parents\", {file});\n\n// Transforms a file loader in order to add local file system cache.\n// It receives the file loader and optionally, a path to save the files\n//\n// with_file_system_cache(\n//   loader: String -> Promise<String>,\n//   cache_dir_path?: String\n// ) -> Promise<String>\nconst with_file_system_cache = (loader, cache_dir_path) => async (file) => {\n  const dir_path = cache_dir_path || get_default_fs_cache_path();\n  setup_cache_dir(dir_path);\n  const cached_file_path = path.join(dir_path, file + \".fm\");\n  if(fs.existsSync(cached_file_path)) {\n    return await async_read_file(cached_file_path, \"utf8\");\n  }\n\n  const code = await loader(file)\n\n  await async_write_file(cached_file_path, code, \"utf8\");\n\n  return code;\n}\n\n// Transforms a file loader in order to add local files for development.\n// It receives the file loader and optionally, a path where the files are\n//\n// with_local_files(\n//   loader: String -> Promise<String>,\n//   local_dir_path?: String\n// ) -> Promise<String>\nconst with_local_files = (loader, local_dir_path) => async (file) => {\n  const dir_path = local_dir_path || process.cwd();\n  const local_file_path = path.join(dir_path, file + \".fm\");\n  const has_local_file = fs.existsSync(local_file_path);\n\n  if(has_local_file) {\n    return await async_read_file(local_file_path, \"utf8\");\n  }\n\n  return await loader(file);\n}\n\n// Transforms a file loader in order to add local file system cache.\n// It receives the file loader and optionally, a prefix for the local storage key\n// defaulting to `FPM@${FM_VERSION}/`\n//\n// with_local_storage_cache(\n//   loader: String -> Promise<String>,\n//   prefix?: String\n// ) -> Promise<String>\nconst with_local_storage_cache = (loader, prefix = `FPM@${version}/`) => async (file) => {\n  const cached = window.localStorage.getItem(prefix + file)\n  if(cached) {\n    return cached;\n  }\n\n  const code = await loader(file)\n\n  window.localStorage.setItem(prefix + file, code)\n\n  return code;\n}\n\nmodule.exports = {\n  load_file_parents,\n  load_file,\n  save_file,\n  with_file_system_cache,\n  with_local_files,\n  with_local_storage_cache,\n}\n\n// Utils not exported\n\nconst get_default_fs_cache_path = () => path.join(process.cwd(), \"fm_modules\");\n\nconst setup_cache_dir = (cache_dir_path) => {\n  var version_file_path = path.join(cache_dir_path, \"version\");\n  var has_cache_dir = fs.existsSync(cache_dir_path);\n  var has_version_file = has_cache_dir && fs.existsSync(version_file_path);\n  var correct_version = has_version_file && fs.readFileSync(version_file_path, \"utf8\") === version;\n  if (!has_cache_dir || !has_version_file || !correct_version) {\n    if (has_cache_dir) {\n      var files = fs.readdirSync(cache_dir_path);\n      for (var i = 0; i < files.length; ++i) {\n        fs.unlinkSync(path.join(cache_dir_path, files[i]));\n      }\n      fs.rmdirSync(cache_dir_path);\n    }\n    fs.mkdirSync(cache_dir_path);\n    fs.writeFileSync(version_file_path, version);\n  }\n}\n\n// The current API is just a simple RPC, so this function helps a lot\nconst post = (func, body) => {\n  return xhr(\"http://moonad.org/api/\" + func,\n    { method: \"POST\"\n    , json: true\n    , body})\n    .then(res => {\n      if (res[0] === \"ok\") {\n        return res[1];\n      } else {\n        throw res[1];\n      }\n    });\n};\n\n/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node-libs-browser/node_modules/process/browser.js */ \"./node_modules/node-libs-browser/node_modules/process/browser.js\")))\n\n//# sourceURL=webpack:///./node_modules/formality-lang/src/forall.js?");
+/* WEBPACK VAR INJECTION */(function(process) {// This module is responsible for loading and publishing files from the Forall repository
+// For now this is using the deprecated moonad.org/api repository, but will be updated to the newer
+// Forall API once the service is deployed and ready to be used.
+//
+// This also exports a few "loader decorators" to enable caching depending on the environment
+
+const xhr = __webpack_require__(/*! xhr-request-promise */ "./node_modules/xhr-request-promise/index.js");
+const version = __webpack_require__(/*! ./../package.json */ "./node_modules/formality-lang/package.json").version;
+
+// Load file related things only on node
+const {fs, path, async_read_file, async_write_file} = (
+  typeof window === "object"
+  ? () => ({})
+  : () => {
+    const {promisify} = eval('require("util")');
+    const path = eval('require("path")');
+    const fs = eval('require("fs")');
+
+    const async_read_file = promisify(fs.readFile)
+    const async_write_file = promisify(fs.writeFile)
+
+    return {fs, path, async_read_file, async_write_file}
+  }
+)()
+
+// load_file receives the name of the file and returns the code asyncronously
+//
+// load_file(file: String) -> Promise<String>
+const load_file = (file) => {
+  return post("load_file", {file});
+};
+
+// save_file receives the file name without the version, the code, and returns, asynchronously
+// the saved global file name (with the version after the @).
+//
+// save_file(file: String, code: String) -> Promise<String>
+const save_file = (file, code) => post("save_file", {file, code});
+
+// Receives a file name and returns a list of parents for that file
+//
+// load_file_parents(file: String) -> Promise<String[]>
+const load_file_parents = (file) => post("load_file_parents", {file});
+
+// Transforms a file loader in order to add local file system cache.
+// It receives the file loader and optionally, a path to save the files
+//
+// with_file_system_cache(
+//   loader: String -> Promise<String>,
+//   cache_dir_path?: String
+// ) -> Promise<String>
+const with_file_system_cache = (loader, cache_dir_path) => async (file) => {
+  const dir_path = cache_dir_path || get_default_fs_cache_path();
+  setup_cache_dir(dir_path);
+  const cached_file_path = path.join(dir_path, file + ".fm");
+  if(fs.existsSync(cached_file_path)) {
+    return await async_read_file(cached_file_path, "utf8");
+  }
+
+  const code = await loader(file)
+
+  await async_write_file(cached_file_path, code, "utf8");
+
+  return code;
+}
+
+// Transforms a file loader in order to add local files for development.
+// It receives the file loader and optionally, a path where the files are
+//
+// with_local_files(
+//   loader: String -> Promise<String>,
+//   local_dir_path?: String
+// ) -> Promise<String>
+const with_local_files = (loader, local_dir_path) => async (file) => {
+  const dir_path = local_dir_path || process.cwd();
+  const local_file_path = path.join(dir_path, file + ".fm");
+  const has_local_file = fs.existsSync(local_file_path);
+
+  if(has_local_file) {
+    return await async_read_file(local_file_path, "utf8");
+  }
+
+  return await loader(file);
+}
+
+// Transforms a file loader in order to add local file system cache.
+// It receives the file loader and optionally, a prefix for the local storage key
+// defaulting to `FPM@${FM_VERSION}/`
+//
+// with_local_storage_cache(
+//   loader: String -> Promise<String>,
+//   prefix?: String
+// ) -> Promise<String>
+const with_local_storage_cache = (loader, prefix = `FPM@${version}/`) => async (file) => {
+  const cached = window.localStorage.getItem(prefix + file)
+  if(cached) {
+    return cached;
+  }
+
+  const code = await loader(file)
+
+  window.localStorage.setItem(prefix + file, code)
+
+  return code;
+}
+
+module.exports = {
+  load_file_parents,
+  load_file,
+  save_file,
+  with_file_system_cache,
+  with_local_files,
+  with_local_storage_cache,
+}
+
+// Utils not exported
+
+const get_default_fs_cache_path = () => path.join(process.cwd(), "fm_modules");
+
+const setup_cache_dir = (cache_dir_path) => {
+  var version_file_path = path.join(cache_dir_path, "version");
+  var has_cache_dir = fs.existsSync(cache_dir_path);
+  var has_version_file = has_cache_dir && fs.existsSync(version_file_path);
+  var correct_version = has_version_file && fs.readFileSync(version_file_path, "utf8") === version;
+  if (!has_cache_dir || !has_version_file || !correct_version) {
+    if (has_cache_dir) {
+      var files = fs.readdirSync(cache_dir_path);
+      for (var i = 0; i < files.length; ++i) {
+        fs.unlinkSync(path.join(cache_dir_path, files[i]));
+      }
+      fs.rmdirSync(cache_dir_path);
+    }
+    fs.mkdirSync(cache_dir_path);
+    fs.writeFileSync(version_file_path, version);
+  }
+}
+
+// The current API is just a simple RPC, so this function helps a lot
+const post = (func, body) => {
+  return xhr("http://moonad.org/api/" + func,
+    { method: "POST"
+    , json: true
+    , body})
+    .then(res => {
+      if (res[0] === "ok") {
+        return res[1];
+      } else {
+        throw res[1];
+      }
+    });
+};
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../../node-libs-browser/node_modules/process/browser.js */ "./node_modules/node-libs-browser/node_modules/process/browser.js")))
 
 /***/ }),
 
@@ -215,7 +4569,21 @@ eval("/* WEBPACK VAR INJECTION */(function(process) {// This module is responsib
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("/* WEBPACK VAR INJECTION */(function(global) {var win;\n\nif (typeof window !== \"undefined\") {\n    win = window;\n} else if (typeof global !== \"undefined\") {\n    win = global;\n} else if (typeof self !== \"undefined\"){\n    win = self;\n} else {\n    win = {};\n}\n\nmodule.exports = win;\n\n/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ \"./node_modules/webpack/buildin/global.js\")))\n\n//# sourceURL=webpack:///./node_modules/global/window.js?");
+/* WEBPACK VAR INJECTION */(function(global) {var win;
+
+if (typeof window !== "undefined") {
+    win = window;
+} else if (typeof global !== "undefined") {
+    win = global;
+} else if (typeof self !== "undefined"){
+    win = self;
+} else {
+    win = {};
+}
+
+module.exports = win;
+
+/* WEBPACK VAR INJECTION */}.call(this, __webpack_require__(/*! ./../webpack/buildin/global.js */ "./node_modules/webpack/buildin/global.js")))
 
 /***/ }),
 
@@ -227,7 +4595,134 @@ eval("/* WEBPACK VAR INJECTION */(function(global) {var win;\n\nif (typeof windo
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"h\", function() { return h; });\n/* harmony import */ var inferno__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! inferno */ \"./node_modules/inferno/index.esm.js\");\n\n\nvar isArray = Array.isArray;\nfunction isStringOrNumber(o) {\n    var type = typeof o;\n    return type === 'string' || type === 'number';\n}\nfunction isString(o) {\n    return typeof o === 'string';\n}\nfunction isUndefined(o) {\n    return o === void 0;\n}\n\nvar classIdSplit = /([.#]?[a-zA-Z0-9_:-]+)/;\nvar notClassId = /^\\.|#/;\nfunction parseTag(tag, props) {\n    if (!tag) {\n        return 'div';\n    }\n    if (tag === inferno__WEBPACK_IMPORTED_MODULE_0__[\"Fragment\"]) {\n        return tag;\n    }\n    var noId = props && isUndefined(props.id);\n    var tagParts = tag.split(classIdSplit);\n    var tagName = null;\n    if (notClassId.test(tagParts[1])) {\n        tagName = 'div';\n    }\n    var classes;\n    for (var i = 0, len = tagParts.length; i < len; ++i) {\n        var part = tagParts[i];\n        if (!part) {\n            continue;\n        }\n        var type = part.charAt(0);\n        if (!tagName) {\n            tagName = part;\n        }\n        else if (type === '.') {\n            if (classes === void 0) {\n                classes = [];\n            }\n            classes.push(part.substring(1, part.length));\n        }\n        else if (type === '#' && noId) {\n            props.id = part.substring(1, part.length);\n        }\n    }\n    if (classes) {\n        if (props.className) {\n            classes.push(props.className);\n        }\n        props.className = classes.join(' ');\n    }\n    return tagName || 'div';\n}\nfunction isChildren(x) {\n    return isStringOrNumber(x) || (x && isArray(x));\n}\n/**\n * Creates virtual node\n * @param {string|VNode|Function} _tag Name for virtual node\n * @param {object=} _props Additional properties for virtual node\n * @param {string|number|VNode|Array<string|number|VNode>|null=} _children Optional children for virtual node\n * @returns {VNode} returns new virtual node\n */\nfunction h(_tag, _props, _children) {\n    // If a child array or text node are passed as the second argument, shift them\n    if (!_children && isChildren(_props)) {\n        _children = _props;\n        _props = {};\n    }\n    var isElement = isString(_tag);\n    _props = _props || {};\n    var tag = isElement ? parseTag(_tag, _props) : _tag;\n    var newProps = {};\n    var key = null;\n    var ref = null;\n    var children = null;\n    var className = null;\n    for (var prop in _props) {\n        if (isElement && (prop === 'className' || prop === 'class')) {\n            className = _props[prop];\n        }\n        else if (prop === 'key') {\n            key = _props[prop];\n        }\n        else if (prop === 'ref') {\n            ref = _props[prop];\n        }\n        else if (prop === 'hooks') {\n            ref = _props[prop];\n        }\n        else if (prop === 'children') {\n            children = _props[prop];\n        }\n        else if (!isElement && prop.substr(0, 11) === 'onComponent') {\n            if (!ref) {\n                ref = {};\n            }\n            ref[prop] = _props[prop];\n        }\n        else {\n            newProps[prop] = _props[prop];\n        }\n    }\n    if (isElement) {\n        var flags = Object(inferno__WEBPACK_IMPORTED_MODULE_0__[\"getFlagsForElementVnode\"])(tag);\n        if (flags & 8192 /* Fragment */) {\n            return Object(inferno__WEBPACK_IMPORTED_MODULE_0__[\"createFragment\"])(_children || children, 0 /* UnknownChildren */, key);\n        }\n        if (newProps.contenteditable !== void 0) {\n            flags |= 4096 /* ContentEditable */;\n        }\n        return Object(inferno__WEBPACK_IMPORTED_MODULE_0__[\"createVNode\"])(flags, tag, className, _children || children, 0 /* UnknownChildren */, newProps, key, ref);\n    }\n    if (children || _children) {\n        newProps.children = children || _children;\n    }\n    return Object(inferno__WEBPACK_IMPORTED_MODULE_0__[\"createComponentVNode\"])(2 /* ComponentUnknown */, tag, newProps, key, ref);\n}\n\n\n\n\n//# sourceURL=webpack:///./node_modules/inferno-hyperscript/dist/index.esm.js?");
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "h", function() { return h; });
+/* harmony import */ var inferno__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
+
+
+var isArray = Array.isArray;
+function isStringOrNumber(o) {
+    var type = typeof o;
+    return type === 'string' || type === 'number';
+}
+function isString(o) {
+    return typeof o === 'string';
+}
+function isUndefined(o) {
+    return o === void 0;
+}
+
+var classIdSplit = /([.#]?[a-zA-Z0-9_:-]+)/;
+var notClassId = /^\.|#/;
+function parseTag(tag, props) {
+    if (!tag) {
+        return 'div';
+    }
+    if (tag === inferno__WEBPACK_IMPORTED_MODULE_0__["Fragment"]) {
+        return tag;
+    }
+    var noId = props && isUndefined(props.id);
+    var tagParts = tag.split(classIdSplit);
+    var tagName = null;
+    if (notClassId.test(tagParts[1])) {
+        tagName = 'div';
+    }
+    var classes;
+    for (var i = 0, len = tagParts.length; i < len; ++i) {
+        var part = tagParts[i];
+        if (!part) {
+            continue;
+        }
+        var type = part.charAt(0);
+        if (!tagName) {
+            tagName = part;
+        }
+        else if (type === '.') {
+            if (classes === void 0) {
+                classes = [];
+            }
+            classes.push(part.substring(1, part.length));
+        }
+        else if (type === '#' && noId) {
+            props.id = part.substring(1, part.length);
+        }
+    }
+    if (classes) {
+        if (props.className) {
+            classes.push(props.className);
+        }
+        props.className = classes.join(' ');
+    }
+    return tagName || 'div';
+}
+function isChildren(x) {
+    return isStringOrNumber(x) || (x && isArray(x));
+}
+/**
+ * Creates virtual node
+ * @param {string|VNode|Function} _tag Name for virtual node
+ * @param {object=} _props Additional properties for virtual node
+ * @param {string|number|VNode|Array<string|number|VNode>|null=} _children Optional children for virtual node
+ * @returns {VNode} returns new virtual node
+ */
+function h(_tag, _props, _children) {
+    // If a child array or text node are passed as the second argument, shift them
+    if (!_children && isChildren(_props)) {
+        _children = _props;
+        _props = {};
+    }
+    var isElement = isString(_tag);
+    _props = _props || {};
+    var tag = isElement ? parseTag(_tag, _props) : _tag;
+    var newProps = {};
+    var key = null;
+    var ref = null;
+    var children = null;
+    var className = null;
+    for (var prop in _props) {
+        if (isElement && (prop === 'className' || prop === 'class')) {
+            className = _props[prop];
+        }
+        else if (prop === 'key') {
+            key = _props[prop];
+        }
+        else if (prop === 'ref') {
+            ref = _props[prop];
+        }
+        else if (prop === 'hooks') {
+            ref = _props[prop];
+        }
+        else if (prop === 'children') {
+            children = _props[prop];
+        }
+        else if (!isElement && prop.substr(0, 11) === 'onComponent') {
+            if (!ref) {
+                ref = {};
+            }
+            ref[prop] = _props[prop];
+        }
+        else {
+            newProps[prop] = _props[prop];
+        }
+    }
+    if (isElement) {
+        var flags = Object(inferno__WEBPACK_IMPORTED_MODULE_0__["getFlagsForElementVnode"])(tag);
+        if (flags & 8192 /* Fragment */) {
+            return Object(inferno__WEBPACK_IMPORTED_MODULE_0__["createFragment"])(_children || children, 0 /* UnknownChildren */, key);
+        }
+        if (newProps.contenteditable !== void 0) {
+            flags |= 4096 /* ContentEditable */;
+        }
+        return Object(inferno__WEBPACK_IMPORTED_MODULE_0__["createVNode"])(flags, tag, className, _children || children, 0 /* UnknownChildren */, newProps, key, ref);
+    }
+    if (children || _children) {
+        newProps.children = children || _children;
+    }
+    return Object(inferno__WEBPACK_IMPORTED_MODULE_0__["createComponentVNode"])(2 /* ComponentUnknown */, tag, newProps, key, ref);
+}
+
+
+
 
 /***/ }),
 
@@ -239,7 +4734,2205 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"Component\", function() { return Component; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"EMPTY_OBJ\", function() { return EMPTY_OBJ; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"Fragment\", function() { return Fragment; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_CI\", function() { return createClassComponentInstance; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_HI\", function() { return normalizeRoot; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_M\", function() { return mount; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_MCCC\", function() { return mountClassComponentCallbacks; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_ME\", function() { return mountElement; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_MFCC\", function() { return mountFunctionalComponentCallbacks; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_MP\", function() { return mountProps; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"_MR\", function() { return mountRef; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"__render\", function() { return __render; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"createComponentVNode\", function() { return createComponentVNode; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"createFragment\", function() { return createFragment; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"createPortal\", function() { return createPortal; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"createRef\", function() { return createRef; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"createRenderer\", function() { return createRenderer; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"createTextVNode\", function() { return createTextVNode; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"createVNode\", function() { return createVNode; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"directClone\", function() { return directClone; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"findDOMfromVNode\", function() { return findDOMfromVNode; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"forwardRef\", function() { return forwardRef; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"getFlagsForElementVnode\", function() { return getFlagsForElementVnode; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"linkEvent\", function() { return linkEvent; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"normalizeProps\", function() { return normalizeProps; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"options\", function() { return options; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"render\", function() { return render; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"rerender\", function() { return rerender; });\n/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, \"version\", function() { return version; });\nvar isArray = Array.isArray;\nfunction isStringOrNumber(o) {\n    var type = typeof o;\n    return type === 'string' || type === 'number';\n}\nfunction isNullOrUndef(o) {\n    return o === void 0 || o === null;\n}\nfunction isInvalid(o) {\n    return o === null || o === false || o === true || o === void 0;\n}\nfunction isFunction(o) {\n    return typeof o === 'function';\n}\nfunction isString(o) {\n    return typeof o === 'string';\n}\nfunction isNumber(o) {\n    return typeof o === 'number';\n}\nfunction isNull(o) {\n    return o === null;\n}\nfunction isUndefined(o) {\n    return o === void 0;\n}\nfunction combineFrom(first, second) {\n    var out = {};\n    if (first) {\n        for (var key in first) {\n            out[key] = first[key];\n        }\n    }\n    if (second) {\n        for (var key$1 in second) {\n            out[key$1] = second[key$1];\n        }\n    }\n    return out;\n}\n\n/**\n * Links given data to event as first parameter\n * @param {*} data data to be linked, it will be available in function as first parameter\n * @param {Function} event Function to be called when event occurs\n * @returns {{data: *, event: Function}}\n */\nfunction linkEvent(data, event) {\n    if (isFunction(event)) {\n        return { data: data, event: event };\n    }\n    return null; // Return null when event is invalid, to avoid creating unnecessary event handlers\n}\n// object.event should always be function, otherwise its badly created object.\nfunction isLinkEventObject(o) {\n    return !isNull(o) && typeof o === 'object';\n}\n\n// We need EMPTY_OBJ defined in one place.\n// Its used for comparison so we cant inline it into shared\nvar EMPTY_OBJ = {};\nvar Fragment = '$F';\nfunction normalizeEventName(name) {\n    return name.substr(2).toLowerCase();\n}\nfunction appendChild(parentDOM, dom) {\n    parentDOM.appendChild(dom);\n}\nfunction insertOrAppend(parentDOM, newNode, nextNode) {\n    if (isNull(nextNode)) {\n        appendChild(parentDOM, newNode);\n    }\n    else {\n        parentDOM.insertBefore(newNode, nextNode);\n    }\n}\nfunction documentCreateElement(tag, isSVG) {\n    if (isSVG) {\n        return document.createElementNS('http://www.w3.org/2000/svg', tag);\n    }\n    return document.createElement(tag);\n}\nfunction replaceChild(parentDOM, newDom, lastDom) {\n    parentDOM.replaceChild(newDom, lastDom);\n}\nfunction removeChild(parentDOM, childNode) {\n    parentDOM.removeChild(childNode);\n}\nfunction callAll(arrayFn) {\n    var listener;\n    while ((listener = arrayFn.shift()) !== undefined) {\n        listener();\n    }\n}\nfunction findChildVNode(vNode, startEdge, flags) {\n    var children = vNode.children;\n    if (flags & 4 /* ComponentClass */) {\n        return children.$LI;\n    }\n    if (flags & 8192 /* Fragment */) {\n        return vNode.childFlags === 2 /* HasVNodeChildren */ ? children : children[startEdge ? 0 : children.length - 1];\n    }\n    return children;\n}\nfunction findDOMfromVNode(vNode, startEdge) {\n    var flags;\n    while (vNode) {\n        flags = vNode.flags;\n        if (flags & 2033 /* DOMRef */) {\n            return vNode.dom;\n        }\n        vNode = findChildVNode(vNode, startEdge, flags);\n    }\n    return null;\n}\nfunction removeVNodeDOM(vNode, parentDOM) {\n    do {\n        var flags = vNode.flags;\n        if (flags & 2033 /* DOMRef */) {\n            removeChild(parentDOM, vNode.dom);\n            return;\n        }\n        var children = vNode.children;\n        if (flags & 4 /* ComponentClass */) {\n            vNode = children.$LI;\n        }\n        if (flags & 8 /* ComponentFunction */) {\n            vNode = children;\n        }\n        if (flags & 8192 /* Fragment */) {\n            if (vNode.childFlags === 2 /* HasVNodeChildren */) {\n                vNode = children;\n            }\n            else {\n                for (var i = 0, len = children.length; i < len; ++i) {\n                    removeVNodeDOM(children[i], parentDOM);\n                }\n                return;\n            }\n        }\n    } while (vNode);\n}\nfunction moveVNodeDOM(vNode, parentDOM, nextNode) {\n    do {\n        var flags = vNode.flags;\n        if (flags & 2033 /* DOMRef */) {\n            insertOrAppend(parentDOM, vNode.dom, nextNode);\n            return;\n        }\n        var children = vNode.children;\n        if (flags & 4 /* ComponentClass */) {\n            vNode = children.$LI;\n        }\n        if (flags & 8 /* ComponentFunction */) {\n            vNode = children;\n        }\n        if (flags & 8192 /* Fragment */) {\n            if (vNode.childFlags === 2 /* HasVNodeChildren */) {\n                vNode = children;\n            }\n            else {\n                for (var i = 0, len = children.length; i < len; ++i) {\n                    moveVNodeDOM(children[i], parentDOM, nextNode);\n                }\n                return;\n            }\n        }\n    } while (vNode);\n}\nfunction createDerivedState(instance, nextProps, state) {\n    if (instance.constructor.getDerivedStateFromProps) {\n        return combineFrom(state, instance.constructor.getDerivedStateFromProps(nextProps, state));\n    }\n    return state;\n}\nvar renderCheck = {\n    v: false\n};\nvar options = {\n    componentComparator: null,\n    createVNode: null,\n    renderComplete: null\n};\nfunction setTextContent(dom, children) {\n    dom.textContent = children;\n}\n// Calling this function assumes, nextValue is linkEvent\nfunction isLastValueSameLinkEvent(lastValue, nextValue) {\n    return (isLinkEventObject(lastValue) &&\n        lastValue.event === nextValue.event &&\n        lastValue.data === nextValue.data);\n}\nfunction mergeUnsetProperties(to, from) {\n    for (var propName in from) {\n        if (isUndefined(to[propName])) {\n            to[propName] = from[propName];\n        }\n    }\n    return to;\n}\nfunction safeCall1(method, arg1) {\n    return !!isFunction(method) && (method(arg1), true);\n}\n\nvar keyPrefix = '$';\nfunction V(childFlags, children, className, flags, key, props, ref, type) {\n    this.childFlags = childFlags;\n    this.children = children;\n    this.className = className;\n    this.dom = null;\n    this.flags = flags;\n    this.key = key === void 0 ? null : key;\n    this.props = props === void 0 ? null : props;\n    this.ref = ref === void 0 ? null : ref;\n    this.type = type;\n}\nfunction createVNode(flags, type, className, children, childFlags, props, key, ref) {\n    var childFlag = childFlags === void 0 ? 1 /* HasInvalidChildren */ : childFlags;\n    var vNode = new V(childFlag, children, className, flags, key, props, ref, type);\n    if (options.createVNode) {\n        options.createVNode(vNode);\n    }\n    if (childFlag === 0 /* UnknownChildren */) {\n        normalizeChildren(vNode, vNode.children);\n    }\n    return vNode;\n}\nfunction mergeDefaultHooks(flags, type, ref) {\n    if (flags & 4 /* ComponentClass */) {\n        return ref;\n    }\n    var defaultHooks = (flags & 32768 /* ForwardRef */ ? type.render : type).defaultHooks;\n    if (isNullOrUndef(defaultHooks)) {\n        return ref;\n    }\n    if (isNullOrUndef(ref)) {\n        return defaultHooks;\n    }\n    return mergeUnsetProperties(ref, defaultHooks);\n}\nfunction mergeDefaultProps(flags, type, props) {\n    // set default props\n    var defaultProps = (flags & 32768 /* ForwardRef */ ? type.render : type).defaultProps;\n    if (isNullOrUndef(defaultProps)) {\n        return props;\n    }\n    if (isNullOrUndef(props)) {\n        return combineFrom(defaultProps, null);\n    }\n    return mergeUnsetProperties(props, defaultProps);\n}\nfunction resolveComponentFlags(flags, type) {\n    if (flags & 12 /* ComponentKnown */) {\n        return flags;\n    }\n    if (type.prototype && type.prototype.render) {\n        return 4 /* ComponentClass */;\n    }\n    if (type.render) {\n        return 32776 /* ForwardRefComponent */;\n    }\n    return 8 /* ComponentFunction */;\n}\nfunction createComponentVNode(flags, type, props, key, ref) {\n    flags = resolveComponentFlags(flags, type);\n    var vNode = new V(1 /* HasInvalidChildren */, null, null, flags, key, mergeDefaultProps(flags, type, props), mergeDefaultHooks(flags, type, ref), type);\n    if (options.createVNode) {\n        options.createVNode(vNode);\n    }\n    return vNode;\n}\nfunction createTextVNode(text, key) {\n    return new V(1 /* HasInvalidChildren */, isNullOrUndef(text) || text === true || text === false ? '' : text, null, 16 /* Text */, key, null, null, null);\n}\nfunction createFragment(children, childFlags, key) {\n    var fragment = createVNode(8192 /* Fragment */, 8192 /* Fragment */, null, children, childFlags, null, key, null);\n    switch (fragment.childFlags) {\n        case 1 /* HasInvalidChildren */:\n            fragment.children = createVoidVNode();\n            fragment.childFlags = 2 /* HasVNodeChildren */;\n            break;\n        case 16 /* HasTextChildren */:\n            fragment.children = [createTextVNode(children)];\n            fragment.childFlags = 4 /* HasNonKeyedChildren */;\n            break;\n        default:\n            break;\n    }\n    return fragment;\n}\nfunction normalizeProps(vNode) {\n    var props = vNode.props;\n    if (props) {\n        var flags = vNode.flags;\n        if (flags & 481 /* Element */) {\n            if (props.children !== void 0 && isNullOrUndef(vNode.children)) {\n                normalizeChildren(vNode, props.children);\n            }\n            if (props.className !== void 0) {\n                vNode.className = props.className || null;\n                props.className = undefined;\n            }\n        }\n        if (props.key !== void 0) {\n            vNode.key = props.key;\n            props.key = undefined;\n        }\n        if (props.ref !== void 0) {\n            if (flags & 8 /* ComponentFunction */) {\n                vNode.ref = combineFrom(vNode.ref, props.ref);\n            }\n            else {\n                vNode.ref = props.ref;\n            }\n            props.ref = undefined;\n        }\n    }\n    return vNode;\n}\n/*\n * Fragment is different than normal vNode,\n * because when it needs to be cloned we need to clone its children too\n * But not normalize, because otherwise those possibly get KEY and re-mount\n */\nfunction cloneFragment(vNodeToClone) {\n    var clonedChildren;\n    var oldChildren = vNodeToClone.children;\n    var childFlags = vNodeToClone.childFlags;\n    if (childFlags === 2 /* HasVNodeChildren */) {\n        clonedChildren = directClone(oldChildren);\n    }\n    else if (childFlags & 12 /* MultipleChildren */) {\n        clonedChildren = [];\n        for (var i = 0, len = oldChildren.length; i < len; ++i) {\n            clonedChildren.push(directClone(oldChildren[i]));\n        }\n    }\n    return createFragment(clonedChildren, childFlags, vNodeToClone.key);\n}\nfunction directClone(vNodeToClone) {\n    var flags = vNodeToClone.flags & -16385 /* ClearInUse */;\n    var props = vNodeToClone.props;\n    if (flags & 14 /* Component */) {\n        if (!isNull(props)) {\n            var propsToClone = props;\n            props = {};\n            for (var key in propsToClone) {\n                props[key] = propsToClone[key];\n            }\n        }\n    }\n    if ((flags & 8192 /* Fragment */) === 0) {\n        return new V(vNodeToClone.childFlags, vNodeToClone.children, vNodeToClone.className, flags, vNodeToClone.key, props, vNodeToClone.ref, vNodeToClone.type);\n    }\n    return cloneFragment(vNodeToClone);\n}\nfunction createVoidVNode() {\n    return createTextVNode('', null);\n}\nfunction createPortal(children, container) {\n    var normalizedRoot = normalizeRoot(children);\n    return createVNode(1024 /* Portal */, 1024 /* Portal */, null, normalizedRoot, 0 /* UnknownChildren */, null, normalizedRoot.key, container);\n}\nfunction _normalizeVNodes(nodes, result, index, currentKey) {\n    for (var len = nodes.length; index < len; index++) {\n        var n = nodes[index];\n        if (!isInvalid(n)) {\n            var newKey = currentKey + keyPrefix + index;\n            if (isArray(n)) {\n                _normalizeVNodes(n, result, 0, newKey);\n            }\n            else {\n                if (isStringOrNumber(n)) {\n                    n = createTextVNode(n, newKey);\n                }\n                else {\n                    var oldKey = n.key;\n                    var isPrefixedKey = isString(oldKey) && oldKey[0] === keyPrefix;\n                    if (n.flags & 81920 /* InUseOrNormalized */ || isPrefixedKey) {\n                        n = directClone(n);\n                    }\n                    n.flags |= 65536 /* Normalized */;\n                    if (!isPrefixedKey) {\n                        if (isNull(oldKey)) {\n                            n.key = newKey;\n                        }\n                        else {\n                            n.key = currentKey + oldKey;\n                        }\n                    }\n                    else if (oldKey.substring(0, currentKey.length) !== currentKey) {\n                        n.key = currentKey + oldKey;\n                    }\n                }\n                result.push(n);\n            }\n        }\n    }\n}\nfunction getFlagsForElementVnode(type) {\n    switch (type) {\n        case 'svg':\n            return 32 /* SvgElement */;\n        case 'input':\n            return 64 /* InputElement */;\n        case 'select':\n            return 256 /* SelectElement */;\n        case 'textarea':\n            return 128 /* TextareaElement */;\n        case Fragment:\n            return 8192 /* Fragment */;\n        default:\n            return 1 /* HtmlElement */;\n    }\n}\nfunction normalizeChildren(vNode, children) {\n    var newChildren;\n    var newChildFlags = 1 /* HasInvalidChildren */;\n    // Don't change children to match strict equal (===) true in patching\n    if (isInvalid(children)) {\n        newChildren = children;\n    }\n    else if (isStringOrNumber(children)) {\n        newChildFlags = 16 /* HasTextChildren */;\n        newChildren = children;\n    }\n    else if (isArray(children)) {\n        var len = children.length;\n        for (var i = 0; i < len; ++i) {\n            var n = children[i];\n            if (isInvalid(n) || isArray(n)) {\n                newChildren = newChildren || children.slice(0, i);\n                _normalizeVNodes(children, newChildren, i, '');\n                break;\n            }\n            else if (isStringOrNumber(n)) {\n                newChildren = newChildren || children.slice(0, i);\n                newChildren.push(createTextVNode(n, keyPrefix + i));\n            }\n            else {\n                var key = n.key;\n                var needsCloning = (n.flags & 81920 /* InUseOrNormalized */) > 0;\n                var isNullKey = isNull(key);\n                var isPrefixed = isString(key) && key[0] === keyPrefix;\n                if (needsCloning || isNullKey || isPrefixed) {\n                    newChildren = newChildren || children.slice(0, i);\n                    if (needsCloning || isPrefixed) {\n                        n = directClone(n);\n                    }\n                    if (isNullKey || isPrefixed) {\n                        n.key = keyPrefix + i;\n                    }\n                    newChildren.push(n);\n                }\n                else if (newChildren) {\n                    newChildren.push(n);\n                }\n                n.flags |= 65536 /* Normalized */;\n            }\n        }\n        newChildren = newChildren || children;\n        if (newChildren.length === 0) {\n            newChildFlags = 1 /* HasInvalidChildren */;\n        }\n        else {\n            newChildFlags = 8 /* HasKeyedChildren */;\n        }\n    }\n    else {\n        newChildren = children;\n        newChildren.flags |= 65536 /* Normalized */;\n        if (children.flags & 81920 /* InUseOrNormalized */) {\n            newChildren = directClone(children);\n        }\n        newChildFlags = 2 /* HasVNodeChildren */;\n    }\n    vNode.children = newChildren;\n    vNode.childFlags = newChildFlags;\n    return vNode;\n}\nfunction normalizeRoot(input) {\n    if (isInvalid(input) || isStringOrNumber(input)) {\n        return createTextVNode(input, null);\n    }\n    if (isArray(input)) {\n        return createFragment(input, 0 /* UnknownChildren */, null);\n    }\n    return input.flags & 16384 /* InUse */ ? directClone(input) : input;\n}\n\nvar xlinkNS = 'http://www.w3.org/1999/xlink';\nvar xmlNS = 'http://www.w3.org/XML/1998/namespace';\nvar namespaces = {\n    'xlink:actuate': xlinkNS,\n    'xlink:arcrole': xlinkNS,\n    'xlink:href': xlinkNS,\n    'xlink:role': xlinkNS,\n    'xlink:show': xlinkNS,\n    'xlink:title': xlinkNS,\n    'xlink:type': xlinkNS,\n    'xml:base': xmlNS,\n    'xml:lang': xmlNS,\n    'xml:space': xmlNS\n};\n\nfunction getDelegatedEventObject(v) {\n    return {\n        onClick: v,\n        onDblClick: v,\n        onFocusIn: v,\n        onFocusOut: v,\n        onKeyDown: v,\n        onKeyPress: v,\n        onKeyUp: v,\n        onMouseDown: v,\n        onMouseMove: v,\n        onMouseUp: v,\n        onTouchEnd: v,\n        onTouchMove: v,\n        onTouchStart: v\n    };\n}\nvar attachedEventCounts = getDelegatedEventObject(0);\nvar attachedEvents = getDelegatedEventObject(null);\nvar syntheticEvents = getDelegatedEventObject(true);\nfunction updateOrAddSyntheticEvent(name, dom) {\n    var eventsObject = dom.$EV;\n    if (!eventsObject) {\n        eventsObject = dom.$EV = getDelegatedEventObject(null);\n    }\n    if (!eventsObject[name]) {\n        if (++attachedEventCounts[name] === 1) {\n            attachedEvents[name] = attachEventToDocument(name);\n        }\n    }\n    return eventsObject;\n}\nfunction unmountSyntheticEvent(name, dom) {\n    var eventsObject = dom.$EV;\n    if (eventsObject && eventsObject[name]) {\n        if (--attachedEventCounts[name] === 0) {\n            document.removeEventListener(normalizeEventName(name), attachedEvents[name]);\n            attachedEvents[name] = null;\n        }\n        eventsObject[name] = null;\n    }\n}\nfunction handleSyntheticEvent(name, lastEvent, nextEvent, dom) {\n    if (isFunction(nextEvent)) {\n        updateOrAddSyntheticEvent(name, dom)[name] = nextEvent;\n    }\n    else if (isLinkEventObject(nextEvent)) {\n        if (isLastValueSameLinkEvent(lastEvent, nextEvent)) {\n            return;\n        }\n        updateOrAddSyntheticEvent(name, dom)[name] = nextEvent;\n    }\n    else {\n        unmountSyntheticEvent(name, dom);\n    }\n}\n// When browsers fully support event.composedPath we could loop it through instead of using parentNode property\nfunction getTargetNode(event) {\n    return isFunction(event.composedPath) ? event.composedPath()[0] : event.target;\n}\nfunction dispatchEvents(event, isClick, name, eventData) {\n    var dom = getTargetNode(event);\n    do {\n        // Html Nodes can be nested fe: span inside button in that scenario browser does not handle disabled attribute on parent,\n        // because the event listener is on document.body\n        // Don't process clicks on disabled elements\n        if (isClick && dom.disabled) {\n            return;\n        }\n        var eventsObject = dom.$EV;\n        if (eventsObject) {\n            var currentEvent = eventsObject[name];\n            if (currentEvent) {\n                // linkEvent object\n                eventData.dom = dom;\n                currentEvent.event ? currentEvent.event(currentEvent.data, event) : currentEvent(event);\n                if (event.cancelBubble) {\n                    return;\n                }\n            }\n        }\n        dom = dom.parentNode;\n    } while (!isNull(dom));\n}\nfunction stopPropagation() {\n    this.cancelBubble = true;\n    if (!this.immediatePropagationStopped) {\n        this.stopImmediatePropagation();\n    }\n}\nfunction isDefaultPrevented() {\n    return this.defaultPrevented;\n}\nfunction isPropagationStopped() {\n    return this.cancelBubble;\n}\nfunction extendEventProperties(event) {\n    // Event data needs to be object to save reference to currentTarget getter\n    var eventData = {\n        dom: document\n    };\n    event.isDefaultPrevented = isDefaultPrevented;\n    event.isPropagationStopped = isPropagationStopped;\n    event.stopPropagation = stopPropagation;\n    Object.defineProperty(event, 'currentTarget', {\n        configurable: true,\n        get: function get() {\n            return eventData.dom;\n        }\n    });\n    return eventData;\n}\nfunction rootClickEvent(name) {\n    return function (event) {\n        if (event.button !== 0) {\n            // Firefox incorrectly triggers click event for mid/right mouse buttons.\n            // This bug has been active for 17 years.\n            // https://bugzilla.mozilla.org/show_bug.cgi?id=184051\n            event.stopPropagation();\n            return;\n        }\n        dispatchEvents(event, true, name, extendEventProperties(event));\n    };\n}\nfunction rootEvent(name) {\n    return function (event) {\n        dispatchEvents(event, false, name, extendEventProperties(event));\n    };\n}\nfunction attachEventToDocument(name) {\n    var attachedEvent = name === 'onClick' || name === 'onDblClick' ? rootClickEvent(name) : rootEvent(name);\n    document.addEventListener(normalizeEventName(name), attachedEvent);\n    return attachedEvent;\n}\n\nfunction isSameInnerHTML(dom, innerHTML) {\n    var tempdom = document.createElement('i');\n    tempdom.innerHTML = innerHTML;\n    return tempdom.innerHTML === dom.innerHTML;\n}\n\nfunction triggerEventListener(props, methodName, e) {\n    if (props[methodName]) {\n        var listener = props[methodName];\n        if (listener.event) {\n            listener.event(listener.data, e);\n        }\n        else {\n            listener(e);\n        }\n    }\n    else {\n        var nativeListenerName = methodName.toLowerCase();\n        if (props[nativeListenerName]) {\n            props[nativeListenerName](e);\n        }\n    }\n}\nfunction createWrappedFunction(methodName, applyValue) {\n    var fnMethod = function (e) {\n        var vNode = this.$V;\n        // If vNode is gone by the time event fires, no-op\n        if (!vNode) {\n            return;\n        }\n        var props = vNode.props || EMPTY_OBJ;\n        var dom = vNode.dom;\n        if (isString(methodName)) {\n            triggerEventListener(props, methodName, e);\n        }\n        else {\n            for (var i = 0; i < methodName.length; ++i) {\n                triggerEventListener(props, methodName[i], e);\n            }\n        }\n        if (isFunction(applyValue)) {\n            var newVNode = this.$V;\n            var newProps = newVNode.props || EMPTY_OBJ;\n            applyValue(newProps, dom, false, newVNode);\n        }\n    };\n    Object.defineProperty(fnMethod, 'wrapped', {\n        configurable: false,\n        enumerable: false,\n        value: true,\n        writable: false\n    });\n    return fnMethod;\n}\n\nfunction attachEvent(dom, eventName, handler) {\n    var previousKey = \"$\" + eventName;\n    var previousArgs = dom[previousKey];\n    if (previousArgs) {\n        if (previousArgs[1].wrapped) {\n            return;\n        }\n        dom.removeEventListener(previousArgs[0], previousArgs[1]);\n        dom[previousKey] = null;\n    }\n    if (isFunction(handler)) {\n        dom.addEventListener(eventName, handler);\n        dom[previousKey] = [eventName, handler];\n    }\n}\n\nfunction isCheckedType(type) {\n    return type === 'checkbox' || type === 'radio';\n}\nvar onTextInputChange = createWrappedFunction('onInput', applyValueInput);\nvar wrappedOnChange = createWrappedFunction(['onClick', 'onChange'], applyValueInput);\n/* tslint:disable-next-line:no-empty */\nfunction emptywrapper(event) {\n    event.stopPropagation();\n}\nemptywrapper.wrapped = true;\nfunction inputEvents(dom, nextPropsOrEmpty) {\n    if (isCheckedType(nextPropsOrEmpty.type)) {\n        attachEvent(dom, 'change', wrappedOnChange);\n        attachEvent(dom, 'click', emptywrapper);\n    }\n    else {\n        attachEvent(dom, 'input', onTextInputChange);\n    }\n}\nfunction applyValueInput(nextPropsOrEmpty, dom) {\n    var type = nextPropsOrEmpty.type;\n    var value = nextPropsOrEmpty.value;\n    var checked = nextPropsOrEmpty.checked;\n    var multiple = nextPropsOrEmpty.multiple;\n    var defaultValue = nextPropsOrEmpty.defaultValue;\n    var hasValue = !isNullOrUndef(value);\n    if (type && type !== dom.type) {\n        dom.setAttribute('type', type);\n    }\n    if (!isNullOrUndef(multiple) && multiple !== dom.multiple) {\n        dom.multiple = multiple;\n    }\n    if (!isNullOrUndef(defaultValue) && !hasValue) {\n        dom.defaultValue = defaultValue + '';\n    }\n    if (isCheckedType(type)) {\n        if (hasValue) {\n            dom.value = value;\n        }\n        if (!isNullOrUndef(checked)) {\n            dom.checked = checked;\n        }\n    }\n    else {\n        if (hasValue && dom.value !== value) {\n            dom.defaultValue = value;\n            dom.value = value;\n        }\n        else if (!isNullOrUndef(checked)) {\n            dom.checked = checked;\n        }\n    }\n}\n\nfunction updateChildOptions(vNode, value) {\n    if (vNode.type === 'option') {\n        updateChildOption(vNode, value);\n    }\n    else {\n        var children = vNode.children;\n        var flags = vNode.flags;\n        if (flags & 4 /* ComponentClass */) {\n            updateChildOptions(children.$LI, value);\n        }\n        else if (flags & 8 /* ComponentFunction */) {\n            updateChildOptions(children, value);\n        }\n        else if (vNode.childFlags === 2 /* HasVNodeChildren */) {\n            updateChildOptions(children, value);\n        }\n        else if (vNode.childFlags & 12 /* MultipleChildren */) {\n            for (var i = 0, len = children.length; i < len; ++i) {\n                updateChildOptions(children[i], value);\n            }\n        }\n    }\n}\nfunction updateChildOption(vNode, value) {\n    var props = vNode.props || EMPTY_OBJ;\n    var dom = vNode.dom;\n    // we do this as multiple may have changed\n    dom.value = props.value;\n    if (props.value === value || (isArray(value) && value.indexOf(props.value) !== -1)) {\n        dom.selected = true;\n    }\n    else if (!isNullOrUndef(value) || !isNullOrUndef(props.selected)) {\n        dom.selected = props.selected || false;\n    }\n}\nvar onSelectChange = createWrappedFunction('onChange', applyValueSelect);\nfunction selectEvents(dom) {\n    attachEvent(dom, 'change', onSelectChange);\n}\nfunction applyValueSelect(nextPropsOrEmpty, dom, mounting, vNode) {\n    var multiplePropInBoolean = Boolean(nextPropsOrEmpty.multiple);\n    if (!isNullOrUndef(nextPropsOrEmpty.multiple) && multiplePropInBoolean !== dom.multiple) {\n        dom.multiple = multiplePropInBoolean;\n    }\n    var index = nextPropsOrEmpty.selectedIndex;\n    if (index === -1) {\n        dom.selectedIndex = -1;\n    }\n    var childFlags = vNode.childFlags;\n    if (childFlags !== 1 /* HasInvalidChildren */) {\n        var value = nextPropsOrEmpty.value;\n        if (isNumber(index) && index > -1 && dom.options[index]) {\n            value = dom.options[index].value;\n        }\n        if (mounting && isNullOrUndef(value)) {\n            value = nextPropsOrEmpty.defaultValue;\n        }\n        updateChildOptions(vNode, value);\n    }\n}\n\nvar onTextareaInputChange = createWrappedFunction('onInput', applyValueTextArea);\nvar wrappedOnChange$1 = createWrappedFunction('onChange');\nfunction textAreaEvents(dom, nextPropsOrEmpty) {\n    attachEvent(dom, 'input', onTextareaInputChange);\n    if (nextPropsOrEmpty.onChange) {\n        attachEvent(dom, 'change', wrappedOnChange$1);\n    }\n}\nfunction applyValueTextArea(nextPropsOrEmpty, dom, mounting) {\n    var value = nextPropsOrEmpty.value;\n    var domValue = dom.value;\n    if (isNullOrUndef(value)) {\n        if (mounting) {\n            var defaultValue = nextPropsOrEmpty.defaultValue;\n            if (!isNullOrUndef(defaultValue) && defaultValue !== domValue) {\n                dom.defaultValue = defaultValue;\n                dom.value = defaultValue;\n            }\n        }\n    }\n    else if (domValue !== value) {\n        /* There is value so keep it controlled */\n        dom.defaultValue = value;\n        dom.value = value;\n    }\n}\n\n/**\n * There is currently no support for switching same input between controlled and nonControlled\n * If that ever becomes a real issue, then re design controlled elements\n * Currently user must choose either controlled or non-controlled and stick with that\n */\nfunction processElement(flags, vNode, dom, nextPropsOrEmpty, mounting, isControlled) {\n    if (flags & 64 /* InputElement */) {\n        applyValueInput(nextPropsOrEmpty, dom);\n    }\n    else if (flags & 256 /* SelectElement */) {\n        applyValueSelect(nextPropsOrEmpty, dom, mounting, vNode);\n    }\n    else if (flags & 128 /* TextareaElement */) {\n        applyValueTextArea(nextPropsOrEmpty, dom, mounting);\n    }\n    if (isControlled) {\n        dom.$V = vNode;\n    }\n}\nfunction addFormElementEventHandlers(flags, dom, nextPropsOrEmpty) {\n    if (flags & 64 /* InputElement */) {\n        inputEvents(dom, nextPropsOrEmpty);\n    }\n    else if (flags & 256 /* SelectElement */) {\n        selectEvents(dom);\n    }\n    else if (flags & 128 /* TextareaElement */) {\n        textAreaEvents(dom, nextPropsOrEmpty);\n    }\n}\nfunction isControlledFormElement(nextPropsOrEmpty) {\n    return nextPropsOrEmpty.type && isCheckedType(nextPropsOrEmpty.type) ? !isNullOrUndef(nextPropsOrEmpty.checked) : !isNullOrUndef(nextPropsOrEmpty.value);\n}\n\nfunction createRef() {\n    return {\n        current: null\n    };\n}\nfunction forwardRef(render) {\n    return {\n        render: render\n    };\n}\nfunction unmountRef(ref) {\n    if (ref) {\n        if (!safeCall1(ref, null) && ref.current) {\n            ref.current = null;\n        }\n    }\n}\nfunction mountRef(ref, value, lifecycle) {\n    if (ref && (isFunction(ref) || ref.current !== void 0)) {\n        lifecycle.push(function () {\n            if (!safeCall1(ref, value) && ref.current !== void 0) {\n                ref.current = value;\n            }\n        });\n    }\n}\n\nfunction remove(vNode, parentDOM) {\n    unmount(vNode);\n    removeVNodeDOM(vNode, parentDOM);\n}\nfunction unmount(vNode) {\n    var flags = vNode.flags;\n    var children = vNode.children;\n    var ref;\n    if (flags & 481 /* Element */) {\n        ref = vNode.ref;\n        var props = vNode.props;\n        unmountRef(ref);\n        var childFlags = vNode.childFlags;\n        if (!isNull(props)) {\n            var keys = Object.keys(props);\n            for (var i = 0, len = keys.length; i < len; i++) {\n                var key = keys[i];\n                if (syntheticEvents[key]) {\n                    unmountSyntheticEvent(key, vNode.dom);\n                }\n            }\n        }\n        if (childFlags & 12 /* MultipleChildren */) {\n            unmountAllChildren(children);\n        }\n        else if (childFlags === 2 /* HasVNodeChildren */) {\n            unmount(children);\n        }\n    }\n    else if (children) {\n        if (flags & 4 /* ComponentClass */) {\n            if (isFunction(children.componentWillUnmount)) {\n                children.componentWillUnmount();\n            }\n            unmountRef(vNode.ref);\n            children.$UN = true;\n            unmount(children.$LI);\n        }\n        else if (flags & 8 /* ComponentFunction */) {\n            ref = vNode.ref;\n            if (!isNullOrUndef(ref) && isFunction(ref.onComponentWillUnmount)) {\n                ref.onComponentWillUnmount(findDOMfromVNode(vNode, true), vNode.props || EMPTY_OBJ);\n            }\n            unmount(children);\n        }\n        else if (flags & 1024 /* Portal */) {\n            remove(children, vNode.ref);\n        }\n        else if (flags & 8192 /* Fragment */) {\n            if (vNode.childFlags & 12 /* MultipleChildren */) {\n                unmountAllChildren(children);\n            }\n        }\n    }\n}\nfunction unmountAllChildren(children) {\n    for (var i = 0, len = children.length; i < len; ++i) {\n        unmount(children[i]);\n    }\n}\nfunction clearDOM(dom) {\n    // Optimization for clearing dom\n    dom.textContent = '';\n}\nfunction removeAllChildren(dom, vNode, children) {\n    unmountAllChildren(children);\n    if (vNode.flags & 8192 /* Fragment */) {\n        removeVNodeDOM(vNode, dom);\n    }\n    else {\n        clearDOM(dom);\n    }\n}\n\nfunction wrapLinkEvent(nextValue) {\n    // This variable makes sure there is no \"this\" context in callback\n    var ev = nextValue.event;\n    return function (e) {\n        ev(nextValue.data, e);\n    };\n}\nfunction patchEvent(name, lastValue, nextValue, dom) {\n    if (isLinkEventObject(nextValue)) {\n        if (isLastValueSameLinkEvent(lastValue, nextValue)) {\n            return;\n        }\n        nextValue = wrapLinkEvent(nextValue);\n    }\n    attachEvent(dom, normalizeEventName(name), nextValue);\n}\n// We are assuming here that we come from patchProp routine\n// -nextAttrValue cannot be null or undefined\nfunction patchStyle(lastAttrValue, nextAttrValue, dom) {\n    if (isNullOrUndef(nextAttrValue)) {\n        dom.removeAttribute('style');\n        return;\n    }\n    var domStyle = dom.style;\n    var style;\n    var value;\n    if (isString(nextAttrValue)) {\n        domStyle.cssText = nextAttrValue;\n        return;\n    }\n    if (!isNullOrUndef(lastAttrValue) && !isString(lastAttrValue)) {\n        for (style in nextAttrValue) {\n            // do not add a hasOwnProperty check here, it affects performance\n            value = nextAttrValue[style];\n            if (value !== lastAttrValue[style]) {\n                domStyle.setProperty(style, value);\n            }\n        }\n        for (style in lastAttrValue) {\n            if (isNullOrUndef(nextAttrValue[style])) {\n                domStyle.removeProperty(style);\n            }\n        }\n    }\n    else {\n        for (style in nextAttrValue) {\n            value = nextAttrValue[style];\n            domStyle.setProperty(style, value);\n        }\n    }\n}\nfunction patchDangerInnerHTML(lastValue, nextValue, lastVNode, dom) {\n    var lastHtml = (lastValue && lastValue.__html) || '';\n    var nextHtml = (nextValue && nextValue.__html) || '';\n    if (lastHtml !== nextHtml) {\n        if (!isNullOrUndef(nextHtml) && !isSameInnerHTML(dom, nextHtml)) {\n            if (!isNull(lastVNode)) {\n                if (lastVNode.childFlags & 12 /* MultipleChildren */) {\n                    unmountAllChildren(lastVNode.children);\n                }\n                else if (lastVNode.childFlags === 2 /* HasVNodeChildren */) {\n                    unmount(lastVNode.children);\n                }\n                lastVNode.children = null;\n                lastVNode.childFlags = 1 /* HasInvalidChildren */;\n            }\n            dom.innerHTML = nextHtml;\n        }\n    }\n}\nfunction patchProp(prop, lastValue, nextValue, dom, isSVG, hasControlledValue, lastVNode) {\n    switch (prop) {\n        case 'children':\n        case 'childrenType':\n        case 'className':\n        case 'defaultValue':\n        case 'key':\n        case 'multiple':\n        case 'ref':\n        case 'selectedIndex':\n            break;\n        case 'autoFocus':\n            dom.autofocus = !!nextValue;\n            break;\n        case 'allowfullscreen':\n        case 'autoplay':\n        case 'capture':\n        case 'checked':\n        case 'controls':\n        case 'default':\n        case 'disabled':\n        case 'hidden':\n        case 'indeterminate':\n        case 'loop':\n        case 'muted':\n        case 'novalidate':\n        case 'open':\n        case 'readOnly':\n        case 'required':\n        case 'reversed':\n        case 'scoped':\n        case 'seamless':\n        case 'selected':\n            dom[prop] = !!nextValue;\n            break;\n        case 'defaultChecked':\n        case 'value':\n        case 'volume':\n            if (hasControlledValue && prop === 'value') {\n                break;\n            }\n            var value = isNullOrUndef(nextValue) ? '' : nextValue;\n            if (dom[prop] !== value) {\n                dom[prop] = value;\n            }\n            break;\n        case 'style':\n            patchStyle(lastValue, nextValue, dom);\n            break;\n        case 'dangerouslySetInnerHTML':\n            patchDangerInnerHTML(lastValue, nextValue, lastVNode, dom);\n            break;\n        default:\n            if (syntheticEvents[prop]) {\n                handleSyntheticEvent(prop, lastValue, nextValue, dom);\n            }\n            else if (prop.charCodeAt(0) === 111 && prop.charCodeAt(1) === 110) {\n                patchEvent(prop, lastValue, nextValue, dom);\n            }\n            else if (isNullOrUndef(nextValue)) {\n                dom.removeAttribute(prop);\n            }\n            else if (isSVG && namespaces[prop]) {\n                // We optimize for isSVG being false\n                // If we end up in this path we can read property again\n                dom.setAttributeNS(namespaces[prop], prop, nextValue);\n            }\n            else {\n                dom.setAttribute(prop, nextValue);\n            }\n            break;\n    }\n}\nfunction mountProps(vNode, flags, props, dom, isSVG) {\n    var hasControlledValue = false;\n    var isFormElement = (flags & 448 /* FormElement */) > 0;\n    if (isFormElement) {\n        hasControlledValue = isControlledFormElement(props);\n        if (hasControlledValue) {\n            addFormElementEventHandlers(flags, dom, props);\n        }\n    }\n    for (var prop in props) {\n        // do not add a hasOwnProperty check here, it affects performance\n        patchProp(prop, null, props[prop], dom, isSVG, hasControlledValue, null);\n    }\n    if (isFormElement) {\n        processElement(flags, vNode, dom, props, true, hasControlledValue);\n    }\n}\n\nfunction renderNewInput(instance, props, context) {\n    var nextInput = normalizeRoot(instance.render(props, instance.state, context));\n    var childContext = context;\n    if (isFunction(instance.getChildContext)) {\n        childContext = combineFrom(context, instance.getChildContext());\n    }\n    instance.$CX = childContext;\n    return nextInput;\n}\nfunction createClassComponentInstance(vNode, Component, props, context, isSVG, lifecycle) {\n    var instance = new Component(props, context);\n    var usesNewAPI = (instance.$N = Boolean(Component.getDerivedStateFromProps || instance.getSnapshotBeforeUpdate));\n    instance.$SVG = isSVG;\n    instance.$L = lifecycle;\n    vNode.children = instance;\n    instance.$BS = false;\n    instance.context = context;\n    if (instance.props === EMPTY_OBJ) {\n        instance.props = props;\n    }\n    if (!usesNewAPI) {\n        if (isFunction(instance.componentWillMount)) {\n            instance.$BR = true;\n            instance.componentWillMount();\n            var pending = instance.$PS;\n            if (!isNull(pending)) {\n                var state = instance.state;\n                if (isNull(state)) {\n                    instance.state = pending;\n                }\n                else {\n                    for (var key in pending) {\n                        state[key] = pending[key];\n                    }\n                }\n                instance.$PS = null;\n            }\n            instance.$BR = false;\n        }\n    }\n    else {\n        instance.state = createDerivedState(instance, props, instance.state);\n    }\n    instance.$LI = renderNewInput(instance, props, context);\n    return instance;\n}\n\nfunction mount(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {\n    var flags = (vNode.flags |= 16384 /* InUse */);\n    if (flags & 481 /* Element */) {\n        mountElement(vNode, parentDOM, context, isSVG, nextNode, lifecycle);\n    }\n    else if (flags & 4 /* ComponentClass */) {\n        mountClassComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle);\n    }\n    else if (flags & 8 /* ComponentFunction */) {\n        mountFunctionalComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle);\n        mountFunctionalComponentCallbacks(vNode, lifecycle);\n    }\n    else if (flags & 512 /* Void */ || flags & 16 /* Text */) {\n        mountText(vNode, parentDOM, nextNode);\n    }\n    else if (flags & 8192 /* Fragment */) {\n        mountFragment(vNode, context, parentDOM, isSVG, nextNode, lifecycle);\n    }\n    else if (flags & 1024 /* Portal */) {\n        mountPortal(vNode, context, parentDOM, nextNode, lifecycle);\n    }\n}\nfunction mountPortal(vNode, context, parentDOM, nextNode, lifecycle) {\n    mount(vNode.children, vNode.ref, context, false, null, lifecycle);\n    var placeHolderVNode = createVoidVNode();\n    mountText(placeHolderVNode, parentDOM, nextNode);\n    vNode.dom = placeHolderVNode.dom;\n}\nfunction mountFragment(vNode, context, parentDOM, isSVG, nextNode, lifecycle) {\n    var children = vNode.children;\n    var childFlags = vNode.childFlags;\n    // When fragment is optimized for multiple children, check if there is no children and change flag to invalid\n    // This is the only normalization always done, to keep optimization flags API same for fragments and regular elements\n    if (childFlags & 12 /* MultipleChildren */ && children.length === 0) {\n        childFlags = vNode.childFlags = 2 /* HasVNodeChildren */;\n        children = vNode.children = createVoidVNode();\n    }\n    if (childFlags === 2 /* HasVNodeChildren */) {\n        mount(children, parentDOM, nextNode, isSVG, nextNode, lifecycle);\n    }\n    else {\n        mountArrayChildren(children, parentDOM, context, isSVG, nextNode, lifecycle);\n    }\n}\nfunction mountText(vNode, parentDOM, nextNode) {\n    var dom = (vNode.dom = document.createTextNode(vNode.children));\n    if (!isNull(parentDOM)) {\n        insertOrAppend(parentDOM, dom, nextNode);\n    }\n}\nfunction mountElement(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {\n    var flags = vNode.flags;\n    var props = vNode.props;\n    var className = vNode.className;\n    var children = vNode.children;\n    var childFlags = vNode.childFlags;\n    var dom = (vNode.dom = documentCreateElement(vNode.type, (isSVG = isSVG || (flags & 32 /* SvgElement */) > 0)));\n    if (!isNullOrUndef(className) && className !== '') {\n        if (isSVG) {\n            dom.setAttribute('class', className);\n        }\n        else {\n            dom.className = className;\n        }\n    }\n    if (childFlags === 16 /* HasTextChildren */) {\n        setTextContent(dom, children);\n    }\n    else if (childFlags !== 1 /* HasInvalidChildren */) {\n        var childrenIsSVG = isSVG && vNode.type !== 'foreignObject';\n        if (childFlags === 2 /* HasVNodeChildren */) {\n            if (children.flags & 16384 /* InUse */) {\n                vNode.children = children = directClone(children);\n            }\n            mount(children, dom, context, childrenIsSVG, null, lifecycle);\n        }\n        else if (childFlags === 8 /* HasKeyedChildren */ || childFlags === 4 /* HasNonKeyedChildren */) {\n            mountArrayChildren(children, dom, context, childrenIsSVG, null, lifecycle);\n        }\n    }\n    if (!isNull(parentDOM)) {\n        insertOrAppend(parentDOM, dom, nextNode);\n    }\n    if (!isNull(props)) {\n        mountProps(vNode, flags, props, dom, isSVG);\n    }\n    mountRef(vNode.ref, dom, lifecycle);\n}\nfunction mountArrayChildren(children, dom, context, isSVG, nextNode, lifecycle) {\n    for (var i = 0; i < children.length; ++i) {\n        var child = children[i];\n        if (child.flags & 16384 /* InUse */) {\n            children[i] = child = directClone(child);\n        }\n        mount(child, dom, context, isSVG, nextNode, lifecycle);\n    }\n}\nfunction mountClassComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {\n    var instance = createClassComponentInstance(vNode, vNode.type, vNode.props || EMPTY_OBJ, context, isSVG, lifecycle);\n    mount(instance.$LI, parentDOM, instance.$CX, isSVG, nextNode, lifecycle);\n    mountClassComponentCallbacks(vNode.ref, instance, lifecycle);\n}\nfunction renderFunctionalComponent(vNode, context) {\n    return vNode.flags & 32768 /* ForwardRef */ ? vNode.type.render(vNode.props || EMPTY_OBJ, vNode.ref, context) : vNode.type(vNode.props || EMPTY_OBJ, context);\n}\nfunction mountFunctionalComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {\n    mount((vNode.children = normalizeRoot(renderFunctionalComponent(vNode, context))), parentDOM, context, isSVG, nextNode, lifecycle);\n}\nfunction createClassMountCallback(instance) {\n    return function () {\n        instance.componentDidMount();\n    };\n}\nfunction mountClassComponentCallbacks(ref, instance, lifecycle) {\n    mountRef(ref, instance, lifecycle);\n    if (isFunction(instance.componentDidMount)) {\n        lifecycle.push(createClassMountCallback(instance));\n    }\n}\nfunction createOnMountCallback(ref, vNode) {\n    return function () {\n        ref.onComponentDidMount(findDOMfromVNode(vNode, true), vNode.props || EMPTY_OBJ);\n    };\n}\nfunction mountFunctionalComponentCallbacks(vNode, lifecycle) {\n    var ref = vNode.ref;\n    if (!isNullOrUndef(ref)) {\n        safeCall1(ref.onComponentWillMount, vNode.props || EMPTY_OBJ);\n        if (isFunction(ref.onComponentDidMount)) {\n            lifecycle.push(createOnMountCallback(ref, vNode));\n        }\n    }\n}\n\nfunction replaceWithNewNode(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle) {\n    unmount(lastVNode);\n    if ((nextVNode.flags & lastVNode.flags & 2033 /* DOMRef */) !== 0) {\n        mount(nextVNode, null, context, isSVG, null, lifecycle);\n        // Single DOM operation, when we have dom references available\n        replaceChild(parentDOM, nextVNode.dom, lastVNode.dom);\n    }\n    else {\n        mount(nextVNode, parentDOM, context, isSVG, findDOMfromVNode(lastVNode, true), lifecycle);\n        removeVNodeDOM(lastVNode, parentDOM);\n    }\n}\nfunction patch(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle) {\n    var nextFlags = (nextVNode.flags |= 16384 /* InUse */);\n    if (lastVNode.flags !== nextFlags || lastVNode.type !== nextVNode.type || lastVNode.key !== nextVNode.key || nextFlags & 2048 /* ReCreate */) {\n        if (lastVNode.flags & 16384 /* InUse */) {\n            replaceWithNewNode(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle);\n        }\n        else {\n            // Last vNode is not in use, it has crashed at application level. Just mount nextVNode and ignore last one\n            mount(nextVNode, parentDOM, context, isSVG, nextNode, lifecycle);\n        }\n    }\n    else if (nextFlags & 481 /* Element */) {\n        patchElement(lastVNode, nextVNode, context, isSVG, nextFlags, lifecycle);\n    }\n    else if (nextFlags & 4 /* ComponentClass */) {\n        patchClassComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle);\n    }\n    else if (nextFlags & 8 /* ComponentFunction */) {\n        patchFunctionalComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle);\n    }\n    else if (nextFlags & 16 /* Text */) {\n        patchText(lastVNode, nextVNode);\n    }\n    else if (nextFlags & 512 /* Void */) {\n        nextVNode.dom = lastVNode.dom;\n    }\n    else if (nextFlags & 8192 /* Fragment */) {\n        patchFragment(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle);\n    }\n    else {\n        patchPortal(lastVNode, nextVNode, context, lifecycle);\n    }\n}\nfunction patchSingleTextChild(lastChildren, nextChildren, parentDOM) {\n    if (lastChildren !== nextChildren) {\n        if (lastChildren !== '') {\n            parentDOM.firstChild.nodeValue = nextChildren;\n        }\n        else {\n            setTextContent(parentDOM, nextChildren);\n        }\n    }\n}\nfunction patchContentEditableChildren(dom, nextChildren) {\n    if (dom.textContent !== nextChildren) {\n        dom.textContent = nextChildren;\n    }\n}\nfunction patchFragment(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle) {\n    var lastChildren = lastVNode.children;\n    var nextChildren = nextVNode.children;\n    var lastChildFlags = lastVNode.childFlags;\n    var nextChildFlags = nextVNode.childFlags;\n    var nextNode = null;\n    // When fragment is optimized for multiple children, check if there is no children and change flag to invalid\n    // This is the only normalization always done, to keep optimization flags API same for fragments and regular elements\n    if (nextChildFlags & 12 /* MultipleChildren */ && nextChildren.length === 0) {\n        nextChildFlags = nextVNode.childFlags = 2 /* HasVNodeChildren */;\n        nextChildren = nextVNode.children = createVoidVNode();\n    }\n    var nextIsSingle = (nextChildFlags & 2 /* HasVNodeChildren */) !== 0;\n    if (lastChildFlags & 12 /* MultipleChildren */) {\n        var lastLen = lastChildren.length;\n        // We need to know Fragment's edge node when\n        if (\n        // It uses keyed algorithm\n        (lastChildFlags & 8 /* HasKeyedChildren */ && nextChildFlags & 8 /* HasKeyedChildren */) ||\n            // It transforms from many to single\n            nextIsSingle ||\n            // It will append more nodes\n            (!nextIsSingle && nextChildren.length > lastLen)) {\n            // When fragment has multiple children there is always at least one vNode\n            nextNode = findDOMfromVNode(lastChildren[lastLen - 1], false).nextSibling;\n        }\n    }\n    patchChildren(lastChildFlags, nextChildFlags, lastChildren, nextChildren, parentDOM, context, isSVG, nextNode, lastVNode, lifecycle);\n}\nfunction patchPortal(lastVNode, nextVNode, context, lifecycle) {\n    var lastContainer = lastVNode.ref;\n    var nextContainer = nextVNode.ref;\n    var nextChildren = nextVNode.children;\n    patchChildren(lastVNode.childFlags, nextVNode.childFlags, lastVNode.children, nextChildren, lastContainer, context, false, null, lastVNode, lifecycle);\n    nextVNode.dom = lastVNode.dom;\n    if (lastContainer !== nextContainer && !isInvalid(nextChildren)) {\n        var node = nextChildren.dom;\n        removeChild(lastContainer, node);\n        appendChild(nextContainer, node);\n    }\n}\nfunction patchElement(lastVNode, nextVNode, context, isSVG, nextFlags, lifecycle) {\n    var dom = (nextVNode.dom = lastVNode.dom);\n    var lastProps = lastVNode.props;\n    var nextProps = nextVNode.props;\n    var isFormElement = false;\n    var hasControlledValue = false;\n    var nextPropsOrEmpty;\n    isSVG = isSVG || (nextFlags & 32 /* SvgElement */) > 0;\n    // inlined patchProps  -- starts --\n    if (lastProps !== nextProps) {\n        var lastPropsOrEmpty = lastProps || EMPTY_OBJ;\n        nextPropsOrEmpty = nextProps || EMPTY_OBJ;\n        if (nextPropsOrEmpty !== EMPTY_OBJ) {\n            isFormElement = (nextFlags & 448 /* FormElement */) > 0;\n            if (isFormElement) {\n                hasControlledValue = isControlledFormElement(nextPropsOrEmpty);\n            }\n            for (var prop in nextPropsOrEmpty) {\n                var lastValue = lastPropsOrEmpty[prop];\n                var nextValue = nextPropsOrEmpty[prop];\n                if (lastValue !== nextValue) {\n                    patchProp(prop, lastValue, nextValue, dom, isSVG, hasControlledValue, lastVNode);\n                }\n            }\n        }\n        if (lastPropsOrEmpty !== EMPTY_OBJ) {\n            for (var prop$1 in lastPropsOrEmpty) {\n                if (isNullOrUndef(nextPropsOrEmpty[prop$1]) && !isNullOrUndef(lastPropsOrEmpty[prop$1])) {\n                    patchProp(prop$1, lastPropsOrEmpty[prop$1], null, dom, isSVG, hasControlledValue, lastVNode);\n                }\n            }\n        }\n    }\n    var nextChildren = nextVNode.children;\n    var nextClassName = nextVNode.className;\n    // inlined patchProps  -- ends --\n    if (lastVNode.className !== nextClassName) {\n        if (isNullOrUndef(nextClassName)) {\n            dom.removeAttribute('class');\n        }\n        else if (isSVG) {\n            dom.setAttribute('class', nextClassName);\n        }\n        else {\n            dom.className = nextClassName;\n        }\n    }\n    if (nextFlags & 4096 /* ContentEditable */) {\n        patchContentEditableChildren(dom, nextChildren);\n    }\n    else {\n        patchChildren(lastVNode.childFlags, nextVNode.childFlags, lastVNode.children, nextChildren, dom, context, isSVG && nextVNode.type !== 'foreignObject', null, lastVNode, lifecycle);\n    }\n    if (isFormElement) {\n        processElement(nextFlags, nextVNode, dom, nextPropsOrEmpty, false, hasControlledValue);\n    }\n    var nextRef = nextVNode.ref;\n    var lastRef = lastVNode.ref;\n    if (lastRef !== nextRef) {\n        unmountRef(lastRef);\n        mountRef(nextRef, dom, lifecycle);\n    }\n}\nfunction replaceOneVNodeWithMultipleVNodes(lastChildren, nextChildren, parentDOM, context, isSVG, lifecycle) {\n    unmount(lastChildren);\n    mountArrayChildren(nextChildren, parentDOM, context, isSVG, findDOMfromVNode(lastChildren, true), lifecycle);\n    removeVNodeDOM(lastChildren, parentDOM);\n}\nfunction patchChildren(lastChildFlags, nextChildFlags, lastChildren, nextChildren, parentDOM, context, isSVG, nextNode, parentVNode, lifecycle) {\n    switch (lastChildFlags) {\n        case 2 /* HasVNodeChildren */:\n            switch (nextChildFlags) {\n                case 2 /* HasVNodeChildren */:\n                    patch(lastChildren, nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);\n                    break;\n                case 1 /* HasInvalidChildren */:\n                    remove(lastChildren, parentDOM);\n                    break;\n                case 16 /* HasTextChildren */:\n                    unmount(lastChildren);\n                    setTextContent(parentDOM, nextChildren);\n                    break;\n                default:\n                    replaceOneVNodeWithMultipleVNodes(lastChildren, nextChildren, parentDOM, context, isSVG, lifecycle);\n                    break;\n            }\n            break;\n        case 1 /* HasInvalidChildren */:\n            switch (nextChildFlags) {\n                case 2 /* HasVNodeChildren */:\n                    mount(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);\n                    break;\n                case 1 /* HasInvalidChildren */:\n                    break;\n                case 16 /* HasTextChildren */:\n                    setTextContent(parentDOM, nextChildren);\n                    break;\n                default:\n                    mountArrayChildren(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);\n                    break;\n            }\n            break;\n        case 16 /* HasTextChildren */:\n            switch (nextChildFlags) {\n                case 16 /* HasTextChildren */:\n                    patchSingleTextChild(lastChildren, nextChildren, parentDOM);\n                    break;\n                case 2 /* HasVNodeChildren */:\n                    clearDOM(parentDOM);\n                    mount(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);\n                    break;\n                case 1 /* HasInvalidChildren */:\n                    clearDOM(parentDOM);\n                    break;\n                default:\n                    clearDOM(parentDOM);\n                    mountArrayChildren(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);\n                    break;\n            }\n            break;\n        default:\n            switch (nextChildFlags) {\n                case 16 /* HasTextChildren */:\n                    unmountAllChildren(lastChildren);\n                    setTextContent(parentDOM, nextChildren);\n                    break;\n                case 2 /* HasVNodeChildren */:\n                    removeAllChildren(parentDOM, parentVNode, lastChildren);\n                    mount(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);\n                    break;\n                case 1 /* HasInvalidChildren */:\n                    removeAllChildren(parentDOM, parentVNode, lastChildren);\n                    break;\n                default:\n                    var lastLength = lastChildren.length | 0;\n                    var nextLength = nextChildren.length | 0;\n                    // Fast path's for both algorithms\n                    if (lastLength === 0) {\n                        if (nextLength > 0) {\n                            mountArrayChildren(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);\n                        }\n                    }\n                    else if (nextLength === 0) {\n                        removeAllChildren(parentDOM, parentVNode, lastChildren);\n                    }\n                    else if (nextChildFlags === 8 /* HasKeyedChildren */ && lastChildFlags === 8 /* HasKeyedChildren */) {\n                        patchKeyedChildren(lastChildren, nextChildren, parentDOM, context, isSVG, lastLength, nextLength, nextNode, parentVNode, lifecycle);\n                    }\n                    else {\n                        patchNonKeyedChildren(lastChildren, nextChildren, parentDOM, context, isSVG, lastLength, nextLength, nextNode, lifecycle);\n                    }\n                    break;\n            }\n            break;\n    }\n}\nfunction createDidUpdate(instance, lastProps, lastState, snapshot, lifecycle) {\n    lifecycle.push(function () {\n        instance.componentDidUpdate(lastProps, lastState, snapshot);\n    });\n}\nfunction updateClassComponent(instance, nextState, nextProps, parentDOM, context, isSVG, force, nextNode, lifecycle) {\n    var lastState = instance.state;\n    var lastProps = instance.props;\n    var usesNewAPI = Boolean(instance.$N);\n    var hasSCU = isFunction(instance.shouldComponentUpdate);\n    if (usesNewAPI) {\n        nextState = createDerivedState(instance, nextProps, nextState !== lastState ? combineFrom(lastState, nextState) : nextState);\n    }\n    if (force || !hasSCU || (hasSCU && instance.shouldComponentUpdate(nextProps, nextState, context))) {\n        if (!usesNewAPI && isFunction(instance.componentWillUpdate)) {\n            instance.componentWillUpdate(nextProps, nextState, context);\n        }\n        instance.props = nextProps;\n        instance.state = nextState;\n        instance.context = context;\n        var snapshot = null;\n        var nextInput = renderNewInput(instance, nextProps, context);\n        if (usesNewAPI && isFunction(instance.getSnapshotBeforeUpdate)) {\n            snapshot = instance.getSnapshotBeforeUpdate(lastProps, lastState);\n        }\n        patch(instance.$LI, nextInput, parentDOM, instance.$CX, isSVG, nextNode, lifecycle);\n        // Dont update Last input, until patch has been succesfully executed\n        instance.$LI = nextInput;\n        if (isFunction(instance.componentDidUpdate)) {\n            createDidUpdate(instance, lastProps, lastState, snapshot, lifecycle);\n        }\n    }\n    else {\n        instance.props = nextProps;\n        instance.state = nextState;\n        instance.context = context;\n    }\n}\nfunction patchClassComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle) {\n    var instance = (nextVNode.children = lastVNode.children);\n    // If Component has crashed, ignore it to stay functional\n    if (isNull(instance)) {\n        return;\n    }\n    instance.$L = lifecycle;\n    var nextProps = nextVNode.props || EMPTY_OBJ;\n    var nextRef = nextVNode.ref;\n    var lastRef = lastVNode.ref;\n    var nextState = instance.state;\n    if (!instance.$N) {\n        if (isFunction(instance.componentWillReceiveProps)) {\n            instance.$BR = true;\n            instance.componentWillReceiveProps(nextProps, context);\n            // If instance component was removed during its own update do nothing.\n            if (instance.$UN) {\n                return;\n            }\n            instance.$BR = false;\n        }\n        if (!isNull(instance.$PS)) {\n            nextState = combineFrom(nextState, instance.$PS);\n            instance.$PS = null;\n        }\n    }\n    updateClassComponent(instance, nextState, nextProps, parentDOM, context, isSVG, false, nextNode, lifecycle);\n    if (lastRef !== nextRef) {\n        unmountRef(lastRef);\n        mountRef(nextRef, instance, lifecycle);\n    }\n}\nfunction patchFunctionalComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle) {\n    var shouldUpdate = true;\n    var nextProps = nextVNode.props || EMPTY_OBJ;\n    var nextRef = nextVNode.ref;\n    var lastProps = lastVNode.props;\n    var nextHooksDefined = !isNullOrUndef(nextRef);\n    var lastInput = lastVNode.children;\n    if (nextHooksDefined && isFunction(nextRef.onComponentShouldUpdate)) {\n        shouldUpdate = nextRef.onComponentShouldUpdate(lastProps, nextProps);\n    }\n    if (shouldUpdate !== false) {\n        if (nextHooksDefined && isFunction(nextRef.onComponentWillUpdate)) {\n            nextRef.onComponentWillUpdate(lastProps, nextProps);\n        }\n        var type = nextVNode.type;\n        var nextInput = normalizeRoot(nextVNode.flags & 32768 /* ForwardRef */ ? type.render(nextProps, nextRef, context) : type(nextProps, context));\n        patch(lastInput, nextInput, parentDOM, context, isSVG, nextNode, lifecycle);\n        nextVNode.children = nextInput;\n        if (nextHooksDefined && isFunction(nextRef.onComponentDidUpdate)) {\n            nextRef.onComponentDidUpdate(lastProps, nextProps);\n        }\n    }\n    else {\n        nextVNode.children = lastInput;\n    }\n}\nfunction patchText(lastVNode, nextVNode) {\n    var nextText = nextVNode.children;\n    var dom = (nextVNode.dom = lastVNode.dom);\n    if (nextText !== lastVNode.children) {\n        dom.nodeValue = nextText;\n    }\n}\nfunction patchNonKeyedChildren(lastChildren, nextChildren, dom, context, isSVG, lastChildrenLength, nextChildrenLength, nextNode, lifecycle) {\n    var commonLength = lastChildrenLength > nextChildrenLength ? nextChildrenLength : lastChildrenLength;\n    var i = 0;\n    var nextChild;\n    var lastChild;\n    for (; i < commonLength; ++i) {\n        nextChild = nextChildren[i];\n        lastChild = lastChildren[i];\n        if (nextChild.flags & 16384 /* InUse */) {\n            nextChild = nextChildren[i] = directClone(nextChild);\n        }\n        patch(lastChild, nextChild, dom, context, isSVG, nextNode, lifecycle);\n        lastChildren[i] = nextChild;\n    }\n    if (lastChildrenLength < nextChildrenLength) {\n        for (i = commonLength; i < nextChildrenLength; ++i) {\n            nextChild = nextChildren[i];\n            if (nextChild.flags & 16384 /* InUse */) {\n                nextChild = nextChildren[i] = directClone(nextChild);\n            }\n            mount(nextChild, dom, context, isSVG, nextNode, lifecycle);\n        }\n    }\n    else if (lastChildrenLength > nextChildrenLength) {\n        for (i = commonLength; i < lastChildrenLength; ++i) {\n            remove(lastChildren[i], dom);\n        }\n    }\n}\nfunction patchKeyedChildren(a, b, dom, context, isSVG, aLength, bLength, outerEdge, parentVNode, lifecycle) {\n    var aEnd = aLength - 1;\n    var bEnd = bLength - 1;\n    var j = 0;\n    var aNode = a[j];\n    var bNode = b[j];\n    var nextPos;\n    var nextNode;\n    // Step 1\n    // tslint:disable-next-line\n    outer: {\n        // Sync nodes with the same key at the beginning.\n        while (aNode.key === bNode.key) {\n            if (bNode.flags & 16384 /* InUse */) {\n                b[j] = bNode = directClone(bNode);\n            }\n            patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);\n            a[j] = bNode;\n            ++j;\n            if (j > aEnd || j > bEnd) {\n                break outer;\n            }\n            aNode = a[j];\n            bNode = b[j];\n        }\n        aNode = a[aEnd];\n        bNode = b[bEnd];\n        // Sync nodes with the same key at the end.\n        while (aNode.key === bNode.key) {\n            if (bNode.flags & 16384 /* InUse */) {\n                b[bEnd] = bNode = directClone(bNode);\n            }\n            patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);\n            a[aEnd] = bNode;\n            aEnd--;\n            bEnd--;\n            if (j > aEnd || j > bEnd) {\n                break outer;\n            }\n            aNode = a[aEnd];\n            bNode = b[bEnd];\n        }\n    }\n    if (j > aEnd) {\n        if (j <= bEnd) {\n            nextPos = bEnd + 1;\n            nextNode = nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge;\n            while (j <= bEnd) {\n                bNode = b[j];\n                if (bNode.flags & 16384 /* InUse */) {\n                    b[j] = bNode = directClone(bNode);\n                }\n                ++j;\n                mount(bNode, dom, context, isSVG, nextNode, lifecycle);\n            }\n        }\n    }\n    else if (j > bEnd) {\n        while (j <= aEnd) {\n            remove(a[j++], dom);\n        }\n    }\n    else {\n        patchKeyedChildrenComplex(a, b, context, aLength, bLength, aEnd, bEnd, j, dom, isSVG, outerEdge, parentVNode, lifecycle);\n    }\n}\nfunction patchKeyedChildrenComplex(a, b, context, aLength, bLength, aEnd, bEnd, j, dom, isSVG, outerEdge, parentVNode, lifecycle) {\n    var aNode;\n    var bNode;\n    var nextPos;\n    var i = 0;\n    var aStart = j;\n    var bStart = j;\n    var aLeft = aEnd - j + 1;\n    var bLeft = bEnd - j + 1;\n    var sources = new Int32Array(bLeft + 1);\n    // Keep track if its possible to remove whole DOM using textContent = '';\n    var canRemoveWholeContent = aLeft === aLength;\n    var moved = false;\n    var pos = 0;\n    var patched = 0;\n    // When sizes are small, just loop them through\n    if (bLength < 4 || (aLeft | bLeft) < 32) {\n        for (i = aStart; i <= aEnd; ++i) {\n            aNode = a[i];\n            if (patched < bLeft) {\n                for (j = bStart; j <= bEnd; j++) {\n                    bNode = b[j];\n                    if (aNode.key === bNode.key) {\n                        sources[j - bStart] = i + 1;\n                        if (canRemoveWholeContent) {\n                            canRemoveWholeContent = false;\n                            while (aStart < i) {\n                                remove(a[aStart++], dom);\n                            }\n                        }\n                        if (pos > j) {\n                            moved = true;\n                        }\n                        else {\n                            pos = j;\n                        }\n                        if (bNode.flags & 16384 /* InUse */) {\n                            b[j] = bNode = directClone(bNode);\n                        }\n                        patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);\n                        ++patched;\n                        break;\n                    }\n                }\n                if (!canRemoveWholeContent && j > bEnd) {\n                    remove(aNode, dom);\n                }\n            }\n            else if (!canRemoveWholeContent) {\n                remove(aNode, dom);\n            }\n        }\n    }\n    else {\n        var keyIndex = {};\n        // Map keys by their index\n        for (i = bStart; i <= bEnd; ++i) {\n            keyIndex[b[i].key] = i;\n        }\n        // Try to patch same keys\n        for (i = aStart; i <= aEnd; ++i) {\n            aNode = a[i];\n            if (patched < bLeft) {\n                j = keyIndex[aNode.key];\n                if (j !== void 0) {\n                    if (canRemoveWholeContent) {\n                        canRemoveWholeContent = false;\n                        while (i > aStart) {\n                            remove(a[aStart++], dom);\n                        }\n                    }\n                    sources[j - bStart] = i + 1;\n                    if (pos > j) {\n                        moved = true;\n                    }\n                    else {\n                        pos = j;\n                    }\n                    bNode = b[j];\n                    if (bNode.flags & 16384 /* InUse */) {\n                        b[j] = bNode = directClone(bNode);\n                    }\n                    patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);\n                    ++patched;\n                }\n                else if (!canRemoveWholeContent) {\n                    remove(aNode, dom);\n                }\n            }\n            else if (!canRemoveWholeContent) {\n                remove(aNode, dom);\n            }\n        }\n    }\n    // fast-path: if nothing patched remove all old and add all new\n    if (canRemoveWholeContent) {\n        removeAllChildren(dom, parentVNode, a);\n        mountArrayChildren(b, dom, context, isSVG, outerEdge, lifecycle);\n    }\n    else if (moved) {\n        var seq = lis_algorithm(sources);\n        j = seq.length - 1;\n        for (i = bLeft - 1; i >= 0; i--) {\n            if (sources[i] === 0) {\n                pos = i + bStart;\n                bNode = b[pos];\n                if (bNode.flags & 16384 /* InUse */) {\n                    b[pos] = bNode = directClone(bNode);\n                }\n                nextPos = pos + 1;\n                mount(bNode, dom, context, isSVG, nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge, lifecycle);\n            }\n            else if (j < 0 || i !== seq[j]) {\n                pos = i + bStart;\n                bNode = b[pos];\n                nextPos = pos + 1;\n                moveVNodeDOM(bNode, dom, nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge);\n            }\n            else {\n                j--;\n            }\n        }\n    }\n    else if (patched !== bLeft) {\n        // when patched count doesn't match b length we need to insert those new ones\n        // loop backwards so we can use insertBefore\n        for (i = bLeft - 1; i >= 0; i--) {\n            if (sources[i] === 0) {\n                pos = i + bStart;\n                bNode = b[pos];\n                if (bNode.flags & 16384 /* InUse */) {\n                    b[pos] = bNode = directClone(bNode);\n                }\n                nextPos = pos + 1;\n                mount(bNode, dom, context, isSVG, nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge, lifecycle);\n            }\n        }\n    }\n}\nvar result;\nvar p;\nvar maxLen = 0;\n// https://en.wikipedia.org/wiki/Longest_increasing_subsequence\nfunction lis_algorithm(arr) {\n    var arrI = 0;\n    var i = 0;\n    var j = 0;\n    var k = 0;\n    var u = 0;\n    var v = 0;\n    var c = 0;\n    var len = arr.length;\n    if (len > maxLen) {\n        maxLen = len;\n        result = new Int32Array(len);\n        p = new Int32Array(len);\n    }\n    for (; i < len; ++i) {\n        arrI = arr[i];\n        if (arrI !== 0) {\n            j = result[k];\n            if (arr[j] < arrI) {\n                p[i] = j;\n                result[++k] = i;\n                continue;\n            }\n            u = 0;\n            v = k;\n            while (u < v) {\n                c = (u + v) >> 1;\n                if (arr[result[c]] < arrI) {\n                    u = c + 1;\n                }\n                else {\n                    v = c;\n                }\n            }\n            if (arrI < arr[result[u]]) {\n                if (u > 0) {\n                    p[i] = result[u - 1];\n                }\n                result[u] = i;\n            }\n        }\n    }\n    u = k + 1;\n    var seq = new Int32Array(u);\n    v = result[u - 1];\n    while (u-- > 0) {\n        seq[u] = v;\n        v = p[v];\n        result[u] = 0;\n    }\n    return seq;\n}\n\nvar hasDocumentAvailable = typeof document !== 'undefined';\nif (hasDocumentAvailable) {\n    /*\n     * Defining $EV and $V properties on Node.prototype\n     * fixes v8 \"wrong map\" de-optimization\n     */\n    if (window.Node) {\n        Node.prototype.$EV = null;\n        Node.prototype.$V = null;\n    }\n}\nfunction __render(input, parentDOM, callback, context) {\n    var lifecycle = [];\n    var rootInput = parentDOM.$V;\n    renderCheck.v = true;\n    if (isNullOrUndef(rootInput)) {\n        if (!isNullOrUndef(input)) {\n            if (input.flags & 16384 /* InUse */) {\n                input = directClone(input);\n            }\n            mount(input, parentDOM, context, false, null, lifecycle);\n            parentDOM.$V = input;\n            rootInput = input;\n        }\n    }\n    else {\n        if (isNullOrUndef(input)) {\n            remove(rootInput, parentDOM);\n            parentDOM.$V = null;\n        }\n        else {\n            if (input.flags & 16384 /* InUse */) {\n                input = directClone(input);\n            }\n            patch(rootInput, input, parentDOM, context, false, null, lifecycle);\n            rootInput = parentDOM.$V = input;\n        }\n    }\n    if (lifecycle.length > 0) {\n        callAll(lifecycle);\n    }\n    renderCheck.v = false;\n    if (isFunction(callback)) {\n        callback();\n    }\n    if (isFunction(options.renderComplete)) {\n        options.renderComplete(rootInput, parentDOM);\n    }\n}\nfunction render(input, parentDOM, callback, context) {\n    if ( callback === void 0 ) callback = null;\n    if ( context === void 0 ) context = EMPTY_OBJ;\n\n    __render(input, parentDOM, callback, context);\n}\nfunction createRenderer(parentDOM) {\n    return function renderer(lastInput, nextInput, callback, context) {\n        if (!parentDOM) {\n            parentDOM = lastInput;\n        }\n        render(nextInput, parentDOM, callback, context);\n    };\n}\n\nvar QUEUE = [];\nvar nextTick = typeof Promise !== 'undefined'\n    ? Promise.resolve().then.bind(Promise.resolve())\n    : function (a) {\n        window.setTimeout(a, 0);\n    };\nvar microTaskPending = false;\nfunction queueStateChanges(component, newState, callback, force) {\n    var pending = component.$PS;\n    if (isFunction(newState)) {\n        newState = newState(pending ? combineFrom(component.state, pending) : component.state, component.props, component.context);\n    }\n    if (isNullOrUndef(pending)) {\n        component.$PS = newState;\n    }\n    else {\n        for (var stateKey in newState) {\n            pending[stateKey] = newState[stateKey];\n        }\n    }\n    if (!component.$BR) {\n        if (!renderCheck.v) {\n            if (QUEUE.length === 0) {\n                applyState(component, force, callback);\n                return;\n            }\n        }\n        if (QUEUE.indexOf(component) === -1) {\n            QUEUE.push(component);\n        }\n        if (!microTaskPending) {\n            microTaskPending = true;\n            nextTick(rerender);\n        }\n        if (isFunction(callback)) {\n            var QU = component.$QU;\n            if (!QU) {\n                QU = component.$QU = [];\n            }\n            QU.push(callback);\n        }\n    }\n    else if (isFunction(callback)) {\n        component.$L.push(callback.bind(component));\n    }\n}\nfunction callSetStateCallbacks(component) {\n    var queue = component.$QU;\n    for (var i = 0, len = queue.length; i < len; ++i) {\n        queue[i].call(component);\n    }\n    component.$QU = null;\n}\nfunction rerender() {\n    var component;\n    microTaskPending = false;\n    while ((component = QUEUE.pop())) {\n        var queue = component.$QU;\n        applyState(component, false, queue ? callSetStateCallbacks.bind(null, component) : null);\n    }\n}\nfunction applyState(component, force, callback) {\n    if (component.$UN) {\n        return;\n    }\n    if (force || !component.$BR) {\n        var pendingState = component.$PS;\n        component.$PS = null;\n        var lifecycle = [];\n        renderCheck.v = true;\n        updateClassComponent(component, combineFrom(component.state, pendingState), component.props, findDOMfromVNode(component.$LI, true).parentNode, component.context, component.$SVG, force, null, lifecycle);\n        if (lifecycle.length > 0) {\n            callAll(lifecycle);\n        }\n        renderCheck.v = false;\n    }\n    else {\n        component.state = component.$PS;\n        component.$PS = null;\n    }\n    if (isFunction(callback)) {\n        callback.call(component);\n    }\n}\nvar Component = function Component(props, context) {\n    // Public\n    this.state = null;\n    // Internal properties\n    this.$BR = false; // BLOCK RENDER\n    this.$BS = true; // BLOCK STATE\n    this.$PS = null; // PENDING STATE (PARTIAL or FULL)\n    this.$LI = null; // LAST INPUT\n    this.$UN = false; // UNMOUNTED\n    this.$CX = null; // CHILDCONTEXT\n    this.$QU = null; // QUEUE\n    this.$N = false; // Uses new lifecycle API Flag\n    this.$L = null; // Current lifecycle of this component\n    this.$SVG = false; // Flag to keep track if component is inside SVG tree\n    this.props = props || EMPTY_OBJ;\n    this.context = context || EMPTY_OBJ; // context should not be mutable\n};\nComponent.prototype.forceUpdate = function forceUpdate (callback) {\n    if (this.$UN) {\n        return;\n    }\n    // Do not allow double render during force update\n    queueStateChanges(this, {}, callback, true);\n};\nComponent.prototype.setState = function setState (newState, callback) {\n    if (this.$UN) {\n        return;\n    }\n    if (!this.$BS) {\n        queueStateChanges(this, newState, callback, false);\n    }\n};\nComponent.prototype.render = function render (_nextProps, _nextState, _nextContext) {\n    return null;\n};\n\nvar version = \"7.3.2\";\n\n\n\n\n//# sourceURL=webpack:///./node_modules/inferno/dist/index.esm.js?");
+__webpack_require__.r(__webpack_exports__);
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return Component; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "EMPTY_OBJ", function() { return EMPTY_OBJ; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "Fragment", function() { return Fragment; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_CI", function() { return createClassComponentInstance; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_HI", function() { return normalizeRoot; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_M", function() { return mount; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_MCCC", function() { return mountClassComponentCallbacks; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_ME", function() { return mountElement; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_MFCC", function() { return mountFunctionalComponentCallbacks; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_MP", function() { return mountProps; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "_MR", function() { return mountRef; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "__render", function() { return __render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createComponentVNode", function() { return createComponentVNode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createFragment", function() { return createFragment; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createPortal", function() { return createPortal; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createRef", function() { return createRef; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createRenderer", function() { return createRenderer; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createTextVNode", function() { return createTextVNode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "createVNode", function() { return createVNode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "directClone", function() { return directClone; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "findDOMfromVNode", function() { return findDOMfromVNode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "forwardRef", function() { return forwardRef; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "getFlagsForElementVnode", function() { return getFlagsForElementVnode; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "linkEvent", function() { return linkEvent; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "normalizeProps", function() { return normalizeProps; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "options", function() { return options; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "render", function() { return render; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "rerender", function() { return rerender; });
+/* harmony export (binding) */ __webpack_require__.d(__webpack_exports__, "version", function() { return version; });
+var isArray = Array.isArray;
+function isStringOrNumber(o) {
+    var type = typeof o;
+    return type === 'string' || type === 'number';
+}
+function isNullOrUndef(o) {
+    return o === void 0 || o === null;
+}
+function isInvalid(o) {
+    return o === null || o === false || o === true || o === void 0;
+}
+function isFunction(o) {
+    return typeof o === 'function';
+}
+function isString(o) {
+    return typeof o === 'string';
+}
+function isNumber(o) {
+    return typeof o === 'number';
+}
+function isNull(o) {
+    return o === null;
+}
+function isUndefined(o) {
+    return o === void 0;
+}
+function combineFrom(first, second) {
+    var out = {};
+    if (first) {
+        for (var key in first) {
+            out[key] = first[key];
+        }
+    }
+    if (second) {
+        for (var key$1 in second) {
+            out[key$1] = second[key$1];
+        }
+    }
+    return out;
+}
+
+/**
+ * Links given data to event as first parameter
+ * @param {*} data data to be linked, it will be available in function as first parameter
+ * @param {Function} event Function to be called when event occurs
+ * @returns {{data: *, event: Function}}
+ */
+function linkEvent(data, event) {
+    if (isFunction(event)) {
+        return { data: data, event: event };
+    }
+    return null; // Return null when event is invalid, to avoid creating unnecessary event handlers
+}
+// object.event should always be function, otherwise its badly created object.
+function isLinkEventObject(o) {
+    return !isNull(o) && typeof o === 'object';
+}
+
+// We need EMPTY_OBJ defined in one place.
+// Its used for comparison so we cant inline it into shared
+var EMPTY_OBJ = {};
+var Fragment = '$F';
+function normalizeEventName(name) {
+    return name.substr(2).toLowerCase();
+}
+function appendChild(parentDOM, dom) {
+    parentDOM.appendChild(dom);
+}
+function insertOrAppend(parentDOM, newNode, nextNode) {
+    if (isNull(nextNode)) {
+        appendChild(parentDOM, newNode);
+    }
+    else {
+        parentDOM.insertBefore(newNode, nextNode);
+    }
+}
+function documentCreateElement(tag, isSVG) {
+    if (isSVG) {
+        return document.createElementNS('http://www.w3.org/2000/svg', tag);
+    }
+    return document.createElement(tag);
+}
+function replaceChild(parentDOM, newDom, lastDom) {
+    parentDOM.replaceChild(newDom, lastDom);
+}
+function removeChild(parentDOM, childNode) {
+    parentDOM.removeChild(childNode);
+}
+function callAll(arrayFn) {
+    var listener;
+    while ((listener = arrayFn.shift()) !== undefined) {
+        listener();
+    }
+}
+function findChildVNode(vNode, startEdge, flags) {
+    var children = vNode.children;
+    if (flags & 4 /* ComponentClass */) {
+        return children.$LI;
+    }
+    if (flags & 8192 /* Fragment */) {
+        return vNode.childFlags === 2 /* HasVNodeChildren */ ? children : children[startEdge ? 0 : children.length - 1];
+    }
+    return children;
+}
+function findDOMfromVNode(vNode, startEdge) {
+    var flags;
+    while (vNode) {
+        flags = vNode.flags;
+        if (flags & 2033 /* DOMRef */) {
+            return vNode.dom;
+        }
+        vNode = findChildVNode(vNode, startEdge, flags);
+    }
+    return null;
+}
+function removeVNodeDOM(vNode, parentDOM) {
+    do {
+        var flags = vNode.flags;
+        if (flags & 2033 /* DOMRef */) {
+            removeChild(parentDOM, vNode.dom);
+            return;
+        }
+        var children = vNode.children;
+        if (flags & 4 /* ComponentClass */) {
+            vNode = children.$LI;
+        }
+        if (flags & 8 /* ComponentFunction */) {
+            vNode = children;
+        }
+        if (flags & 8192 /* Fragment */) {
+            if (vNode.childFlags === 2 /* HasVNodeChildren */) {
+                vNode = children;
+            }
+            else {
+                for (var i = 0, len = children.length; i < len; ++i) {
+                    removeVNodeDOM(children[i], parentDOM);
+                }
+                return;
+            }
+        }
+    } while (vNode);
+}
+function moveVNodeDOM(vNode, parentDOM, nextNode) {
+    do {
+        var flags = vNode.flags;
+        if (flags & 2033 /* DOMRef */) {
+            insertOrAppend(parentDOM, vNode.dom, nextNode);
+            return;
+        }
+        var children = vNode.children;
+        if (flags & 4 /* ComponentClass */) {
+            vNode = children.$LI;
+        }
+        if (flags & 8 /* ComponentFunction */) {
+            vNode = children;
+        }
+        if (flags & 8192 /* Fragment */) {
+            if (vNode.childFlags === 2 /* HasVNodeChildren */) {
+                vNode = children;
+            }
+            else {
+                for (var i = 0, len = children.length; i < len; ++i) {
+                    moveVNodeDOM(children[i], parentDOM, nextNode);
+                }
+                return;
+            }
+        }
+    } while (vNode);
+}
+function createDerivedState(instance, nextProps, state) {
+    if (instance.constructor.getDerivedStateFromProps) {
+        return combineFrom(state, instance.constructor.getDerivedStateFromProps(nextProps, state));
+    }
+    return state;
+}
+var renderCheck = {
+    v: false
+};
+var options = {
+    componentComparator: null,
+    createVNode: null,
+    renderComplete: null
+};
+function setTextContent(dom, children) {
+    dom.textContent = children;
+}
+// Calling this function assumes, nextValue is linkEvent
+function isLastValueSameLinkEvent(lastValue, nextValue) {
+    return (isLinkEventObject(lastValue) &&
+        lastValue.event === nextValue.event &&
+        lastValue.data === nextValue.data);
+}
+function mergeUnsetProperties(to, from) {
+    for (var propName in from) {
+        if (isUndefined(to[propName])) {
+            to[propName] = from[propName];
+        }
+    }
+    return to;
+}
+function safeCall1(method, arg1) {
+    return !!isFunction(method) && (method(arg1), true);
+}
+
+var keyPrefix = '$';
+function V(childFlags, children, className, flags, key, props, ref, type) {
+    this.childFlags = childFlags;
+    this.children = children;
+    this.className = className;
+    this.dom = null;
+    this.flags = flags;
+    this.key = key === void 0 ? null : key;
+    this.props = props === void 0 ? null : props;
+    this.ref = ref === void 0 ? null : ref;
+    this.type = type;
+}
+function createVNode(flags, type, className, children, childFlags, props, key, ref) {
+    var childFlag = childFlags === void 0 ? 1 /* HasInvalidChildren */ : childFlags;
+    var vNode = new V(childFlag, children, className, flags, key, props, ref, type);
+    if (options.createVNode) {
+        options.createVNode(vNode);
+    }
+    if (childFlag === 0 /* UnknownChildren */) {
+        normalizeChildren(vNode, vNode.children);
+    }
+    return vNode;
+}
+function mergeDefaultHooks(flags, type, ref) {
+    if (flags & 4 /* ComponentClass */) {
+        return ref;
+    }
+    var defaultHooks = (flags & 32768 /* ForwardRef */ ? type.render : type).defaultHooks;
+    if (isNullOrUndef(defaultHooks)) {
+        return ref;
+    }
+    if (isNullOrUndef(ref)) {
+        return defaultHooks;
+    }
+    return mergeUnsetProperties(ref, defaultHooks);
+}
+function mergeDefaultProps(flags, type, props) {
+    // set default props
+    var defaultProps = (flags & 32768 /* ForwardRef */ ? type.render : type).defaultProps;
+    if (isNullOrUndef(defaultProps)) {
+        return props;
+    }
+    if (isNullOrUndef(props)) {
+        return combineFrom(defaultProps, null);
+    }
+    return mergeUnsetProperties(props, defaultProps);
+}
+function resolveComponentFlags(flags, type) {
+    if (flags & 12 /* ComponentKnown */) {
+        return flags;
+    }
+    if (type.prototype && type.prototype.render) {
+        return 4 /* ComponentClass */;
+    }
+    if (type.render) {
+        return 32776 /* ForwardRefComponent */;
+    }
+    return 8 /* ComponentFunction */;
+}
+function createComponentVNode(flags, type, props, key, ref) {
+    flags = resolveComponentFlags(flags, type);
+    var vNode = new V(1 /* HasInvalidChildren */, null, null, flags, key, mergeDefaultProps(flags, type, props), mergeDefaultHooks(flags, type, ref), type);
+    if (options.createVNode) {
+        options.createVNode(vNode);
+    }
+    return vNode;
+}
+function createTextVNode(text, key) {
+    return new V(1 /* HasInvalidChildren */, isNullOrUndef(text) || text === true || text === false ? '' : text, null, 16 /* Text */, key, null, null, null);
+}
+function createFragment(children, childFlags, key) {
+    var fragment = createVNode(8192 /* Fragment */, 8192 /* Fragment */, null, children, childFlags, null, key, null);
+    switch (fragment.childFlags) {
+        case 1 /* HasInvalidChildren */:
+            fragment.children = createVoidVNode();
+            fragment.childFlags = 2 /* HasVNodeChildren */;
+            break;
+        case 16 /* HasTextChildren */:
+            fragment.children = [createTextVNode(children)];
+            fragment.childFlags = 4 /* HasNonKeyedChildren */;
+            break;
+        default:
+            break;
+    }
+    return fragment;
+}
+function normalizeProps(vNode) {
+    var props = vNode.props;
+    if (props) {
+        var flags = vNode.flags;
+        if (flags & 481 /* Element */) {
+            if (props.children !== void 0 && isNullOrUndef(vNode.children)) {
+                normalizeChildren(vNode, props.children);
+            }
+            if (props.className !== void 0) {
+                vNode.className = props.className || null;
+                props.className = undefined;
+            }
+        }
+        if (props.key !== void 0) {
+            vNode.key = props.key;
+            props.key = undefined;
+        }
+        if (props.ref !== void 0) {
+            if (flags & 8 /* ComponentFunction */) {
+                vNode.ref = combineFrom(vNode.ref, props.ref);
+            }
+            else {
+                vNode.ref = props.ref;
+            }
+            props.ref = undefined;
+        }
+    }
+    return vNode;
+}
+/*
+ * Fragment is different than normal vNode,
+ * because when it needs to be cloned we need to clone its children too
+ * But not normalize, because otherwise those possibly get KEY and re-mount
+ */
+function cloneFragment(vNodeToClone) {
+    var clonedChildren;
+    var oldChildren = vNodeToClone.children;
+    var childFlags = vNodeToClone.childFlags;
+    if (childFlags === 2 /* HasVNodeChildren */) {
+        clonedChildren = directClone(oldChildren);
+    }
+    else if (childFlags & 12 /* MultipleChildren */) {
+        clonedChildren = [];
+        for (var i = 0, len = oldChildren.length; i < len; ++i) {
+            clonedChildren.push(directClone(oldChildren[i]));
+        }
+    }
+    return createFragment(clonedChildren, childFlags, vNodeToClone.key);
+}
+function directClone(vNodeToClone) {
+    var flags = vNodeToClone.flags & -16385 /* ClearInUse */;
+    var props = vNodeToClone.props;
+    if (flags & 14 /* Component */) {
+        if (!isNull(props)) {
+            var propsToClone = props;
+            props = {};
+            for (var key in propsToClone) {
+                props[key] = propsToClone[key];
+            }
+        }
+    }
+    if ((flags & 8192 /* Fragment */) === 0) {
+        return new V(vNodeToClone.childFlags, vNodeToClone.children, vNodeToClone.className, flags, vNodeToClone.key, props, vNodeToClone.ref, vNodeToClone.type);
+    }
+    return cloneFragment(vNodeToClone);
+}
+function createVoidVNode() {
+    return createTextVNode('', null);
+}
+function createPortal(children, container) {
+    var normalizedRoot = normalizeRoot(children);
+    return createVNode(1024 /* Portal */, 1024 /* Portal */, null, normalizedRoot, 0 /* UnknownChildren */, null, normalizedRoot.key, container);
+}
+function _normalizeVNodes(nodes, result, index, currentKey) {
+    for (var len = nodes.length; index < len; index++) {
+        var n = nodes[index];
+        if (!isInvalid(n)) {
+            var newKey = currentKey + keyPrefix + index;
+            if (isArray(n)) {
+                _normalizeVNodes(n, result, 0, newKey);
+            }
+            else {
+                if (isStringOrNumber(n)) {
+                    n = createTextVNode(n, newKey);
+                }
+                else {
+                    var oldKey = n.key;
+                    var isPrefixedKey = isString(oldKey) && oldKey[0] === keyPrefix;
+                    if (n.flags & 81920 /* InUseOrNormalized */ || isPrefixedKey) {
+                        n = directClone(n);
+                    }
+                    n.flags |= 65536 /* Normalized */;
+                    if (!isPrefixedKey) {
+                        if (isNull(oldKey)) {
+                            n.key = newKey;
+                        }
+                        else {
+                            n.key = currentKey + oldKey;
+                        }
+                    }
+                    else if (oldKey.substring(0, currentKey.length) !== currentKey) {
+                        n.key = currentKey + oldKey;
+                    }
+                }
+                result.push(n);
+            }
+        }
+    }
+}
+function getFlagsForElementVnode(type) {
+    switch (type) {
+        case 'svg':
+            return 32 /* SvgElement */;
+        case 'input':
+            return 64 /* InputElement */;
+        case 'select':
+            return 256 /* SelectElement */;
+        case 'textarea':
+            return 128 /* TextareaElement */;
+        case Fragment:
+            return 8192 /* Fragment */;
+        default:
+            return 1 /* HtmlElement */;
+    }
+}
+function normalizeChildren(vNode, children) {
+    var newChildren;
+    var newChildFlags = 1 /* HasInvalidChildren */;
+    // Don't change children to match strict equal (===) true in patching
+    if (isInvalid(children)) {
+        newChildren = children;
+    }
+    else if (isStringOrNumber(children)) {
+        newChildFlags = 16 /* HasTextChildren */;
+        newChildren = children;
+    }
+    else if (isArray(children)) {
+        var len = children.length;
+        for (var i = 0; i < len; ++i) {
+            var n = children[i];
+            if (isInvalid(n) || isArray(n)) {
+                newChildren = newChildren || children.slice(0, i);
+                _normalizeVNodes(children, newChildren, i, '');
+                break;
+            }
+            else if (isStringOrNumber(n)) {
+                newChildren = newChildren || children.slice(0, i);
+                newChildren.push(createTextVNode(n, keyPrefix + i));
+            }
+            else {
+                var key = n.key;
+                var needsCloning = (n.flags & 81920 /* InUseOrNormalized */) > 0;
+                var isNullKey = isNull(key);
+                var isPrefixed = isString(key) && key[0] === keyPrefix;
+                if (needsCloning || isNullKey || isPrefixed) {
+                    newChildren = newChildren || children.slice(0, i);
+                    if (needsCloning || isPrefixed) {
+                        n = directClone(n);
+                    }
+                    if (isNullKey || isPrefixed) {
+                        n.key = keyPrefix + i;
+                    }
+                    newChildren.push(n);
+                }
+                else if (newChildren) {
+                    newChildren.push(n);
+                }
+                n.flags |= 65536 /* Normalized */;
+            }
+        }
+        newChildren = newChildren || children;
+        if (newChildren.length === 0) {
+            newChildFlags = 1 /* HasInvalidChildren */;
+        }
+        else {
+            newChildFlags = 8 /* HasKeyedChildren */;
+        }
+    }
+    else {
+        newChildren = children;
+        newChildren.flags |= 65536 /* Normalized */;
+        if (children.flags & 81920 /* InUseOrNormalized */) {
+            newChildren = directClone(children);
+        }
+        newChildFlags = 2 /* HasVNodeChildren */;
+    }
+    vNode.children = newChildren;
+    vNode.childFlags = newChildFlags;
+    return vNode;
+}
+function normalizeRoot(input) {
+    if (isInvalid(input) || isStringOrNumber(input)) {
+        return createTextVNode(input, null);
+    }
+    if (isArray(input)) {
+        return createFragment(input, 0 /* UnknownChildren */, null);
+    }
+    return input.flags & 16384 /* InUse */ ? directClone(input) : input;
+}
+
+var xlinkNS = 'http://www.w3.org/1999/xlink';
+var xmlNS = 'http://www.w3.org/XML/1998/namespace';
+var namespaces = {
+    'xlink:actuate': xlinkNS,
+    'xlink:arcrole': xlinkNS,
+    'xlink:href': xlinkNS,
+    'xlink:role': xlinkNS,
+    'xlink:show': xlinkNS,
+    'xlink:title': xlinkNS,
+    'xlink:type': xlinkNS,
+    'xml:base': xmlNS,
+    'xml:lang': xmlNS,
+    'xml:space': xmlNS
+};
+
+function getDelegatedEventObject(v) {
+    return {
+        onClick: v,
+        onDblClick: v,
+        onFocusIn: v,
+        onFocusOut: v,
+        onKeyDown: v,
+        onKeyPress: v,
+        onKeyUp: v,
+        onMouseDown: v,
+        onMouseMove: v,
+        onMouseUp: v,
+        onTouchEnd: v,
+        onTouchMove: v,
+        onTouchStart: v
+    };
+}
+var attachedEventCounts = getDelegatedEventObject(0);
+var attachedEvents = getDelegatedEventObject(null);
+var syntheticEvents = getDelegatedEventObject(true);
+function updateOrAddSyntheticEvent(name, dom) {
+    var eventsObject = dom.$EV;
+    if (!eventsObject) {
+        eventsObject = dom.$EV = getDelegatedEventObject(null);
+    }
+    if (!eventsObject[name]) {
+        if (++attachedEventCounts[name] === 1) {
+            attachedEvents[name] = attachEventToDocument(name);
+        }
+    }
+    return eventsObject;
+}
+function unmountSyntheticEvent(name, dom) {
+    var eventsObject = dom.$EV;
+    if (eventsObject && eventsObject[name]) {
+        if (--attachedEventCounts[name] === 0) {
+            document.removeEventListener(normalizeEventName(name), attachedEvents[name]);
+            attachedEvents[name] = null;
+        }
+        eventsObject[name] = null;
+    }
+}
+function handleSyntheticEvent(name, lastEvent, nextEvent, dom) {
+    if (isFunction(nextEvent)) {
+        updateOrAddSyntheticEvent(name, dom)[name] = nextEvent;
+    }
+    else if (isLinkEventObject(nextEvent)) {
+        if (isLastValueSameLinkEvent(lastEvent, nextEvent)) {
+            return;
+        }
+        updateOrAddSyntheticEvent(name, dom)[name] = nextEvent;
+    }
+    else {
+        unmountSyntheticEvent(name, dom);
+    }
+}
+// When browsers fully support event.composedPath we could loop it through instead of using parentNode property
+function getTargetNode(event) {
+    return isFunction(event.composedPath) ? event.composedPath()[0] : event.target;
+}
+function dispatchEvents(event, isClick, name, eventData) {
+    var dom = getTargetNode(event);
+    do {
+        // Html Nodes can be nested fe: span inside button in that scenario browser does not handle disabled attribute on parent,
+        // because the event listener is on document.body
+        // Don't process clicks on disabled elements
+        if (isClick && dom.disabled) {
+            return;
+        }
+        var eventsObject = dom.$EV;
+        if (eventsObject) {
+            var currentEvent = eventsObject[name];
+            if (currentEvent) {
+                // linkEvent object
+                eventData.dom = dom;
+                currentEvent.event ? currentEvent.event(currentEvent.data, event) : currentEvent(event);
+                if (event.cancelBubble) {
+                    return;
+                }
+            }
+        }
+        dom = dom.parentNode;
+    } while (!isNull(dom));
+}
+function stopPropagation() {
+    this.cancelBubble = true;
+    if (!this.immediatePropagationStopped) {
+        this.stopImmediatePropagation();
+    }
+}
+function isDefaultPrevented() {
+    return this.defaultPrevented;
+}
+function isPropagationStopped() {
+    return this.cancelBubble;
+}
+function extendEventProperties(event) {
+    // Event data needs to be object to save reference to currentTarget getter
+    var eventData = {
+        dom: document
+    };
+    event.isDefaultPrevented = isDefaultPrevented;
+    event.isPropagationStopped = isPropagationStopped;
+    event.stopPropagation = stopPropagation;
+    Object.defineProperty(event, 'currentTarget', {
+        configurable: true,
+        get: function get() {
+            return eventData.dom;
+        }
+    });
+    return eventData;
+}
+function rootClickEvent(name) {
+    return function (event) {
+        if (event.button !== 0) {
+            // Firefox incorrectly triggers click event for mid/right mouse buttons.
+            // This bug has been active for 17 years.
+            // https://bugzilla.mozilla.org/show_bug.cgi?id=184051
+            event.stopPropagation();
+            return;
+        }
+        dispatchEvents(event, true, name, extendEventProperties(event));
+    };
+}
+function rootEvent(name) {
+    return function (event) {
+        dispatchEvents(event, false, name, extendEventProperties(event));
+    };
+}
+function attachEventToDocument(name) {
+    var attachedEvent = name === 'onClick' || name === 'onDblClick' ? rootClickEvent(name) : rootEvent(name);
+    document.addEventListener(normalizeEventName(name), attachedEvent);
+    return attachedEvent;
+}
+
+function isSameInnerHTML(dom, innerHTML) {
+    var tempdom = document.createElement('i');
+    tempdom.innerHTML = innerHTML;
+    return tempdom.innerHTML === dom.innerHTML;
+}
+
+function triggerEventListener(props, methodName, e) {
+    if (props[methodName]) {
+        var listener = props[methodName];
+        if (listener.event) {
+            listener.event(listener.data, e);
+        }
+        else {
+            listener(e);
+        }
+    }
+    else {
+        var nativeListenerName = methodName.toLowerCase();
+        if (props[nativeListenerName]) {
+            props[nativeListenerName](e);
+        }
+    }
+}
+function createWrappedFunction(methodName, applyValue) {
+    var fnMethod = function (e) {
+        var vNode = this.$V;
+        // If vNode is gone by the time event fires, no-op
+        if (!vNode) {
+            return;
+        }
+        var props = vNode.props || EMPTY_OBJ;
+        var dom = vNode.dom;
+        if (isString(methodName)) {
+            triggerEventListener(props, methodName, e);
+        }
+        else {
+            for (var i = 0; i < methodName.length; ++i) {
+                triggerEventListener(props, methodName[i], e);
+            }
+        }
+        if (isFunction(applyValue)) {
+            var newVNode = this.$V;
+            var newProps = newVNode.props || EMPTY_OBJ;
+            applyValue(newProps, dom, false, newVNode);
+        }
+    };
+    Object.defineProperty(fnMethod, 'wrapped', {
+        configurable: false,
+        enumerable: false,
+        value: true,
+        writable: false
+    });
+    return fnMethod;
+}
+
+function attachEvent(dom, eventName, handler) {
+    var previousKey = "$" + eventName;
+    var previousArgs = dom[previousKey];
+    if (previousArgs) {
+        if (previousArgs[1].wrapped) {
+            return;
+        }
+        dom.removeEventListener(previousArgs[0], previousArgs[1]);
+        dom[previousKey] = null;
+    }
+    if (isFunction(handler)) {
+        dom.addEventListener(eventName, handler);
+        dom[previousKey] = [eventName, handler];
+    }
+}
+
+function isCheckedType(type) {
+    return type === 'checkbox' || type === 'radio';
+}
+var onTextInputChange = createWrappedFunction('onInput', applyValueInput);
+var wrappedOnChange = createWrappedFunction(['onClick', 'onChange'], applyValueInput);
+/* tslint:disable-next-line:no-empty */
+function emptywrapper(event) {
+    event.stopPropagation();
+}
+emptywrapper.wrapped = true;
+function inputEvents(dom, nextPropsOrEmpty) {
+    if (isCheckedType(nextPropsOrEmpty.type)) {
+        attachEvent(dom, 'change', wrappedOnChange);
+        attachEvent(dom, 'click', emptywrapper);
+    }
+    else {
+        attachEvent(dom, 'input', onTextInputChange);
+    }
+}
+function applyValueInput(nextPropsOrEmpty, dom) {
+    var type = nextPropsOrEmpty.type;
+    var value = nextPropsOrEmpty.value;
+    var checked = nextPropsOrEmpty.checked;
+    var multiple = nextPropsOrEmpty.multiple;
+    var defaultValue = nextPropsOrEmpty.defaultValue;
+    var hasValue = !isNullOrUndef(value);
+    if (type && type !== dom.type) {
+        dom.setAttribute('type', type);
+    }
+    if (!isNullOrUndef(multiple) && multiple !== dom.multiple) {
+        dom.multiple = multiple;
+    }
+    if (!isNullOrUndef(defaultValue) && !hasValue) {
+        dom.defaultValue = defaultValue + '';
+    }
+    if (isCheckedType(type)) {
+        if (hasValue) {
+            dom.value = value;
+        }
+        if (!isNullOrUndef(checked)) {
+            dom.checked = checked;
+        }
+    }
+    else {
+        if (hasValue && dom.value !== value) {
+            dom.defaultValue = value;
+            dom.value = value;
+        }
+        else if (!isNullOrUndef(checked)) {
+            dom.checked = checked;
+        }
+    }
+}
+
+function updateChildOptions(vNode, value) {
+    if (vNode.type === 'option') {
+        updateChildOption(vNode, value);
+    }
+    else {
+        var children = vNode.children;
+        var flags = vNode.flags;
+        if (flags & 4 /* ComponentClass */) {
+            updateChildOptions(children.$LI, value);
+        }
+        else if (flags & 8 /* ComponentFunction */) {
+            updateChildOptions(children, value);
+        }
+        else if (vNode.childFlags === 2 /* HasVNodeChildren */) {
+            updateChildOptions(children, value);
+        }
+        else if (vNode.childFlags & 12 /* MultipleChildren */) {
+            for (var i = 0, len = children.length; i < len; ++i) {
+                updateChildOptions(children[i], value);
+            }
+        }
+    }
+}
+function updateChildOption(vNode, value) {
+    var props = vNode.props || EMPTY_OBJ;
+    var dom = vNode.dom;
+    // we do this as multiple may have changed
+    dom.value = props.value;
+    if (props.value === value || (isArray(value) && value.indexOf(props.value) !== -1)) {
+        dom.selected = true;
+    }
+    else if (!isNullOrUndef(value) || !isNullOrUndef(props.selected)) {
+        dom.selected = props.selected || false;
+    }
+}
+var onSelectChange = createWrappedFunction('onChange', applyValueSelect);
+function selectEvents(dom) {
+    attachEvent(dom, 'change', onSelectChange);
+}
+function applyValueSelect(nextPropsOrEmpty, dom, mounting, vNode) {
+    var multiplePropInBoolean = Boolean(nextPropsOrEmpty.multiple);
+    if (!isNullOrUndef(nextPropsOrEmpty.multiple) && multiplePropInBoolean !== dom.multiple) {
+        dom.multiple = multiplePropInBoolean;
+    }
+    var index = nextPropsOrEmpty.selectedIndex;
+    if (index === -1) {
+        dom.selectedIndex = -1;
+    }
+    var childFlags = vNode.childFlags;
+    if (childFlags !== 1 /* HasInvalidChildren */) {
+        var value = nextPropsOrEmpty.value;
+        if (isNumber(index) && index > -1 && dom.options[index]) {
+            value = dom.options[index].value;
+        }
+        if (mounting && isNullOrUndef(value)) {
+            value = nextPropsOrEmpty.defaultValue;
+        }
+        updateChildOptions(vNode, value);
+    }
+}
+
+var onTextareaInputChange = createWrappedFunction('onInput', applyValueTextArea);
+var wrappedOnChange$1 = createWrappedFunction('onChange');
+function textAreaEvents(dom, nextPropsOrEmpty) {
+    attachEvent(dom, 'input', onTextareaInputChange);
+    if (nextPropsOrEmpty.onChange) {
+        attachEvent(dom, 'change', wrappedOnChange$1);
+    }
+}
+function applyValueTextArea(nextPropsOrEmpty, dom, mounting) {
+    var value = nextPropsOrEmpty.value;
+    var domValue = dom.value;
+    if (isNullOrUndef(value)) {
+        if (mounting) {
+            var defaultValue = nextPropsOrEmpty.defaultValue;
+            if (!isNullOrUndef(defaultValue) && defaultValue !== domValue) {
+                dom.defaultValue = defaultValue;
+                dom.value = defaultValue;
+            }
+        }
+    }
+    else if (domValue !== value) {
+        /* There is value so keep it controlled */
+        dom.defaultValue = value;
+        dom.value = value;
+    }
+}
+
+/**
+ * There is currently no support for switching same input between controlled and nonControlled
+ * If that ever becomes a real issue, then re design controlled elements
+ * Currently user must choose either controlled or non-controlled and stick with that
+ */
+function processElement(flags, vNode, dom, nextPropsOrEmpty, mounting, isControlled) {
+    if (flags & 64 /* InputElement */) {
+        applyValueInput(nextPropsOrEmpty, dom);
+    }
+    else if (flags & 256 /* SelectElement */) {
+        applyValueSelect(nextPropsOrEmpty, dom, mounting, vNode);
+    }
+    else if (flags & 128 /* TextareaElement */) {
+        applyValueTextArea(nextPropsOrEmpty, dom, mounting);
+    }
+    if (isControlled) {
+        dom.$V = vNode;
+    }
+}
+function addFormElementEventHandlers(flags, dom, nextPropsOrEmpty) {
+    if (flags & 64 /* InputElement */) {
+        inputEvents(dom, nextPropsOrEmpty);
+    }
+    else if (flags & 256 /* SelectElement */) {
+        selectEvents(dom);
+    }
+    else if (flags & 128 /* TextareaElement */) {
+        textAreaEvents(dom, nextPropsOrEmpty);
+    }
+}
+function isControlledFormElement(nextPropsOrEmpty) {
+    return nextPropsOrEmpty.type && isCheckedType(nextPropsOrEmpty.type) ? !isNullOrUndef(nextPropsOrEmpty.checked) : !isNullOrUndef(nextPropsOrEmpty.value);
+}
+
+function createRef() {
+    return {
+        current: null
+    };
+}
+function forwardRef(render) {
+    return {
+        render: render
+    };
+}
+function unmountRef(ref) {
+    if (ref) {
+        if (!safeCall1(ref, null) && ref.current) {
+            ref.current = null;
+        }
+    }
+}
+function mountRef(ref, value, lifecycle) {
+    if (ref && (isFunction(ref) || ref.current !== void 0)) {
+        lifecycle.push(function () {
+            if (!safeCall1(ref, value) && ref.current !== void 0) {
+                ref.current = value;
+            }
+        });
+    }
+}
+
+function remove(vNode, parentDOM) {
+    unmount(vNode);
+    removeVNodeDOM(vNode, parentDOM);
+}
+function unmount(vNode) {
+    var flags = vNode.flags;
+    var children = vNode.children;
+    var ref;
+    if (flags & 481 /* Element */) {
+        ref = vNode.ref;
+        var props = vNode.props;
+        unmountRef(ref);
+        var childFlags = vNode.childFlags;
+        if (!isNull(props)) {
+            var keys = Object.keys(props);
+            for (var i = 0, len = keys.length; i < len; i++) {
+                var key = keys[i];
+                if (syntheticEvents[key]) {
+                    unmountSyntheticEvent(key, vNode.dom);
+                }
+            }
+        }
+        if (childFlags & 12 /* MultipleChildren */) {
+            unmountAllChildren(children);
+        }
+        else if (childFlags === 2 /* HasVNodeChildren */) {
+            unmount(children);
+        }
+    }
+    else if (children) {
+        if (flags & 4 /* ComponentClass */) {
+            if (isFunction(children.componentWillUnmount)) {
+                children.componentWillUnmount();
+            }
+            unmountRef(vNode.ref);
+            children.$UN = true;
+            unmount(children.$LI);
+        }
+        else if (flags & 8 /* ComponentFunction */) {
+            ref = vNode.ref;
+            if (!isNullOrUndef(ref) && isFunction(ref.onComponentWillUnmount)) {
+                ref.onComponentWillUnmount(findDOMfromVNode(vNode, true), vNode.props || EMPTY_OBJ);
+            }
+            unmount(children);
+        }
+        else if (flags & 1024 /* Portal */) {
+            remove(children, vNode.ref);
+        }
+        else if (flags & 8192 /* Fragment */) {
+            if (vNode.childFlags & 12 /* MultipleChildren */) {
+                unmountAllChildren(children);
+            }
+        }
+    }
+}
+function unmountAllChildren(children) {
+    for (var i = 0, len = children.length; i < len; ++i) {
+        unmount(children[i]);
+    }
+}
+function clearDOM(dom) {
+    // Optimization for clearing dom
+    dom.textContent = '';
+}
+function removeAllChildren(dom, vNode, children) {
+    unmountAllChildren(children);
+    if (vNode.flags & 8192 /* Fragment */) {
+        removeVNodeDOM(vNode, dom);
+    }
+    else {
+        clearDOM(dom);
+    }
+}
+
+function wrapLinkEvent(nextValue) {
+    // This variable makes sure there is no "this" context in callback
+    var ev = nextValue.event;
+    return function (e) {
+        ev(nextValue.data, e);
+    };
+}
+function patchEvent(name, lastValue, nextValue, dom) {
+    if (isLinkEventObject(nextValue)) {
+        if (isLastValueSameLinkEvent(lastValue, nextValue)) {
+            return;
+        }
+        nextValue = wrapLinkEvent(nextValue);
+    }
+    attachEvent(dom, normalizeEventName(name), nextValue);
+}
+// We are assuming here that we come from patchProp routine
+// -nextAttrValue cannot be null or undefined
+function patchStyle(lastAttrValue, nextAttrValue, dom) {
+    if (isNullOrUndef(nextAttrValue)) {
+        dom.removeAttribute('style');
+        return;
+    }
+    var domStyle = dom.style;
+    var style;
+    var value;
+    if (isString(nextAttrValue)) {
+        domStyle.cssText = nextAttrValue;
+        return;
+    }
+    if (!isNullOrUndef(lastAttrValue) && !isString(lastAttrValue)) {
+        for (style in nextAttrValue) {
+            // do not add a hasOwnProperty check here, it affects performance
+            value = nextAttrValue[style];
+            if (value !== lastAttrValue[style]) {
+                domStyle.setProperty(style, value);
+            }
+        }
+        for (style in lastAttrValue) {
+            if (isNullOrUndef(nextAttrValue[style])) {
+                domStyle.removeProperty(style);
+            }
+        }
+    }
+    else {
+        for (style in nextAttrValue) {
+            value = nextAttrValue[style];
+            domStyle.setProperty(style, value);
+        }
+    }
+}
+function patchDangerInnerHTML(lastValue, nextValue, lastVNode, dom) {
+    var lastHtml = (lastValue && lastValue.__html) || '';
+    var nextHtml = (nextValue && nextValue.__html) || '';
+    if (lastHtml !== nextHtml) {
+        if (!isNullOrUndef(nextHtml) && !isSameInnerHTML(dom, nextHtml)) {
+            if (!isNull(lastVNode)) {
+                if (lastVNode.childFlags & 12 /* MultipleChildren */) {
+                    unmountAllChildren(lastVNode.children);
+                }
+                else if (lastVNode.childFlags === 2 /* HasVNodeChildren */) {
+                    unmount(lastVNode.children);
+                }
+                lastVNode.children = null;
+                lastVNode.childFlags = 1 /* HasInvalidChildren */;
+            }
+            dom.innerHTML = nextHtml;
+        }
+    }
+}
+function patchProp(prop, lastValue, nextValue, dom, isSVG, hasControlledValue, lastVNode) {
+    switch (prop) {
+        case 'children':
+        case 'childrenType':
+        case 'className':
+        case 'defaultValue':
+        case 'key':
+        case 'multiple':
+        case 'ref':
+        case 'selectedIndex':
+            break;
+        case 'autoFocus':
+            dom.autofocus = !!nextValue;
+            break;
+        case 'allowfullscreen':
+        case 'autoplay':
+        case 'capture':
+        case 'checked':
+        case 'controls':
+        case 'default':
+        case 'disabled':
+        case 'hidden':
+        case 'indeterminate':
+        case 'loop':
+        case 'muted':
+        case 'novalidate':
+        case 'open':
+        case 'readOnly':
+        case 'required':
+        case 'reversed':
+        case 'scoped':
+        case 'seamless':
+        case 'selected':
+            dom[prop] = !!nextValue;
+            break;
+        case 'defaultChecked':
+        case 'value':
+        case 'volume':
+            if (hasControlledValue && prop === 'value') {
+                break;
+            }
+            var value = isNullOrUndef(nextValue) ? '' : nextValue;
+            if (dom[prop] !== value) {
+                dom[prop] = value;
+            }
+            break;
+        case 'style':
+            patchStyle(lastValue, nextValue, dom);
+            break;
+        case 'dangerouslySetInnerHTML':
+            patchDangerInnerHTML(lastValue, nextValue, lastVNode, dom);
+            break;
+        default:
+            if (syntheticEvents[prop]) {
+                handleSyntheticEvent(prop, lastValue, nextValue, dom);
+            }
+            else if (prop.charCodeAt(0) === 111 && prop.charCodeAt(1) === 110) {
+                patchEvent(prop, lastValue, nextValue, dom);
+            }
+            else if (isNullOrUndef(nextValue)) {
+                dom.removeAttribute(prop);
+            }
+            else if (isSVG && namespaces[prop]) {
+                // We optimize for isSVG being false
+                // If we end up in this path we can read property again
+                dom.setAttributeNS(namespaces[prop], prop, nextValue);
+            }
+            else {
+                dom.setAttribute(prop, nextValue);
+            }
+            break;
+    }
+}
+function mountProps(vNode, flags, props, dom, isSVG) {
+    var hasControlledValue = false;
+    var isFormElement = (flags & 448 /* FormElement */) > 0;
+    if (isFormElement) {
+        hasControlledValue = isControlledFormElement(props);
+        if (hasControlledValue) {
+            addFormElementEventHandlers(flags, dom, props);
+        }
+    }
+    for (var prop in props) {
+        // do not add a hasOwnProperty check here, it affects performance
+        patchProp(prop, null, props[prop], dom, isSVG, hasControlledValue, null);
+    }
+    if (isFormElement) {
+        processElement(flags, vNode, dom, props, true, hasControlledValue);
+    }
+}
+
+function renderNewInput(instance, props, context) {
+    var nextInput = normalizeRoot(instance.render(props, instance.state, context));
+    var childContext = context;
+    if (isFunction(instance.getChildContext)) {
+        childContext = combineFrom(context, instance.getChildContext());
+    }
+    instance.$CX = childContext;
+    return nextInput;
+}
+function createClassComponentInstance(vNode, Component, props, context, isSVG, lifecycle) {
+    var instance = new Component(props, context);
+    var usesNewAPI = (instance.$N = Boolean(Component.getDerivedStateFromProps || instance.getSnapshotBeforeUpdate));
+    instance.$SVG = isSVG;
+    instance.$L = lifecycle;
+    vNode.children = instance;
+    instance.$BS = false;
+    instance.context = context;
+    if (instance.props === EMPTY_OBJ) {
+        instance.props = props;
+    }
+    if (!usesNewAPI) {
+        if (isFunction(instance.componentWillMount)) {
+            instance.$BR = true;
+            instance.componentWillMount();
+            var pending = instance.$PS;
+            if (!isNull(pending)) {
+                var state = instance.state;
+                if (isNull(state)) {
+                    instance.state = pending;
+                }
+                else {
+                    for (var key in pending) {
+                        state[key] = pending[key];
+                    }
+                }
+                instance.$PS = null;
+            }
+            instance.$BR = false;
+        }
+    }
+    else {
+        instance.state = createDerivedState(instance, props, instance.state);
+    }
+    instance.$LI = renderNewInput(instance, props, context);
+    return instance;
+}
+
+function mount(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {
+    var flags = (vNode.flags |= 16384 /* InUse */);
+    if (flags & 481 /* Element */) {
+        mountElement(vNode, parentDOM, context, isSVG, nextNode, lifecycle);
+    }
+    else if (flags & 4 /* ComponentClass */) {
+        mountClassComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle);
+    }
+    else if (flags & 8 /* ComponentFunction */) {
+        mountFunctionalComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle);
+        mountFunctionalComponentCallbacks(vNode, lifecycle);
+    }
+    else if (flags & 512 /* Void */ || flags & 16 /* Text */) {
+        mountText(vNode, parentDOM, nextNode);
+    }
+    else if (flags & 8192 /* Fragment */) {
+        mountFragment(vNode, context, parentDOM, isSVG, nextNode, lifecycle);
+    }
+    else if (flags & 1024 /* Portal */) {
+        mountPortal(vNode, context, parentDOM, nextNode, lifecycle);
+    }
+}
+function mountPortal(vNode, context, parentDOM, nextNode, lifecycle) {
+    mount(vNode.children, vNode.ref, context, false, null, lifecycle);
+    var placeHolderVNode = createVoidVNode();
+    mountText(placeHolderVNode, parentDOM, nextNode);
+    vNode.dom = placeHolderVNode.dom;
+}
+function mountFragment(vNode, context, parentDOM, isSVG, nextNode, lifecycle) {
+    var children = vNode.children;
+    var childFlags = vNode.childFlags;
+    // When fragment is optimized for multiple children, check if there is no children and change flag to invalid
+    // This is the only normalization always done, to keep optimization flags API same for fragments and regular elements
+    if (childFlags & 12 /* MultipleChildren */ && children.length === 0) {
+        childFlags = vNode.childFlags = 2 /* HasVNodeChildren */;
+        children = vNode.children = createVoidVNode();
+    }
+    if (childFlags === 2 /* HasVNodeChildren */) {
+        mount(children, parentDOM, nextNode, isSVG, nextNode, lifecycle);
+    }
+    else {
+        mountArrayChildren(children, parentDOM, context, isSVG, nextNode, lifecycle);
+    }
+}
+function mountText(vNode, parentDOM, nextNode) {
+    var dom = (vNode.dom = document.createTextNode(vNode.children));
+    if (!isNull(parentDOM)) {
+        insertOrAppend(parentDOM, dom, nextNode);
+    }
+}
+function mountElement(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {
+    var flags = vNode.flags;
+    var props = vNode.props;
+    var className = vNode.className;
+    var children = vNode.children;
+    var childFlags = vNode.childFlags;
+    var dom = (vNode.dom = documentCreateElement(vNode.type, (isSVG = isSVG || (flags & 32 /* SvgElement */) > 0)));
+    if (!isNullOrUndef(className) && className !== '') {
+        if (isSVG) {
+            dom.setAttribute('class', className);
+        }
+        else {
+            dom.className = className;
+        }
+    }
+    if (childFlags === 16 /* HasTextChildren */) {
+        setTextContent(dom, children);
+    }
+    else if (childFlags !== 1 /* HasInvalidChildren */) {
+        var childrenIsSVG = isSVG && vNode.type !== 'foreignObject';
+        if (childFlags === 2 /* HasVNodeChildren */) {
+            if (children.flags & 16384 /* InUse */) {
+                vNode.children = children = directClone(children);
+            }
+            mount(children, dom, context, childrenIsSVG, null, lifecycle);
+        }
+        else if (childFlags === 8 /* HasKeyedChildren */ || childFlags === 4 /* HasNonKeyedChildren */) {
+            mountArrayChildren(children, dom, context, childrenIsSVG, null, lifecycle);
+        }
+    }
+    if (!isNull(parentDOM)) {
+        insertOrAppend(parentDOM, dom, nextNode);
+    }
+    if (!isNull(props)) {
+        mountProps(vNode, flags, props, dom, isSVG);
+    }
+    mountRef(vNode.ref, dom, lifecycle);
+}
+function mountArrayChildren(children, dom, context, isSVG, nextNode, lifecycle) {
+    for (var i = 0; i < children.length; ++i) {
+        var child = children[i];
+        if (child.flags & 16384 /* InUse */) {
+            children[i] = child = directClone(child);
+        }
+        mount(child, dom, context, isSVG, nextNode, lifecycle);
+    }
+}
+function mountClassComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {
+    var instance = createClassComponentInstance(vNode, vNode.type, vNode.props || EMPTY_OBJ, context, isSVG, lifecycle);
+    mount(instance.$LI, parentDOM, instance.$CX, isSVG, nextNode, lifecycle);
+    mountClassComponentCallbacks(vNode.ref, instance, lifecycle);
+}
+function renderFunctionalComponent(vNode, context) {
+    return vNode.flags & 32768 /* ForwardRef */ ? vNode.type.render(vNode.props || EMPTY_OBJ, vNode.ref, context) : vNode.type(vNode.props || EMPTY_OBJ, context);
+}
+function mountFunctionalComponent(vNode, parentDOM, context, isSVG, nextNode, lifecycle) {
+    mount((vNode.children = normalizeRoot(renderFunctionalComponent(vNode, context))), parentDOM, context, isSVG, nextNode, lifecycle);
+}
+function createClassMountCallback(instance) {
+    return function () {
+        instance.componentDidMount();
+    };
+}
+function mountClassComponentCallbacks(ref, instance, lifecycle) {
+    mountRef(ref, instance, lifecycle);
+    if (isFunction(instance.componentDidMount)) {
+        lifecycle.push(createClassMountCallback(instance));
+    }
+}
+function createOnMountCallback(ref, vNode) {
+    return function () {
+        ref.onComponentDidMount(findDOMfromVNode(vNode, true), vNode.props || EMPTY_OBJ);
+    };
+}
+function mountFunctionalComponentCallbacks(vNode, lifecycle) {
+    var ref = vNode.ref;
+    if (!isNullOrUndef(ref)) {
+        safeCall1(ref.onComponentWillMount, vNode.props || EMPTY_OBJ);
+        if (isFunction(ref.onComponentDidMount)) {
+            lifecycle.push(createOnMountCallback(ref, vNode));
+        }
+    }
+}
+
+function replaceWithNewNode(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle) {
+    unmount(lastVNode);
+    if ((nextVNode.flags & lastVNode.flags & 2033 /* DOMRef */) !== 0) {
+        mount(nextVNode, null, context, isSVG, null, lifecycle);
+        // Single DOM operation, when we have dom references available
+        replaceChild(parentDOM, nextVNode.dom, lastVNode.dom);
+    }
+    else {
+        mount(nextVNode, parentDOM, context, isSVG, findDOMfromVNode(lastVNode, true), lifecycle);
+        removeVNodeDOM(lastVNode, parentDOM);
+    }
+}
+function patch(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle) {
+    var nextFlags = (nextVNode.flags |= 16384 /* InUse */);
+    if (lastVNode.flags !== nextFlags || lastVNode.type !== nextVNode.type || lastVNode.key !== nextVNode.key || nextFlags & 2048 /* ReCreate */) {
+        if (lastVNode.flags & 16384 /* InUse */) {
+            replaceWithNewNode(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle);
+        }
+        else {
+            // Last vNode is not in use, it has crashed at application level. Just mount nextVNode and ignore last one
+            mount(nextVNode, parentDOM, context, isSVG, nextNode, lifecycle);
+        }
+    }
+    else if (nextFlags & 481 /* Element */) {
+        patchElement(lastVNode, nextVNode, context, isSVG, nextFlags, lifecycle);
+    }
+    else if (nextFlags & 4 /* ComponentClass */) {
+        patchClassComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle);
+    }
+    else if (nextFlags & 8 /* ComponentFunction */) {
+        patchFunctionalComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle);
+    }
+    else if (nextFlags & 16 /* Text */) {
+        patchText(lastVNode, nextVNode);
+    }
+    else if (nextFlags & 512 /* Void */) {
+        nextVNode.dom = lastVNode.dom;
+    }
+    else if (nextFlags & 8192 /* Fragment */) {
+        patchFragment(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle);
+    }
+    else {
+        patchPortal(lastVNode, nextVNode, context, lifecycle);
+    }
+}
+function patchSingleTextChild(lastChildren, nextChildren, parentDOM) {
+    if (lastChildren !== nextChildren) {
+        if (lastChildren !== '') {
+            parentDOM.firstChild.nodeValue = nextChildren;
+        }
+        else {
+            setTextContent(parentDOM, nextChildren);
+        }
+    }
+}
+function patchContentEditableChildren(dom, nextChildren) {
+    if (dom.textContent !== nextChildren) {
+        dom.textContent = nextChildren;
+    }
+}
+function patchFragment(lastVNode, nextVNode, parentDOM, context, isSVG, lifecycle) {
+    var lastChildren = lastVNode.children;
+    var nextChildren = nextVNode.children;
+    var lastChildFlags = lastVNode.childFlags;
+    var nextChildFlags = nextVNode.childFlags;
+    var nextNode = null;
+    // When fragment is optimized for multiple children, check if there is no children and change flag to invalid
+    // This is the only normalization always done, to keep optimization flags API same for fragments and regular elements
+    if (nextChildFlags & 12 /* MultipleChildren */ && nextChildren.length === 0) {
+        nextChildFlags = nextVNode.childFlags = 2 /* HasVNodeChildren */;
+        nextChildren = nextVNode.children = createVoidVNode();
+    }
+    var nextIsSingle = (nextChildFlags & 2 /* HasVNodeChildren */) !== 0;
+    if (lastChildFlags & 12 /* MultipleChildren */) {
+        var lastLen = lastChildren.length;
+        // We need to know Fragment's edge node when
+        if (
+        // It uses keyed algorithm
+        (lastChildFlags & 8 /* HasKeyedChildren */ && nextChildFlags & 8 /* HasKeyedChildren */) ||
+            // It transforms from many to single
+            nextIsSingle ||
+            // It will append more nodes
+            (!nextIsSingle && nextChildren.length > lastLen)) {
+            // When fragment has multiple children there is always at least one vNode
+            nextNode = findDOMfromVNode(lastChildren[lastLen - 1], false).nextSibling;
+        }
+    }
+    patchChildren(lastChildFlags, nextChildFlags, lastChildren, nextChildren, parentDOM, context, isSVG, nextNode, lastVNode, lifecycle);
+}
+function patchPortal(lastVNode, nextVNode, context, lifecycle) {
+    var lastContainer = lastVNode.ref;
+    var nextContainer = nextVNode.ref;
+    var nextChildren = nextVNode.children;
+    patchChildren(lastVNode.childFlags, nextVNode.childFlags, lastVNode.children, nextChildren, lastContainer, context, false, null, lastVNode, lifecycle);
+    nextVNode.dom = lastVNode.dom;
+    if (lastContainer !== nextContainer && !isInvalid(nextChildren)) {
+        var node = nextChildren.dom;
+        removeChild(lastContainer, node);
+        appendChild(nextContainer, node);
+    }
+}
+function patchElement(lastVNode, nextVNode, context, isSVG, nextFlags, lifecycle) {
+    var dom = (nextVNode.dom = lastVNode.dom);
+    var lastProps = lastVNode.props;
+    var nextProps = nextVNode.props;
+    var isFormElement = false;
+    var hasControlledValue = false;
+    var nextPropsOrEmpty;
+    isSVG = isSVG || (nextFlags & 32 /* SvgElement */) > 0;
+    // inlined patchProps  -- starts --
+    if (lastProps !== nextProps) {
+        var lastPropsOrEmpty = lastProps || EMPTY_OBJ;
+        nextPropsOrEmpty = nextProps || EMPTY_OBJ;
+        if (nextPropsOrEmpty !== EMPTY_OBJ) {
+            isFormElement = (nextFlags & 448 /* FormElement */) > 0;
+            if (isFormElement) {
+                hasControlledValue = isControlledFormElement(nextPropsOrEmpty);
+            }
+            for (var prop in nextPropsOrEmpty) {
+                var lastValue = lastPropsOrEmpty[prop];
+                var nextValue = nextPropsOrEmpty[prop];
+                if (lastValue !== nextValue) {
+                    patchProp(prop, lastValue, nextValue, dom, isSVG, hasControlledValue, lastVNode);
+                }
+            }
+        }
+        if (lastPropsOrEmpty !== EMPTY_OBJ) {
+            for (var prop$1 in lastPropsOrEmpty) {
+                if (isNullOrUndef(nextPropsOrEmpty[prop$1]) && !isNullOrUndef(lastPropsOrEmpty[prop$1])) {
+                    patchProp(prop$1, lastPropsOrEmpty[prop$1], null, dom, isSVG, hasControlledValue, lastVNode);
+                }
+            }
+        }
+    }
+    var nextChildren = nextVNode.children;
+    var nextClassName = nextVNode.className;
+    // inlined patchProps  -- ends --
+    if (lastVNode.className !== nextClassName) {
+        if (isNullOrUndef(nextClassName)) {
+            dom.removeAttribute('class');
+        }
+        else if (isSVG) {
+            dom.setAttribute('class', nextClassName);
+        }
+        else {
+            dom.className = nextClassName;
+        }
+    }
+    if (nextFlags & 4096 /* ContentEditable */) {
+        patchContentEditableChildren(dom, nextChildren);
+    }
+    else {
+        patchChildren(lastVNode.childFlags, nextVNode.childFlags, lastVNode.children, nextChildren, dom, context, isSVG && nextVNode.type !== 'foreignObject', null, lastVNode, lifecycle);
+    }
+    if (isFormElement) {
+        processElement(nextFlags, nextVNode, dom, nextPropsOrEmpty, false, hasControlledValue);
+    }
+    var nextRef = nextVNode.ref;
+    var lastRef = lastVNode.ref;
+    if (lastRef !== nextRef) {
+        unmountRef(lastRef);
+        mountRef(nextRef, dom, lifecycle);
+    }
+}
+function replaceOneVNodeWithMultipleVNodes(lastChildren, nextChildren, parentDOM, context, isSVG, lifecycle) {
+    unmount(lastChildren);
+    mountArrayChildren(nextChildren, parentDOM, context, isSVG, findDOMfromVNode(lastChildren, true), lifecycle);
+    removeVNodeDOM(lastChildren, parentDOM);
+}
+function patchChildren(lastChildFlags, nextChildFlags, lastChildren, nextChildren, parentDOM, context, isSVG, nextNode, parentVNode, lifecycle) {
+    switch (lastChildFlags) {
+        case 2 /* HasVNodeChildren */:
+            switch (nextChildFlags) {
+                case 2 /* HasVNodeChildren */:
+                    patch(lastChildren, nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);
+                    break;
+                case 1 /* HasInvalidChildren */:
+                    remove(lastChildren, parentDOM);
+                    break;
+                case 16 /* HasTextChildren */:
+                    unmount(lastChildren);
+                    setTextContent(parentDOM, nextChildren);
+                    break;
+                default:
+                    replaceOneVNodeWithMultipleVNodes(lastChildren, nextChildren, parentDOM, context, isSVG, lifecycle);
+                    break;
+            }
+            break;
+        case 1 /* HasInvalidChildren */:
+            switch (nextChildFlags) {
+                case 2 /* HasVNodeChildren */:
+                    mount(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);
+                    break;
+                case 1 /* HasInvalidChildren */:
+                    break;
+                case 16 /* HasTextChildren */:
+                    setTextContent(parentDOM, nextChildren);
+                    break;
+                default:
+                    mountArrayChildren(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);
+                    break;
+            }
+            break;
+        case 16 /* HasTextChildren */:
+            switch (nextChildFlags) {
+                case 16 /* HasTextChildren */:
+                    patchSingleTextChild(lastChildren, nextChildren, parentDOM);
+                    break;
+                case 2 /* HasVNodeChildren */:
+                    clearDOM(parentDOM);
+                    mount(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);
+                    break;
+                case 1 /* HasInvalidChildren */:
+                    clearDOM(parentDOM);
+                    break;
+                default:
+                    clearDOM(parentDOM);
+                    mountArrayChildren(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);
+                    break;
+            }
+            break;
+        default:
+            switch (nextChildFlags) {
+                case 16 /* HasTextChildren */:
+                    unmountAllChildren(lastChildren);
+                    setTextContent(parentDOM, nextChildren);
+                    break;
+                case 2 /* HasVNodeChildren */:
+                    removeAllChildren(parentDOM, parentVNode, lastChildren);
+                    mount(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);
+                    break;
+                case 1 /* HasInvalidChildren */:
+                    removeAllChildren(parentDOM, parentVNode, lastChildren);
+                    break;
+                default:
+                    var lastLength = lastChildren.length | 0;
+                    var nextLength = nextChildren.length | 0;
+                    // Fast path's for both algorithms
+                    if (lastLength === 0) {
+                        if (nextLength > 0) {
+                            mountArrayChildren(nextChildren, parentDOM, context, isSVG, nextNode, lifecycle);
+                        }
+                    }
+                    else if (nextLength === 0) {
+                        removeAllChildren(parentDOM, parentVNode, lastChildren);
+                    }
+                    else if (nextChildFlags === 8 /* HasKeyedChildren */ && lastChildFlags === 8 /* HasKeyedChildren */) {
+                        patchKeyedChildren(lastChildren, nextChildren, parentDOM, context, isSVG, lastLength, nextLength, nextNode, parentVNode, lifecycle);
+                    }
+                    else {
+                        patchNonKeyedChildren(lastChildren, nextChildren, parentDOM, context, isSVG, lastLength, nextLength, nextNode, lifecycle);
+                    }
+                    break;
+            }
+            break;
+    }
+}
+function createDidUpdate(instance, lastProps, lastState, snapshot, lifecycle) {
+    lifecycle.push(function () {
+        instance.componentDidUpdate(lastProps, lastState, snapshot);
+    });
+}
+function updateClassComponent(instance, nextState, nextProps, parentDOM, context, isSVG, force, nextNode, lifecycle) {
+    var lastState = instance.state;
+    var lastProps = instance.props;
+    var usesNewAPI = Boolean(instance.$N);
+    var hasSCU = isFunction(instance.shouldComponentUpdate);
+    if (usesNewAPI) {
+        nextState = createDerivedState(instance, nextProps, nextState !== lastState ? combineFrom(lastState, nextState) : nextState);
+    }
+    if (force || !hasSCU || (hasSCU && instance.shouldComponentUpdate(nextProps, nextState, context))) {
+        if (!usesNewAPI && isFunction(instance.componentWillUpdate)) {
+            instance.componentWillUpdate(nextProps, nextState, context);
+        }
+        instance.props = nextProps;
+        instance.state = nextState;
+        instance.context = context;
+        var snapshot = null;
+        var nextInput = renderNewInput(instance, nextProps, context);
+        if (usesNewAPI && isFunction(instance.getSnapshotBeforeUpdate)) {
+            snapshot = instance.getSnapshotBeforeUpdate(lastProps, lastState);
+        }
+        patch(instance.$LI, nextInput, parentDOM, instance.$CX, isSVG, nextNode, lifecycle);
+        // Dont update Last input, until patch has been succesfully executed
+        instance.$LI = nextInput;
+        if (isFunction(instance.componentDidUpdate)) {
+            createDidUpdate(instance, lastProps, lastState, snapshot, lifecycle);
+        }
+    }
+    else {
+        instance.props = nextProps;
+        instance.state = nextState;
+        instance.context = context;
+    }
+}
+function patchClassComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle) {
+    var instance = (nextVNode.children = lastVNode.children);
+    // If Component has crashed, ignore it to stay functional
+    if (isNull(instance)) {
+        return;
+    }
+    instance.$L = lifecycle;
+    var nextProps = nextVNode.props || EMPTY_OBJ;
+    var nextRef = nextVNode.ref;
+    var lastRef = lastVNode.ref;
+    var nextState = instance.state;
+    if (!instance.$N) {
+        if (isFunction(instance.componentWillReceiveProps)) {
+            instance.$BR = true;
+            instance.componentWillReceiveProps(nextProps, context);
+            // If instance component was removed during its own update do nothing.
+            if (instance.$UN) {
+                return;
+            }
+            instance.$BR = false;
+        }
+        if (!isNull(instance.$PS)) {
+            nextState = combineFrom(nextState, instance.$PS);
+            instance.$PS = null;
+        }
+    }
+    updateClassComponent(instance, nextState, nextProps, parentDOM, context, isSVG, false, nextNode, lifecycle);
+    if (lastRef !== nextRef) {
+        unmountRef(lastRef);
+        mountRef(nextRef, instance, lifecycle);
+    }
+}
+function patchFunctionalComponent(lastVNode, nextVNode, parentDOM, context, isSVG, nextNode, lifecycle) {
+    var shouldUpdate = true;
+    var nextProps = nextVNode.props || EMPTY_OBJ;
+    var nextRef = nextVNode.ref;
+    var lastProps = lastVNode.props;
+    var nextHooksDefined = !isNullOrUndef(nextRef);
+    var lastInput = lastVNode.children;
+    if (nextHooksDefined && isFunction(nextRef.onComponentShouldUpdate)) {
+        shouldUpdate = nextRef.onComponentShouldUpdate(lastProps, nextProps);
+    }
+    if (shouldUpdate !== false) {
+        if (nextHooksDefined && isFunction(nextRef.onComponentWillUpdate)) {
+            nextRef.onComponentWillUpdate(lastProps, nextProps);
+        }
+        var type = nextVNode.type;
+        var nextInput = normalizeRoot(nextVNode.flags & 32768 /* ForwardRef */ ? type.render(nextProps, nextRef, context) : type(nextProps, context));
+        patch(lastInput, nextInput, parentDOM, context, isSVG, nextNode, lifecycle);
+        nextVNode.children = nextInput;
+        if (nextHooksDefined && isFunction(nextRef.onComponentDidUpdate)) {
+            nextRef.onComponentDidUpdate(lastProps, nextProps);
+        }
+    }
+    else {
+        nextVNode.children = lastInput;
+    }
+}
+function patchText(lastVNode, nextVNode) {
+    var nextText = nextVNode.children;
+    var dom = (nextVNode.dom = lastVNode.dom);
+    if (nextText !== lastVNode.children) {
+        dom.nodeValue = nextText;
+    }
+}
+function patchNonKeyedChildren(lastChildren, nextChildren, dom, context, isSVG, lastChildrenLength, nextChildrenLength, nextNode, lifecycle) {
+    var commonLength = lastChildrenLength > nextChildrenLength ? nextChildrenLength : lastChildrenLength;
+    var i = 0;
+    var nextChild;
+    var lastChild;
+    for (; i < commonLength; ++i) {
+        nextChild = nextChildren[i];
+        lastChild = lastChildren[i];
+        if (nextChild.flags & 16384 /* InUse */) {
+            nextChild = nextChildren[i] = directClone(nextChild);
+        }
+        patch(lastChild, nextChild, dom, context, isSVG, nextNode, lifecycle);
+        lastChildren[i] = nextChild;
+    }
+    if (lastChildrenLength < nextChildrenLength) {
+        for (i = commonLength; i < nextChildrenLength; ++i) {
+            nextChild = nextChildren[i];
+            if (nextChild.flags & 16384 /* InUse */) {
+                nextChild = nextChildren[i] = directClone(nextChild);
+            }
+            mount(nextChild, dom, context, isSVG, nextNode, lifecycle);
+        }
+    }
+    else if (lastChildrenLength > nextChildrenLength) {
+        for (i = commonLength; i < lastChildrenLength; ++i) {
+            remove(lastChildren[i], dom);
+        }
+    }
+}
+function patchKeyedChildren(a, b, dom, context, isSVG, aLength, bLength, outerEdge, parentVNode, lifecycle) {
+    var aEnd = aLength - 1;
+    var bEnd = bLength - 1;
+    var j = 0;
+    var aNode = a[j];
+    var bNode = b[j];
+    var nextPos;
+    var nextNode;
+    // Step 1
+    // tslint:disable-next-line
+    outer: {
+        // Sync nodes with the same key at the beginning.
+        while (aNode.key === bNode.key) {
+            if (bNode.flags & 16384 /* InUse */) {
+                b[j] = bNode = directClone(bNode);
+            }
+            patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);
+            a[j] = bNode;
+            ++j;
+            if (j > aEnd || j > bEnd) {
+                break outer;
+            }
+            aNode = a[j];
+            bNode = b[j];
+        }
+        aNode = a[aEnd];
+        bNode = b[bEnd];
+        // Sync nodes with the same key at the end.
+        while (aNode.key === bNode.key) {
+            if (bNode.flags & 16384 /* InUse */) {
+                b[bEnd] = bNode = directClone(bNode);
+            }
+            patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);
+            a[aEnd] = bNode;
+            aEnd--;
+            bEnd--;
+            if (j > aEnd || j > bEnd) {
+                break outer;
+            }
+            aNode = a[aEnd];
+            bNode = b[bEnd];
+        }
+    }
+    if (j > aEnd) {
+        if (j <= bEnd) {
+            nextPos = bEnd + 1;
+            nextNode = nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge;
+            while (j <= bEnd) {
+                bNode = b[j];
+                if (bNode.flags & 16384 /* InUse */) {
+                    b[j] = bNode = directClone(bNode);
+                }
+                ++j;
+                mount(bNode, dom, context, isSVG, nextNode, lifecycle);
+            }
+        }
+    }
+    else if (j > bEnd) {
+        while (j <= aEnd) {
+            remove(a[j++], dom);
+        }
+    }
+    else {
+        patchKeyedChildrenComplex(a, b, context, aLength, bLength, aEnd, bEnd, j, dom, isSVG, outerEdge, parentVNode, lifecycle);
+    }
+}
+function patchKeyedChildrenComplex(a, b, context, aLength, bLength, aEnd, bEnd, j, dom, isSVG, outerEdge, parentVNode, lifecycle) {
+    var aNode;
+    var bNode;
+    var nextPos;
+    var i = 0;
+    var aStart = j;
+    var bStart = j;
+    var aLeft = aEnd - j + 1;
+    var bLeft = bEnd - j + 1;
+    var sources = new Int32Array(bLeft + 1);
+    // Keep track if its possible to remove whole DOM using textContent = '';
+    var canRemoveWholeContent = aLeft === aLength;
+    var moved = false;
+    var pos = 0;
+    var patched = 0;
+    // When sizes are small, just loop them through
+    if (bLength < 4 || (aLeft | bLeft) < 32) {
+        for (i = aStart; i <= aEnd; ++i) {
+            aNode = a[i];
+            if (patched < bLeft) {
+                for (j = bStart; j <= bEnd; j++) {
+                    bNode = b[j];
+                    if (aNode.key === bNode.key) {
+                        sources[j - bStart] = i + 1;
+                        if (canRemoveWholeContent) {
+                            canRemoveWholeContent = false;
+                            while (aStart < i) {
+                                remove(a[aStart++], dom);
+                            }
+                        }
+                        if (pos > j) {
+                            moved = true;
+                        }
+                        else {
+                            pos = j;
+                        }
+                        if (bNode.flags & 16384 /* InUse */) {
+                            b[j] = bNode = directClone(bNode);
+                        }
+                        patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);
+                        ++patched;
+                        break;
+                    }
+                }
+                if (!canRemoveWholeContent && j > bEnd) {
+                    remove(aNode, dom);
+                }
+            }
+            else if (!canRemoveWholeContent) {
+                remove(aNode, dom);
+            }
+        }
+    }
+    else {
+        var keyIndex = {};
+        // Map keys by their index
+        for (i = bStart; i <= bEnd; ++i) {
+            keyIndex[b[i].key] = i;
+        }
+        // Try to patch same keys
+        for (i = aStart; i <= aEnd; ++i) {
+            aNode = a[i];
+            if (patched < bLeft) {
+                j = keyIndex[aNode.key];
+                if (j !== void 0) {
+                    if (canRemoveWholeContent) {
+                        canRemoveWholeContent = false;
+                        while (i > aStart) {
+                            remove(a[aStart++], dom);
+                        }
+                    }
+                    sources[j - bStart] = i + 1;
+                    if (pos > j) {
+                        moved = true;
+                    }
+                    else {
+                        pos = j;
+                    }
+                    bNode = b[j];
+                    if (bNode.flags & 16384 /* InUse */) {
+                        b[j] = bNode = directClone(bNode);
+                    }
+                    patch(aNode, bNode, dom, context, isSVG, outerEdge, lifecycle);
+                    ++patched;
+                }
+                else if (!canRemoveWholeContent) {
+                    remove(aNode, dom);
+                }
+            }
+            else if (!canRemoveWholeContent) {
+                remove(aNode, dom);
+            }
+        }
+    }
+    // fast-path: if nothing patched remove all old and add all new
+    if (canRemoveWholeContent) {
+        removeAllChildren(dom, parentVNode, a);
+        mountArrayChildren(b, dom, context, isSVG, outerEdge, lifecycle);
+    }
+    else if (moved) {
+        var seq = lis_algorithm(sources);
+        j = seq.length - 1;
+        for (i = bLeft - 1; i >= 0; i--) {
+            if (sources[i] === 0) {
+                pos = i + bStart;
+                bNode = b[pos];
+                if (bNode.flags & 16384 /* InUse */) {
+                    b[pos] = bNode = directClone(bNode);
+                }
+                nextPos = pos + 1;
+                mount(bNode, dom, context, isSVG, nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge, lifecycle);
+            }
+            else if (j < 0 || i !== seq[j]) {
+                pos = i + bStart;
+                bNode = b[pos];
+                nextPos = pos + 1;
+                moveVNodeDOM(bNode, dom, nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge);
+            }
+            else {
+                j--;
+            }
+        }
+    }
+    else if (patched !== bLeft) {
+        // when patched count doesn't match b length we need to insert those new ones
+        // loop backwards so we can use insertBefore
+        for (i = bLeft - 1; i >= 0; i--) {
+            if (sources[i] === 0) {
+                pos = i + bStart;
+                bNode = b[pos];
+                if (bNode.flags & 16384 /* InUse */) {
+                    b[pos] = bNode = directClone(bNode);
+                }
+                nextPos = pos + 1;
+                mount(bNode, dom, context, isSVG, nextPos < bLength ? findDOMfromVNode(b[nextPos], true) : outerEdge, lifecycle);
+            }
+        }
+    }
+}
+var result;
+var p;
+var maxLen = 0;
+// https://en.wikipedia.org/wiki/Longest_increasing_subsequence
+function lis_algorithm(arr) {
+    var arrI = 0;
+    var i = 0;
+    var j = 0;
+    var k = 0;
+    var u = 0;
+    var v = 0;
+    var c = 0;
+    var len = arr.length;
+    if (len > maxLen) {
+        maxLen = len;
+        result = new Int32Array(len);
+        p = new Int32Array(len);
+    }
+    for (; i < len; ++i) {
+        arrI = arr[i];
+        if (arrI !== 0) {
+            j = result[k];
+            if (arr[j] < arrI) {
+                p[i] = j;
+                result[++k] = i;
+                continue;
+            }
+            u = 0;
+            v = k;
+            while (u < v) {
+                c = (u + v) >> 1;
+                if (arr[result[c]] < arrI) {
+                    u = c + 1;
+                }
+                else {
+                    v = c;
+                }
+            }
+            if (arrI < arr[result[u]]) {
+                if (u > 0) {
+                    p[i] = result[u - 1];
+                }
+                result[u] = i;
+            }
+        }
+    }
+    u = k + 1;
+    var seq = new Int32Array(u);
+    v = result[u - 1];
+    while (u-- > 0) {
+        seq[u] = v;
+        v = p[v];
+        result[u] = 0;
+    }
+    return seq;
+}
+
+var hasDocumentAvailable = typeof document !== 'undefined';
+if (hasDocumentAvailable) {
+    /*
+     * Defining $EV and $V properties on Node.prototype
+     * fixes v8 "wrong map" de-optimization
+     */
+    if (window.Node) {
+        Node.prototype.$EV = null;
+        Node.prototype.$V = null;
+    }
+}
+function __render(input, parentDOM, callback, context) {
+    var lifecycle = [];
+    var rootInput = parentDOM.$V;
+    renderCheck.v = true;
+    if (isNullOrUndef(rootInput)) {
+        if (!isNullOrUndef(input)) {
+            if (input.flags & 16384 /* InUse */) {
+                input = directClone(input);
+            }
+            mount(input, parentDOM, context, false, null, lifecycle);
+            parentDOM.$V = input;
+            rootInput = input;
+        }
+    }
+    else {
+        if (isNullOrUndef(input)) {
+            remove(rootInput, parentDOM);
+            parentDOM.$V = null;
+        }
+        else {
+            if (input.flags & 16384 /* InUse */) {
+                input = directClone(input);
+            }
+            patch(rootInput, input, parentDOM, context, false, null, lifecycle);
+            rootInput = parentDOM.$V = input;
+        }
+    }
+    if (lifecycle.length > 0) {
+        callAll(lifecycle);
+    }
+    renderCheck.v = false;
+    if (isFunction(callback)) {
+        callback();
+    }
+    if (isFunction(options.renderComplete)) {
+        options.renderComplete(rootInput, parentDOM);
+    }
+}
+function render(input, parentDOM, callback, context) {
+    if ( callback === void 0 ) callback = null;
+    if ( context === void 0 ) context = EMPTY_OBJ;
+
+    __render(input, parentDOM, callback, context);
+}
+function createRenderer(parentDOM) {
+    return function renderer(lastInput, nextInput, callback, context) {
+        if (!parentDOM) {
+            parentDOM = lastInput;
+        }
+        render(nextInput, parentDOM, callback, context);
+    };
+}
+
+var QUEUE = [];
+var nextTick = typeof Promise !== 'undefined'
+    ? Promise.resolve().then.bind(Promise.resolve())
+    : function (a) {
+        window.setTimeout(a, 0);
+    };
+var microTaskPending = false;
+function queueStateChanges(component, newState, callback, force) {
+    var pending = component.$PS;
+    if (isFunction(newState)) {
+        newState = newState(pending ? combineFrom(component.state, pending) : component.state, component.props, component.context);
+    }
+    if (isNullOrUndef(pending)) {
+        component.$PS = newState;
+    }
+    else {
+        for (var stateKey in newState) {
+            pending[stateKey] = newState[stateKey];
+        }
+    }
+    if (!component.$BR) {
+        if (!renderCheck.v) {
+            if (QUEUE.length === 0) {
+                applyState(component, force, callback);
+                return;
+            }
+        }
+        if (QUEUE.indexOf(component) === -1) {
+            QUEUE.push(component);
+        }
+        if (!microTaskPending) {
+            microTaskPending = true;
+            nextTick(rerender);
+        }
+        if (isFunction(callback)) {
+            var QU = component.$QU;
+            if (!QU) {
+                QU = component.$QU = [];
+            }
+            QU.push(callback);
+        }
+    }
+    else if (isFunction(callback)) {
+        component.$L.push(callback.bind(component));
+    }
+}
+function callSetStateCallbacks(component) {
+    var queue = component.$QU;
+    for (var i = 0, len = queue.length; i < len; ++i) {
+        queue[i].call(component);
+    }
+    component.$QU = null;
+}
+function rerender() {
+    var component;
+    microTaskPending = false;
+    while ((component = QUEUE.pop())) {
+        var queue = component.$QU;
+        applyState(component, false, queue ? callSetStateCallbacks.bind(null, component) : null);
+    }
+}
+function applyState(component, force, callback) {
+    if (component.$UN) {
+        return;
+    }
+    if (force || !component.$BR) {
+        var pendingState = component.$PS;
+        component.$PS = null;
+        var lifecycle = [];
+        renderCheck.v = true;
+        updateClassComponent(component, combineFrom(component.state, pendingState), component.props, findDOMfromVNode(component.$LI, true).parentNode, component.context, component.$SVG, force, null, lifecycle);
+        if (lifecycle.length > 0) {
+            callAll(lifecycle);
+        }
+        renderCheck.v = false;
+    }
+    else {
+        component.state = component.$PS;
+        component.$PS = null;
+    }
+    if (isFunction(callback)) {
+        callback.call(component);
+    }
+}
+var Component = function Component(props, context) {
+    // Public
+    this.state = null;
+    // Internal properties
+    this.$BR = false; // BLOCK RENDER
+    this.$BS = true; // BLOCK STATE
+    this.$PS = null; // PENDING STATE (PARTIAL or FULL)
+    this.$LI = null; // LAST INPUT
+    this.$UN = false; // UNMOUNTED
+    this.$CX = null; // CHILDCONTEXT
+    this.$QU = null; // QUEUE
+    this.$N = false; // Uses new lifecycle API Flag
+    this.$L = null; // Current lifecycle of this component
+    this.$SVG = false; // Flag to keep track if component is inside SVG tree
+    this.props = props || EMPTY_OBJ;
+    this.context = context || EMPTY_OBJ; // context should not be mutable
+};
+Component.prototype.forceUpdate = function forceUpdate (callback) {
+    if (this.$UN) {
+        return;
+    }
+    // Do not allow double render during force update
+    queueStateChanges(this, {}, callback, true);
+};
+Component.prototype.setState = function setState (newState, callback) {
+    if (this.$UN) {
+        return;
+    }
+    if (!this.$BS) {
+        queueStateChanges(this, newState, callback, false);
+    }
+};
+Component.prototype.render = function render (_nextProps, _nextState, _nextContext) {
+    return null;
+};
+
+var version = "7.3.2";
+
+
+
 
 /***/ }),
 
@@ -251,7 +6944,72 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export (binding) *
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dist/index.esm.js */ \"./node_modules/inferno/dist/index.esm.js\");\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"Component\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"Component\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"EMPTY_OBJ\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"EMPTY_OBJ\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"Fragment\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"Fragment\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_CI\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_CI\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_HI\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_HI\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_M\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_M\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_MCCC\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_MCCC\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_ME\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_ME\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_MFCC\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_MFCC\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_MP\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_MP\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"_MR\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"_MR\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"__render\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"__render\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"createComponentVNode\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"createComponentVNode\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"createFragment\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"createFragment\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"createPortal\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"createPortal\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"createRef\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"createRef\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"createRenderer\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"createRenderer\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"createTextVNode\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"createTextVNode\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"createVNode\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"createVNode\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"directClone\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"directClone\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"findDOMfromVNode\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"findDOMfromVNode\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"forwardRef\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"forwardRef\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"getFlagsForElementVnode\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"getFlagsForElementVnode\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"linkEvent\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"linkEvent\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"normalizeProps\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"normalizeProps\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"options\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"options\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"render\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"render\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"rerender\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"rerender\"]; });\n\n/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, \"version\", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__[\"version\"]; });\n\n\n\nif (true) {\n  console.warn('You are running production build of Inferno in development mode. Use dev:module entry point.');\n}\n\n\n//# sourceURL=webpack:///./node_modules/inferno/index.esm.js?");
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./dist/index.esm.js */ "./node_modules/inferno/dist/index.esm.js");
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Component", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["Component"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "EMPTY_OBJ", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["EMPTY_OBJ"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "Fragment", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["Fragment"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_CI", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_CI"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_HI", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_HI"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_M", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_M"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_MCCC", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_MCCC"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_ME", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_ME"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_MFCC", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_MFCC"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_MP", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_MP"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "_MR", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["_MR"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "__render", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["__render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createComponentVNode", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["createComponentVNode"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createFragment", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["createFragment"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createPortal", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["createPortal"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createRef", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["createRef"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createRenderer", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["createRenderer"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createTextVNode", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["createTextVNode"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "createVNode", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["createVNode"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "directClone", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["directClone"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "findDOMfromVNode", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["findDOMfromVNode"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "forwardRef", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["forwardRef"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "getFlagsForElementVnode", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["getFlagsForElementVnode"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "linkEvent", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["linkEvent"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "normalizeProps", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["normalizeProps"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "options", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["options"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "render", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["render"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "rerender", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["rerender"]; });
+
+/* harmony reexport (safe) */ __webpack_require__.d(__webpack_exports__, "version", function() { return _dist_index_esm_js__WEBPACK_IMPORTED_MODULE_0__["version"]; });
+
+
+
+if (true) {
+  console.warn('You are running production build of Inferno in development mode. Use dev:module entry point.');
+}
+
 
 /***/ }),
 
@@ -262,7 +7020,22 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony import */ var _dis
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("module.exports = isFunction\n\nvar toString = Object.prototype.toString\n\nfunction isFunction (fn) {\n  var string = toString.call(fn)\n  return string === '[object Function]' ||\n    (typeof fn === 'function' && string !== '[object RegExp]') ||\n    (typeof window !== 'undefined' &&\n     // IE8 and below\n     (fn === window.setTimeout ||\n      fn === window.alert ||\n      fn === window.confirm ||\n      fn === window.prompt))\n};\n\n\n//# sourceURL=webpack:///./node_modules/is-function/index.js?");
+module.exports = isFunction
+
+var toString = Object.prototype.toString
+
+function isFunction (fn) {
+  var string = toString.call(fn)
+  return string === '[object Function]' ||
+    (typeof fn === 'function' && string !== '[object RegExp]') ||
+    (typeof window !== 'undefined' &&
+     // IE8 and below
+     (fn === window.setTimeout ||
+      fn === window.alert ||
+      fn === window.confirm ||
+      fn === window.prompt))
+};
+
 
 /***/ }),
 
@@ -273,7 +7046,191 @@ eval("module.exports = isFunction\n\nvar toString = Object.prototype.toString\n\
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("// shim for using process in browser\nvar process = module.exports = {};\n\n// cached from whatever global is present so that test runners that stub it\n// don't break things.  But we need to wrap it in a try catch in case it is\n// wrapped in strict mode code which doesn't define any globals.  It's inside a\n// function because try/catches deoptimize in certain engines.\n\nvar cachedSetTimeout;\nvar cachedClearTimeout;\n\nfunction defaultSetTimout() {\n    throw new Error('setTimeout has not been defined');\n}\nfunction defaultClearTimeout () {\n    throw new Error('clearTimeout has not been defined');\n}\n(function () {\n    try {\n        if (typeof setTimeout === 'function') {\n            cachedSetTimeout = setTimeout;\n        } else {\n            cachedSetTimeout = defaultSetTimout;\n        }\n    } catch (e) {\n        cachedSetTimeout = defaultSetTimout;\n    }\n    try {\n        if (typeof clearTimeout === 'function') {\n            cachedClearTimeout = clearTimeout;\n        } else {\n            cachedClearTimeout = defaultClearTimeout;\n        }\n    } catch (e) {\n        cachedClearTimeout = defaultClearTimeout;\n    }\n} ())\nfunction runTimeout(fun) {\n    if (cachedSetTimeout === setTimeout) {\n        //normal enviroments in sane situations\n        return setTimeout(fun, 0);\n    }\n    // if setTimeout wasn't available but was latter defined\n    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {\n        cachedSetTimeout = setTimeout;\n        return setTimeout(fun, 0);\n    }\n    try {\n        // when when somebody has screwed with setTimeout but no I.E. maddness\n        return cachedSetTimeout(fun, 0);\n    } catch(e){\n        try {\n            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally\n            return cachedSetTimeout.call(null, fun, 0);\n        } catch(e){\n            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error\n            return cachedSetTimeout.call(this, fun, 0);\n        }\n    }\n\n\n}\nfunction runClearTimeout(marker) {\n    if (cachedClearTimeout === clearTimeout) {\n        //normal enviroments in sane situations\n        return clearTimeout(marker);\n    }\n    // if clearTimeout wasn't available but was latter defined\n    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {\n        cachedClearTimeout = clearTimeout;\n        return clearTimeout(marker);\n    }\n    try {\n        // when when somebody has screwed with setTimeout but no I.E. maddness\n        return cachedClearTimeout(marker);\n    } catch (e){\n        try {\n            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally\n            return cachedClearTimeout.call(null, marker);\n        } catch (e){\n            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.\n            // Some versions of I.E. have different rules for clearTimeout vs setTimeout\n            return cachedClearTimeout.call(this, marker);\n        }\n    }\n\n\n\n}\nvar queue = [];\nvar draining = false;\nvar currentQueue;\nvar queueIndex = -1;\n\nfunction cleanUpNextTick() {\n    if (!draining || !currentQueue) {\n        return;\n    }\n    draining = false;\n    if (currentQueue.length) {\n        queue = currentQueue.concat(queue);\n    } else {\n        queueIndex = -1;\n    }\n    if (queue.length) {\n        drainQueue();\n    }\n}\n\nfunction drainQueue() {\n    if (draining) {\n        return;\n    }\n    var timeout = runTimeout(cleanUpNextTick);\n    draining = true;\n\n    var len = queue.length;\n    while(len) {\n        currentQueue = queue;\n        queue = [];\n        while (++queueIndex < len) {\n            if (currentQueue) {\n                currentQueue[queueIndex].run();\n            }\n        }\n        queueIndex = -1;\n        len = queue.length;\n    }\n    currentQueue = null;\n    draining = false;\n    runClearTimeout(timeout);\n}\n\nprocess.nextTick = function (fun) {\n    var args = new Array(arguments.length - 1);\n    if (arguments.length > 1) {\n        for (var i = 1; i < arguments.length; i++) {\n            args[i - 1] = arguments[i];\n        }\n    }\n    queue.push(new Item(fun, args));\n    if (queue.length === 1 && !draining) {\n        runTimeout(drainQueue);\n    }\n};\n\n// v8 likes predictible objects\nfunction Item(fun, array) {\n    this.fun = fun;\n    this.array = array;\n}\nItem.prototype.run = function () {\n    this.fun.apply(null, this.array);\n};\nprocess.title = 'browser';\nprocess.browser = true;\nprocess.env = {};\nprocess.argv = [];\nprocess.version = ''; // empty string to avoid regexp issues\nprocess.versions = {};\n\nfunction noop() {}\n\nprocess.on = noop;\nprocess.addListener = noop;\nprocess.once = noop;\nprocess.off = noop;\nprocess.removeListener = noop;\nprocess.removeAllListeners = noop;\nprocess.emit = noop;\nprocess.prependListener = noop;\nprocess.prependOnceListener = noop;\n\nprocess.listeners = function (name) { return [] }\n\nprocess.binding = function (name) {\n    throw new Error('process.binding is not supported');\n};\n\nprocess.cwd = function () { return '/' };\nprocess.chdir = function (dir) {\n    throw new Error('process.chdir is not supported');\n};\nprocess.umask = function() { return 0; };\n\n\n//# sourceURL=webpack:///./node_modules/node-libs-browser/node_modules/process/browser.js?");
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
 
 /***/ }),
 
@@ -285,7 +7242,97 @@ eval("// shim for using process in browser\nvar process = module.exports = {};\n
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("/*\nobject-assign\n(c) Sindre Sorhus\n@license MIT\n*/\n\n\n/* eslint-disable no-unused-vars */\nvar getOwnPropertySymbols = Object.getOwnPropertySymbols;\nvar hasOwnProperty = Object.prototype.hasOwnProperty;\nvar propIsEnumerable = Object.prototype.propertyIsEnumerable;\n\nfunction toObject(val) {\n\tif (val === null || val === undefined) {\n\t\tthrow new TypeError('Object.assign cannot be called with null or undefined');\n\t}\n\n\treturn Object(val);\n}\n\nfunction shouldUseNative() {\n\ttry {\n\t\tif (!Object.assign) {\n\t\t\treturn false;\n\t\t}\n\n\t\t// Detect buggy property enumeration order in older V8 versions.\n\n\t\t// https://bugs.chromium.org/p/v8/issues/detail?id=4118\n\t\tvar test1 = new String('abc');  // eslint-disable-line no-new-wrappers\n\t\ttest1[5] = 'de';\n\t\tif (Object.getOwnPropertyNames(test1)[0] === '5') {\n\t\t\treturn false;\n\t\t}\n\n\t\t// https://bugs.chromium.org/p/v8/issues/detail?id=3056\n\t\tvar test2 = {};\n\t\tfor (var i = 0; i < 10; i++) {\n\t\t\ttest2['_' + String.fromCharCode(i)] = i;\n\t\t}\n\t\tvar order2 = Object.getOwnPropertyNames(test2).map(function (n) {\n\t\t\treturn test2[n];\n\t\t});\n\t\tif (order2.join('') !== '0123456789') {\n\t\t\treturn false;\n\t\t}\n\n\t\t// https://bugs.chromium.org/p/v8/issues/detail?id=3056\n\t\tvar test3 = {};\n\t\t'abcdefghijklmnopqrst'.split('').forEach(function (letter) {\n\t\t\ttest3[letter] = letter;\n\t\t});\n\t\tif (Object.keys(Object.assign({}, test3)).join('') !==\n\t\t\t\t'abcdefghijklmnopqrst') {\n\t\t\treturn false;\n\t\t}\n\n\t\treturn true;\n\t} catch (err) {\n\t\t// We don't expect any of the above to throw, but better to be safe.\n\t\treturn false;\n\t}\n}\n\nmodule.exports = shouldUseNative() ? Object.assign : function (target, source) {\n\tvar from;\n\tvar to = toObject(target);\n\tvar symbols;\n\n\tfor (var s = 1; s < arguments.length; s++) {\n\t\tfrom = Object(arguments[s]);\n\n\t\tfor (var key in from) {\n\t\t\tif (hasOwnProperty.call(from, key)) {\n\t\t\t\tto[key] = from[key];\n\t\t\t}\n\t\t}\n\n\t\tif (getOwnPropertySymbols) {\n\t\t\tsymbols = getOwnPropertySymbols(from);\n\t\t\tfor (var i = 0; i < symbols.length; i++) {\n\t\t\t\tif (propIsEnumerable.call(from, symbols[i])) {\n\t\t\t\t\tto[symbols[i]] = from[symbols[i]];\n\t\t\t\t}\n\t\t\t}\n\t\t}\n\t}\n\n\treturn to;\n};\n\n\n//# sourceURL=webpack:///./node_modules/object-assign/index.js?");
+/*
+object-assign
+(c) Sindre Sorhus
+@license MIT
+*/
+
+
+/* eslint-disable no-unused-vars */
+var getOwnPropertySymbols = Object.getOwnPropertySymbols;
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+function toObject(val) {
+	if (val === null || val === undefined) {
+		throw new TypeError('Object.assign cannot be called with null or undefined');
+	}
+
+	return Object(val);
+}
+
+function shouldUseNative() {
+	try {
+		if (!Object.assign) {
+			return false;
+		}
+
+		// Detect buggy property enumeration order in older V8 versions.
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=4118
+		var test1 = new String('abc');  // eslint-disable-line no-new-wrappers
+		test1[5] = 'de';
+		if (Object.getOwnPropertyNames(test1)[0] === '5') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test2 = {};
+		for (var i = 0; i < 10; i++) {
+			test2['_' + String.fromCharCode(i)] = i;
+		}
+		var order2 = Object.getOwnPropertyNames(test2).map(function (n) {
+			return test2[n];
+		});
+		if (order2.join('') !== '0123456789') {
+			return false;
+		}
+
+		// https://bugs.chromium.org/p/v8/issues/detail?id=3056
+		var test3 = {};
+		'abcdefghijklmnopqrst'.split('').forEach(function (letter) {
+			test3[letter] = letter;
+		});
+		if (Object.keys(Object.assign({}, test3)).join('') !==
+				'abcdefghijklmnopqrst') {
+			return false;
+		}
+
+		return true;
+	} catch (err) {
+		// We don't expect any of the above to throw, but better to be safe.
+		return false;
+	}
+}
+
+module.exports = shouldUseNative() ? Object.assign : function (target, source) {
+	var from;
+	var to = toObject(target);
+	var symbols;
+
+	for (var s = 1; s < arguments.length; s++) {
+		from = Object(arguments[s]);
+
+		for (var key in from) {
+			if (hasOwnProperty.call(from, key)) {
+				to[key] = from[key];
+			}
+		}
+
+		if (getOwnPropertySymbols) {
+			symbols = getOwnPropertySymbols(from);
+			for (var i = 0; i < symbols.length; i++) {
+				if (propIsEnumerable.call(from, symbols[i])) {
+					to[symbols[i]] = from[symbols[i]];
+				}
+			}
+		}
+	}
+
+	return to;
+};
+
 
 /***/ }),
 
@@ -296,7 +7343,39 @@ eval("/*\nobject-assign\n(c) Sindre Sorhus\n@license MIT\n*/\n\n\n/* eslint-disa
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("var trim = function(string) {\n  return string.replace(/^\\s+|\\s+$/g, '');\n}\n  , isArray = function(arg) {\n      return Object.prototype.toString.call(arg) === '[object Array]';\n    }\n\nmodule.exports = function (headers) {\n  if (!headers)\n    return {}\n\n  var result = {}\n\n  var headersArr = trim(headers).split('\\n')\n\n  for (var i = 0; i < headersArr.length; i++) {\n    var row = headersArr[i]\n    var index = row.indexOf(':')\n    , key = trim(row.slice(0, index)).toLowerCase()\n    , value = trim(row.slice(index + 1))\n\n    if (typeof(result[key]) === 'undefined') {\n      result[key] = value\n    } else if (isArray(result[key])) {\n      result[key].push(value)\n    } else {\n      result[key] = [ result[key], value ]\n    }\n  }\n\n  return result\n}\n\n\n//# sourceURL=webpack:///./node_modules/parse-headers/parse-headers.js?");
+var trim = function(string) {
+  return string.replace(/^\s+|\s+$/g, '');
+}
+  , isArray = function(arg) {
+      return Object.prototype.toString.call(arg) === '[object Array]';
+    }
+
+module.exports = function (headers) {
+  if (!headers)
+    return {}
+
+  var result = {}
+
+  var headersArr = trim(headers).split('\n')
+
+  for (var i = 0; i < headersArr.length; i++) {
+    var row = headersArr[i]
+    var index = row.indexOf(':')
+    , key = trim(row.slice(0, index)).toLowerCase()
+    , value = trim(row.slice(index + 1))
+
+    if (typeof(result[key]) === 'undefined') {
+      result[key] = value
+    } else if (isArray(result[key])) {
+      result[key].push(value)
+    } else {
+      result[key] = [ result[key], value ]
+    }
+  }
+
+  return result
+}
+
 
 /***/ }),
 
@@ -308,7 +7387,231 @@ eval("var trim = function(string) {\n  return string.replace(/^\\s+|\\s+$/g, '')
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nvar strictUriEncode = __webpack_require__(/*! strict-uri-encode */ \"./node_modules/strict-uri-encode/index.js\");\nvar objectAssign = __webpack_require__(/*! object-assign */ \"./node_modules/object-assign/index.js\");\nvar decodeComponent = __webpack_require__(/*! decode-uri-component */ \"./node_modules/decode-uri-component/index.js\");\n\nfunction encoderForArrayFormat(opts) {\n\tswitch (opts.arrayFormat) {\n\t\tcase 'index':\n\t\t\treturn function (key, value, index) {\n\t\t\t\treturn value === null ? [\n\t\t\t\t\tencode(key, opts),\n\t\t\t\t\t'[',\n\t\t\t\t\tindex,\n\t\t\t\t\t']'\n\t\t\t\t].join('') : [\n\t\t\t\t\tencode(key, opts),\n\t\t\t\t\t'[',\n\t\t\t\t\tencode(index, opts),\n\t\t\t\t\t']=',\n\t\t\t\t\tencode(value, opts)\n\t\t\t\t].join('');\n\t\t\t};\n\n\t\tcase 'bracket':\n\t\t\treturn function (key, value) {\n\t\t\t\treturn value === null ? encode(key, opts) : [\n\t\t\t\t\tencode(key, opts),\n\t\t\t\t\t'[]=',\n\t\t\t\t\tencode(value, opts)\n\t\t\t\t].join('');\n\t\t\t};\n\n\t\tdefault:\n\t\t\treturn function (key, value) {\n\t\t\t\treturn value === null ? encode(key, opts) : [\n\t\t\t\t\tencode(key, opts),\n\t\t\t\t\t'=',\n\t\t\t\t\tencode(value, opts)\n\t\t\t\t].join('');\n\t\t\t};\n\t}\n}\n\nfunction parserForArrayFormat(opts) {\n\tvar result;\n\n\tswitch (opts.arrayFormat) {\n\t\tcase 'index':\n\t\t\treturn function (key, value, accumulator) {\n\t\t\t\tresult = /\\[(\\d*)\\]$/.exec(key);\n\n\t\t\t\tkey = key.replace(/\\[\\d*\\]$/, '');\n\n\t\t\t\tif (!result) {\n\t\t\t\t\taccumulator[key] = value;\n\t\t\t\t\treturn;\n\t\t\t\t}\n\n\t\t\t\tif (accumulator[key] === undefined) {\n\t\t\t\t\taccumulator[key] = {};\n\t\t\t\t}\n\n\t\t\t\taccumulator[key][result[1]] = value;\n\t\t\t};\n\n\t\tcase 'bracket':\n\t\t\treturn function (key, value, accumulator) {\n\t\t\t\tresult = /(\\[\\])$/.exec(key);\n\t\t\t\tkey = key.replace(/\\[\\]$/, '');\n\n\t\t\t\tif (!result) {\n\t\t\t\t\taccumulator[key] = value;\n\t\t\t\t\treturn;\n\t\t\t\t} else if (accumulator[key] === undefined) {\n\t\t\t\t\taccumulator[key] = [value];\n\t\t\t\t\treturn;\n\t\t\t\t}\n\n\t\t\t\taccumulator[key] = [].concat(accumulator[key], value);\n\t\t\t};\n\n\t\tdefault:\n\t\t\treturn function (key, value, accumulator) {\n\t\t\t\tif (accumulator[key] === undefined) {\n\t\t\t\t\taccumulator[key] = value;\n\t\t\t\t\treturn;\n\t\t\t\t}\n\n\t\t\t\taccumulator[key] = [].concat(accumulator[key], value);\n\t\t\t};\n\t}\n}\n\nfunction encode(value, opts) {\n\tif (opts.encode) {\n\t\treturn opts.strict ? strictUriEncode(value) : encodeURIComponent(value);\n\t}\n\n\treturn value;\n}\n\nfunction keysSorter(input) {\n\tif (Array.isArray(input)) {\n\t\treturn input.sort();\n\t} else if (typeof input === 'object') {\n\t\treturn keysSorter(Object.keys(input)).sort(function (a, b) {\n\t\t\treturn Number(a) - Number(b);\n\t\t}).map(function (key) {\n\t\t\treturn input[key];\n\t\t});\n\t}\n\n\treturn input;\n}\n\nfunction extract(str) {\n\tvar queryStart = str.indexOf('?');\n\tif (queryStart === -1) {\n\t\treturn '';\n\t}\n\treturn str.slice(queryStart + 1);\n}\n\nfunction parse(str, opts) {\n\topts = objectAssign({arrayFormat: 'none'}, opts);\n\n\tvar formatter = parserForArrayFormat(opts);\n\n\t// Create an object with no prototype\n\t// https://github.com/sindresorhus/query-string/issues/47\n\tvar ret = Object.create(null);\n\n\tif (typeof str !== 'string') {\n\t\treturn ret;\n\t}\n\n\tstr = str.trim().replace(/^[?#&]/, '');\n\n\tif (!str) {\n\t\treturn ret;\n\t}\n\n\tstr.split('&').forEach(function (param) {\n\t\tvar parts = param.replace(/\\+/g, ' ').split('=');\n\t\t// Firefox (pre 40) decodes `%3D` to `=`\n\t\t// https://github.com/sindresorhus/query-string/pull/37\n\t\tvar key = parts.shift();\n\t\tvar val = parts.length > 0 ? parts.join('=') : undefined;\n\n\t\t// missing `=` should be `null`:\n\t\t// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters\n\t\tval = val === undefined ? null : decodeComponent(val);\n\n\t\tformatter(decodeComponent(key), val, ret);\n\t});\n\n\treturn Object.keys(ret).sort().reduce(function (result, key) {\n\t\tvar val = ret[key];\n\t\tif (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {\n\t\t\t// Sort object keys, not values\n\t\t\tresult[key] = keysSorter(val);\n\t\t} else {\n\t\t\tresult[key] = val;\n\t\t}\n\n\t\treturn result;\n\t}, Object.create(null));\n}\n\nexports.extract = extract;\nexports.parse = parse;\n\nexports.stringify = function (obj, opts) {\n\tvar defaults = {\n\t\tencode: true,\n\t\tstrict: true,\n\t\tarrayFormat: 'none'\n\t};\n\n\topts = objectAssign(defaults, opts);\n\n\tif (opts.sort === false) {\n\t\topts.sort = function () {};\n\t}\n\n\tvar formatter = encoderForArrayFormat(opts);\n\n\treturn obj ? Object.keys(obj).sort(opts.sort).map(function (key) {\n\t\tvar val = obj[key];\n\n\t\tif (val === undefined) {\n\t\t\treturn '';\n\t\t}\n\n\t\tif (val === null) {\n\t\t\treturn encode(key, opts);\n\t\t}\n\n\t\tif (Array.isArray(val)) {\n\t\t\tvar result = [];\n\n\t\t\tval.slice().forEach(function (val2) {\n\t\t\t\tif (val2 === undefined) {\n\t\t\t\t\treturn;\n\t\t\t\t}\n\n\t\t\t\tresult.push(formatter(key, val2, result.length));\n\t\t\t});\n\n\t\t\treturn result.join('&');\n\t\t}\n\n\t\treturn encode(key, opts) + '=' + encode(val, opts);\n\t}).filter(function (x) {\n\t\treturn x.length > 0;\n\t}).join('&') : '';\n};\n\nexports.parseUrl = function (str, opts) {\n\treturn {\n\t\turl: str.split('?')[0] || '',\n\t\tquery: parse(extract(str), opts)\n\t};\n};\n\n\n//# sourceURL=webpack:///./node_modules/query-string/index.js?");
+
+var strictUriEncode = __webpack_require__(/*! strict-uri-encode */ "./node_modules/strict-uri-encode/index.js");
+var objectAssign = __webpack_require__(/*! object-assign */ "./node_modules/object-assign/index.js");
+var decodeComponent = __webpack_require__(/*! decode-uri-component */ "./node_modules/decode-uri-component/index.js");
+
+function encoderForArrayFormat(opts) {
+	switch (opts.arrayFormat) {
+		case 'index':
+			return function (key, value, index) {
+				return value === null ? [
+					encode(key, opts),
+					'[',
+					index,
+					']'
+				].join('') : [
+					encode(key, opts),
+					'[',
+					encode(index, opts),
+					']=',
+					encode(value, opts)
+				].join('');
+			};
+
+		case 'bracket':
+			return function (key, value) {
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'[]=',
+					encode(value, opts)
+				].join('');
+			};
+
+		default:
+			return function (key, value) {
+				return value === null ? encode(key, opts) : [
+					encode(key, opts),
+					'=',
+					encode(value, opts)
+				].join('');
+			};
+	}
+}
+
+function parserForArrayFormat(opts) {
+	var result;
+
+	switch (opts.arrayFormat) {
+		case 'index':
+			return function (key, value, accumulator) {
+				result = /\[(\d*)\]$/.exec(key);
+
+				key = key.replace(/\[\d*\]$/, '');
+
+				if (!result) {
+					accumulator[key] = value;
+					return;
+				}
+
+				if (accumulator[key] === undefined) {
+					accumulator[key] = {};
+				}
+
+				accumulator[key][result[1]] = value;
+			};
+
+		case 'bracket':
+			return function (key, value, accumulator) {
+				result = /(\[\])$/.exec(key);
+				key = key.replace(/\[\]$/, '');
+
+				if (!result) {
+					accumulator[key] = value;
+					return;
+				} else if (accumulator[key] === undefined) {
+					accumulator[key] = [value];
+					return;
+				}
+
+				accumulator[key] = [].concat(accumulator[key], value);
+			};
+
+		default:
+			return function (key, value, accumulator) {
+				if (accumulator[key] === undefined) {
+					accumulator[key] = value;
+					return;
+				}
+
+				accumulator[key] = [].concat(accumulator[key], value);
+			};
+	}
+}
+
+function encode(value, opts) {
+	if (opts.encode) {
+		return opts.strict ? strictUriEncode(value) : encodeURIComponent(value);
+	}
+
+	return value;
+}
+
+function keysSorter(input) {
+	if (Array.isArray(input)) {
+		return input.sort();
+	} else if (typeof input === 'object') {
+		return keysSorter(Object.keys(input)).sort(function (a, b) {
+			return Number(a) - Number(b);
+		}).map(function (key) {
+			return input[key];
+		});
+	}
+
+	return input;
+}
+
+function extract(str) {
+	var queryStart = str.indexOf('?');
+	if (queryStart === -1) {
+		return '';
+	}
+	return str.slice(queryStart + 1);
+}
+
+function parse(str, opts) {
+	opts = objectAssign({arrayFormat: 'none'}, opts);
+
+	var formatter = parserForArrayFormat(opts);
+
+	// Create an object with no prototype
+	// https://github.com/sindresorhus/query-string/issues/47
+	var ret = Object.create(null);
+
+	if (typeof str !== 'string') {
+		return ret;
+	}
+
+	str = str.trim().replace(/^[?#&]/, '');
+
+	if (!str) {
+		return ret;
+	}
+
+	str.split('&').forEach(function (param) {
+		var parts = param.replace(/\+/g, ' ').split('=');
+		// Firefox (pre 40) decodes `%3D` to `=`
+		// https://github.com/sindresorhus/query-string/pull/37
+		var key = parts.shift();
+		var val = parts.length > 0 ? parts.join('=') : undefined;
+
+		// missing `=` should be `null`:
+		// http://w3.org/TR/2012/WD-url-20120524/#collect-url-parameters
+		val = val === undefined ? null : decodeComponent(val);
+
+		formatter(decodeComponent(key), val, ret);
+	});
+
+	return Object.keys(ret).sort().reduce(function (result, key) {
+		var val = ret[key];
+		if (Boolean(val) && typeof val === 'object' && !Array.isArray(val)) {
+			// Sort object keys, not values
+			result[key] = keysSorter(val);
+		} else {
+			result[key] = val;
+		}
+
+		return result;
+	}, Object.create(null));
+}
+
+exports.extract = extract;
+exports.parse = parse;
+
+exports.stringify = function (obj, opts) {
+	var defaults = {
+		encode: true,
+		strict: true,
+		arrayFormat: 'none'
+	};
+
+	opts = objectAssign(defaults, opts);
+
+	if (opts.sort === false) {
+		opts.sort = function () {};
+	}
+
+	var formatter = encoderForArrayFormat(opts);
+
+	return obj ? Object.keys(obj).sort(opts.sort).map(function (key) {
+		var val = obj[key];
+
+		if (val === undefined) {
+			return '';
+		}
+
+		if (val === null) {
+			return encode(key, opts);
+		}
+
+		if (Array.isArray(val)) {
+			var result = [];
+
+			val.slice().forEach(function (val2) {
+				if (val2 === undefined) {
+					return;
+				}
+
+				result.push(formatter(key, val2, result.length));
+			});
+
+			return result.join('&');
+		}
+
+		return encode(key, opts) + '=' + encode(val, opts);
+	}).filter(function (x) {
+		return x.length > 0;
+	}).join('&') : '';
+};
+
+exports.parseUrl = function (str, opts) {
+	return {
+		url: str.split('?')[0] || '',
+		query: parse(extract(str), opts)
+	};
+};
+
 
 /***/ }),
 
@@ -320,7 +7623,13 @@ eval("\nvar strictUriEncode = __webpack_require__(/*! strict-uri-encode */ \"./n
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nmodule.exports = function (str) {\n\treturn encodeURIComponent(str).replace(/[!'()*]/g, function (c) {\n\t\treturn '%' + c.charCodeAt(0).toString(16).toUpperCase();\n\t});\n};\n\n\n//# sourceURL=webpack:///./node_modules/strict-uri-encode/index.js?");
+
+module.exports = function (str) {
+	return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
+		return '%' + c.charCodeAt(0).toString(16).toUpperCase();
+	});
+};
+
 
 /***/ }),
 
@@ -331,7 +7640,30 @@ eval("\nmodule.exports = function (str) {\n\treturn encodeURIComponent(str).repl
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("module.exports = urlSetQuery\nfunction urlSetQuery (url, query) {\n  if (query) {\n    // remove optional leading symbols\n    query = query.trim().replace(/^(\\?|#|&)/, '')\n\n    // don't append empty query\n    query = query ? ('?' + query) : query\n\n    var parts = url.split(/[\\?\\#]/)\n    var start = parts[0]\n    if (query && /\\:\\/\\/[^\\/]*$/.test(start)) {\n      // e.g. http://foo.com -> http://foo.com/\n      start = start + '/'\n    }\n    var match = url.match(/(\\#.*)$/)\n    url = start + query\n    if (match) { // add hash back in\n      url = url + match[0]\n    }\n  }\n  return url\n}\n\n\n//# sourceURL=webpack:///./node_modules/url-set-query/index.js?");
+module.exports = urlSetQuery
+function urlSetQuery (url, query) {
+  if (query) {
+    // remove optional leading symbols
+    query = query.trim().replace(/^(\?|#|&)/, '')
+
+    // don't append empty query
+    query = query ? ('?' + query) : query
+
+    var parts = url.split(/[\?\#]/)
+    var start = parts[0]
+    if (query && /\:\/\/[^\/]*$/.test(start)) {
+      // e.g. http://foo.com -> http://foo.com/
+      start = start + '/'
+    }
+    var match = url.match(/(\#.*)$/)
+    url = start + query
+    if (match) { // add hash back in
+      url = url + match[0]
+    }
+  }
+  return url
+}
+
 
 /***/ }),
 
@@ -342,7 +7674,27 @@ eval("module.exports = urlSetQuery\nfunction urlSetQuery (url, query) {\n  if (q
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("var g;\n\n// This works in non-strict mode\ng = (function() {\n\treturn this;\n})();\n\ntry {\n\t// This works if eval is allowed (see CSP)\n\tg = g || new Function(\"return this\")();\n} catch (e) {\n\t// This works if the window reference is available\n\tif (typeof window === \"object\") g = window;\n}\n\n// g can still be undefined, but nothing to do about it...\n// We return undefined, instead of nothing here, so it's\n// easier to handle this case. if(!global) { ...}\n\nmodule.exports = g;\n\n\n//# sourceURL=webpack:///(webpack)/buildin/global.js?");
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || new Function("return this")();
+} catch (e) {
+	// This works if the window reference is available
+	if (typeof window === "object") g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
 
 /***/ }),
 
@@ -353,7 +7705,17 @@ eval("var g;\n\n// This works in non-strict mode\ng = (function() {\n\treturn th
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("var request = __webpack_require__(/*! xhr-request */ \"./node_modules/xhr-request/index.js\")\n\nmodule.exports = function (url, options) {\n  return new Promise(function (resolve, reject) {\n    request(url, options, function (err, data) {\n      if (err) reject(err);\n      else resolve(data);\n    });\n  });\n};\n\n\n//# sourceURL=webpack:///./node_modules/xhr-request-promise/index.js?");
+var request = __webpack_require__(/*! xhr-request */ "./node_modules/xhr-request/index.js")
+
+module.exports = function (url, options) {
+  return new Promise(function (resolve, reject) {
+    request(url, options, function (err, data) {
+      if (err) reject(err);
+      else resolve(data);
+    });
+  });
+};
+
 
 /***/ }),
 
@@ -364,7 +7726,66 @@ eval("var request = __webpack_require__(/*! xhr-request */ \"./node_modules/xhr-
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("var queryString = __webpack_require__(/*! query-string */ \"./node_modules/query-string/index.js\")\nvar setQuery = __webpack_require__(/*! url-set-query */ \"./node_modules/url-set-query/index.js\")\nvar assign = __webpack_require__(/*! object-assign */ \"./node_modules/object-assign/index.js\")\nvar ensureHeader = __webpack_require__(/*! ./lib/ensure-header.js */ \"./node_modules/xhr-request/lib/ensure-header.js\")\n\n// this is replaced in the browser\nvar request = __webpack_require__(/*! ./lib/request.js */ \"./node_modules/xhr-request/lib/request-browser.js\")\n\nvar mimeTypeJson = 'application/json'\nvar noop = function () {}\n\nmodule.exports = xhrRequest\nfunction xhrRequest (url, opt, cb) {\n  if (!url || typeof url !== 'string') {\n    throw new TypeError('must specify a URL')\n  }\n  if (typeof opt === 'function') {\n    cb = opt\n    opt = {}\n  }\n  if (cb && typeof cb !== 'function') {\n    throw new TypeError('expected cb to be undefined or a function')\n  }\n\n  cb = cb || noop\n  opt = opt || {}\n\n  var defaultResponse = opt.json ? 'json' : 'text'\n  opt = assign({ responseType: defaultResponse }, opt)\n\n  var headers = opt.headers || {}\n  var method = (opt.method || 'GET').toUpperCase()\n  var query = opt.query\n  if (query) {\n    if (typeof query !== 'string') {\n      query = queryString.stringify(query)\n    }\n    url = setQuery(url, query)\n  }\n\n  // allow json response\n  if (opt.responseType === 'json') {\n    ensureHeader(headers, 'Accept', mimeTypeJson)\n  }\n\n  // if body content is json\n  if (opt.json && method !== 'GET' && method !== 'HEAD') {\n    ensureHeader(headers, 'Content-Type', mimeTypeJson)\n    opt.body = JSON.stringify(opt.body)\n  }\n\n  opt.method = method\n  opt.url = url\n  opt.headers = headers\n  delete opt.query\n  delete opt.json\n\n  return request(opt, cb)\n}\n\n\n//# sourceURL=webpack:///./node_modules/xhr-request/index.js?");
+var queryString = __webpack_require__(/*! query-string */ "./node_modules/query-string/index.js")
+var setQuery = __webpack_require__(/*! url-set-query */ "./node_modules/url-set-query/index.js")
+var assign = __webpack_require__(/*! object-assign */ "./node_modules/object-assign/index.js")
+var ensureHeader = __webpack_require__(/*! ./lib/ensure-header.js */ "./node_modules/xhr-request/lib/ensure-header.js")
+
+// this is replaced in the browser
+var request = __webpack_require__(/*! ./lib/request.js */ "./node_modules/xhr-request/lib/request-browser.js")
+
+var mimeTypeJson = 'application/json'
+var noop = function () {}
+
+module.exports = xhrRequest
+function xhrRequest (url, opt, cb) {
+  if (!url || typeof url !== 'string') {
+    throw new TypeError('must specify a URL')
+  }
+  if (typeof opt === 'function') {
+    cb = opt
+    opt = {}
+  }
+  if (cb && typeof cb !== 'function') {
+    throw new TypeError('expected cb to be undefined or a function')
+  }
+
+  cb = cb || noop
+  opt = opt || {}
+
+  var defaultResponse = opt.json ? 'json' : 'text'
+  opt = assign({ responseType: defaultResponse }, opt)
+
+  var headers = opt.headers || {}
+  var method = (opt.method || 'GET').toUpperCase()
+  var query = opt.query
+  if (query) {
+    if (typeof query !== 'string') {
+      query = queryString.stringify(query)
+    }
+    url = setQuery(url, query)
+  }
+
+  // allow json response
+  if (opt.responseType === 'json') {
+    ensureHeader(headers, 'Accept', mimeTypeJson)
+  }
+
+  // if body content is json
+  if (opt.json && method !== 'GET' && method !== 'HEAD') {
+    ensureHeader(headers, 'Content-Type', mimeTypeJson)
+    opt.body = JSON.stringify(opt.body)
+  }
+
+  opt.method = method
+  opt.url = url
+  opt.headers = headers
+  delete opt.query
+  delete opt.json
+
+  return request(opt, cb)
+}
+
 
 /***/ }),
 
@@ -375,7 +7796,14 @@ eval("var queryString = __webpack_require__(/*! query-string */ \"./node_modules
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("module.exports = ensureHeader\nfunction ensureHeader (headers, key, value) {\n  var lower = key.toLowerCase()\n  if (!headers[key] && !headers[lower]) {\n    headers[key] = value\n  }\n}\n\n\n//# sourceURL=webpack:///./node_modules/xhr-request/lib/ensure-header.js?");
+module.exports = ensureHeader
+function ensureHeader (headers, key, value) {
+  var lower = key.toLowerCase()
+  if (!headers[key] && !headers[lower]) {
+    headers[key] = value
+  }
+}
+
 
 /***/ }),
 
@@ -386,7 +7814,19 @@ eval("module.exports = ensureHeader\nfunction ensureHeader (headers, key, value)
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("module.exports = getResponse\nfunction getResponse (opt, resp) {\n  if (!resp) return null\n  return {\n    statusCode: resp.statusCode,\n    headers: resp.headers,\n    method: opt.method,\n    url: opt.url,\n    // the XHR object in browser, http response in Node\n    rawRequest: resp.rawRequest ? resp.rawRequest : resp\n  }\n}\n\n\n//# sourceURL=webpack:///./node_modules/xhr-request/lib/normalize-response.js?");
+module.exports = getResponse
+function getResponse (opt, resp) {
+  if (!resp) return null
+  return {
+    statusCode: resp.statusCode,
+    headers: resp.headers,
+    method: opt.method,
+    url: opt.url,
+    // the XHR object in browser, http response in Node
+    rawRequest: resp.rawRequest ? resp.rawRequest : resp
+  }
+}
+
 
 /***/ }),
 
@@ -397,7 +7837,49 @@ eval("module.exports = getResponse\nfunction getResponse (opt, resp) {\n  if (!r
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("var xhr = __webpack_require__(/*! xhr */ \"./node_modules/xhr/index.js\")\nvar normalize = __webpack_require__(/*! ./normalize-response */ \"./node_modules/xhr-request/lib/normalize-response.js\")\nvar noop = function () {}\n\nmodule.exports = xhrRequest\nfunction xhrRequest (opt, cb) {\n  delete opt.uri\n\n  // for better JSON.parse error handling than xhr module\n  var useJson = false\n  if (opt.responseType === 'json') {\n    opt.responseType = 'text'\n    useJson = true\n  }\n\n  var req = xhr(opt, function xhrRequestResult (err, resp, body) {\n    if (useJson && !err) {\n      try {\n        var text = resp.rawRequest.responseText\n        body = JSON.parse(text)\n      } catch (e) {\n        err = e\n      }\n    }\n\n    resp = normalize(opt, resp)\n    if (err) cb(err, null, resp)\n    else cb(err, body, resp)\n    cb = noop\n  })\n\n  // Patch abort() so that it also calls the callback, but with an error\n  var onabort = req.onabort\n  req.onabort = function () {\n    var ret = onabort.apply(req, Array.prototype.slice.call(arguments))\n    cb(new Error('XHR Aborted'))\n    cb = noop\n    return ret\n  }\n\n  return req\n}\n\n\n//# sourceURL=webpack:///./node_modules/xhr-request/lib/request-browser.js?");
+var xhr = __webpack_require__(/*! xhr */ "./node_modules/xhr/index.js")
+var normalize = __webpack_require__(/*! ./normalize-response */ "./node_modules/xhr-request/lib/normalize-response.js")
+var noop = function () {}
+
+module.exports = xhrRequest
+function xhrRequest (opt, cb) {
+  delete opt.uri
+
+  // for better JSON.parse error handling than xhr module
+  var useJson = false
+  if (opt.responseType === 'json') {
+    opt.responseType = 'text'
+    useJson = true
+  }
+
+  var req = xhr(opt, function xhrRequestResult (err, resp, body) {
+    if (useJson && !err) {
+      try {
+        var text = resp.rawRequest.responseText
+        body = JSON.parse(text)
+      } catch (e) {
+        err = e
+      }
+    }
+
+    resp = normalize(opt, resp)
+    if (err) cb(err, null, resp)
+    else cb(err, body, resp)
+    cb = noop
+  })
+
+  // Patch abort() so that it also calls the callback, but with an error
+  var onabort = req.onabort
+  req.onabort = function () {
+    var ret = onabort.apply(req, Array.prototype.slice.call(arguments))
+    cb(new Error('XHR Aborted'))
+    cb = noop
+    return ret
+  }
+
+  return req
+}
+
 
 /***/ }),
 
@@ -409,7 +7891,254 @@ eval("var xhr = __webpack_require__(/*! xhr */ \"./node_modules/xhr/index.js\")\
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
-eval("\nvar window = __webpack_require__(/*! global/window */ \"./node_modules/global/window.js\")\nvar isFunction = __webpack_require__(/*! is-function */ \"./node_modules/is-function/index.js\")\nvar parseHeaders = __webpack_require__(/*! parse-headers */ \"./node_modules/parse-headers/parse-headers.js\")\nvar xtend = __webpack_require__(/*! xtend */ \"./node_modules/xtend/immutable.js\")\n\nmodule.exports = createXHR\n// Allow use of default import syntax in TypeScript\nmodule.exports.default = createXHR;\ncreateXHR.XMLHttpRequest = window.XMLHttpRequest || noop\ncreateXHR.XDomainRequest = \"withCredentials\" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest\n\nforEachArray([\"get\", \"put\", \"post\", \"patch\", \"head\", \"delete\"], function(method) {\n    createXHR[method === \"delete\" ? \"del\" : method] = function(uri, options, callback) {\n        options = initParams(uri, options, callback)\n        options.method = method.toUpperCase()\n        return _createXHR(options)\n    }\n})\n\nfunction forEachArray(array, iterator) {\n    for (var i = 0; i < array.length; i++) {\n        iterator(array[i])\n    }\n}\n\nfunction isEmpty(obj){\n    for(var i in obj){\n        if(obj.hasOwnProperty(i)) return false\n    }\n    return true\n}\n\nfunction initParams(uri, options, callback) {\n    var params = uri\n\n    if (isFunction(options)) {\n        callback = options\n        if (typeof uri === \"string\") {\n            params = {uri:uri}\n        }\n    } else {\n        params = xtend(options, {uri: uri})\n    }\n\n    params.callback = callback\n    return params\n}\n\nfunction createXHR(uri, options, callback) {\n    options = initParams(uri, options, callback)\n    return _createXHR(options)\n}\n\nfunction _createXHR(options) {\n    if(typeof options.callback === \"undefined\"){\n        throw new Error(\"callback argument missing\")\n    }\n\n    var called = false\n    var callback = function cbOnce(err, response, body){\n        if(!called){\n            called = true\n            options.callback(err, response, body)\n        }\n    }\n\n    function readystatechange() {\n        if (xhr.readyState === 4) {\n            setTimeout(loadFunc, 0)\n        }\n    }\n\n    function getBody() {\n        // Chrome with requestType=blob throws errors arround when even testing access to responseText\n        var body = undefined\n\n        if (xhr.response) {\n            body = xhr.response\n        } else {\n            body = xhr.responseText || getXml(xhr)\n        }\n\n        if (isJson) {\n            try {\n                body = JSON.parse(body)\n            } catch (e) {}\n        }\n\n        return body\n    }\n\n    function errorFunc(evt) {\n        clearTimeout(timeoutTimer)\n        if(!(evt instanceof Error)){\n            evt = new Error(\"\" + (evt || \"Unknown XMLHttpRequest Error\") )\n        }\n        evt.statusCode = 0\n        return callback(evt, failureResponse)\n    }\n\n    // will load the data & process the response in a special response object\n    function loadFunc() {\n        if (aborted) return\n        var status\n        clearTimeout(timeoutTimer)\n        if(options.useXDR && xhr.status===undefined) {\n            //IE8 CORS GET successful response doesn't have a status field, but body is fine\n            status = 200\n        } else {\n            status = (xhr.status === 1223 ? 204 : xhr.status)\n        }\n        var response = failureResponse\n        var err = null\n\n        if (status !== 0){\n            response = {\n                body: getBody(),\n                statusCode: status,\n                method: method,\n                headers: {},\n                url: uri,\n                rawRequest: xhr\n            }\n            if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE\n                response.headers = parseHeaders(xhr.getAllResponseHeaders())\n            }\n        } else {\n            err = new Error(\"Internal XMLHttpRequest Error\")\n        }\n        return callback(err, response, response.body)\n    }\n\n    var xhr = options.xhr || null\n\n    if (!xhr) {\n        if (options.cors || options.useXDR) {\n            xhr = new createXHR.XDomainRequest()\n        }else{\n            xhr = new createXHR.XMLHttpRequest()\n        }\n    }\n\n    var key\n    var aborted\n    var uri = xhr.url = options.uri || options.url\n    var method = xhr.method = options.method || \"GET\"\n    var body = options.body || options.data\n    var headers = xhr.headers = options.headers || {}\n    var sync = !!options.sync\n    var isJson = false\n    var timeoutTimer\n    var failureResponse = {\n        body: undefined,\n        headers: {},\n        statusCode: 0,\n        method: method,\n        url: uri,\n        rawRequest: xhr\n    }\n\n    if (\"json\" in options && options.json !== false) {\n        isJson = true\n        headers[\"accept\"] || headers[\"Accept\"] || (headers[\"Accept\"] = \"application/json\") //Don't override existing accept header declared by user\n        if (method !== \"GET\" && method !== \"HEAD\") {\n            headers[\"content-type\"] || headers[\"Content-Type\"] || (headers[\"Content-Type\"] = \"application/json\") //Don't override existing accept header declared by user\n            body = JSON.stringify(options.json === true ? body : options.json)\n        }\n    }\n\n    xhr.onreadystatechange = readystatechange\n    xhr.onload = loadFunc\n    xhr.onerror = errorFunc\n    // IE9 must have onprogress be set to a unique function.\n    xhr.onprogress = function () {\n        // IE must die\n    }\n    xhr.onabort = function(){\n        aborted = true;\n    }\n    xhr.ontimeout = errorFunc\n    xhr.open(method, uri, !sync, options.username, options.password)\n    //has to be after open\n    if(!sync) {\n        xhr.withCredentials = !!options.withCredentials\n    }\n    // Cannot set timeout with sync request\n    // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly\n    // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent\n    if (!sync && options.timeout > 0 ) {\n        timeoutTimer = setTimeout(function(){\n            if (aborted) return\n            aborted = true//IE9 may still call readystatechange\n            xhr.abort(\"timeout\")\n            var e = new Error(\"XMLHttpRequest timeout\")\n            e.code = \"ETIMEDOUT\"\n            errorFunc(e)\n        }, options.timeout )\n    }\n\n    if (xhr.setRequestHeader) {\n        for(key in headers){\n            if(headers.hasOwnProperty(key)){\n                xhr.setRequestHeader(key, headers[key])\n            }\n        }\n    } else if (options.headers && !isEmpty(options.headers)) {\n        throw new Error(\"Headers cannot be set on an XDomainRequest object\")\n    }\n\n    if (\"responseType\" in options) {\n        xhr.responseType = options.responseType\n    }\n\n    if (\"beforeSend\" in options &&\n        typeof options.beforeSend === \"function\"\n    ) {\n        options.beforeSend(xhr)\n    }\n\n    // Microsoft Edge browser sends \"undefined\" when send is called with undefined value.\n    // XMLHttpRequest spec says to pass null as body to indicate no body\n    // See https://github.com/naugtur/xhr/issues/100.\n    xhr.send(body || null)\n\n    return xhr\n\n\n}\n\nfunction getXml(xhr) {\n    // xhr.responseXML will throw Exception \"InvalidStateError\" or \"DOMException\"\n    // See https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseXML.\n    try {\n        if (xhr.responseType === \"document\") {\n            return xhr.responseXML\n        }\n        var firefoxBugTakenEffect = xhr.responseXML && xhr.responseXML.documentElement.nodeName === \"parsererror\"\n        if (xhr.responseType === \"\" && !firefoxBugTakenEffect) {\n            return xhr.responseXML\n        }\n    } catch (e) {}\n\n    return null\n}\n\nfunction noop() {}\n\n\n//# sourceURL=webpack:///./node_modules/xhr/index.js?");
+
+var window = __webpack_require__(/*! global/window */ "./node_modules/global/window.js")
+var isFunction = __webpack_require__(/*! is-function */ "./node_modules/is-function/index.js")
+var parseHeaders = __webpack_require__(/*! parse-headers */ "./node_modules/parse-headers/parse-headers.js")
+var xtend = __webpack_require__(/*! xtend */ "./node_modules/xtend/immutable.js")
+
+module.exports = createXHR
+// Allow use of default import syntax in TypeScript
+module.exports.default = createXHR;
+createXHR.XMLHttpRequest = window.XMLHttpRequest || noop
+createXHR.XDomainRequest = "withCredentials" in (new createXHR.XMLHttpRequest()) ? createXHR.XMLHttpRequest : window.XDomainRequest
+
+forEachArray(["get", "put", "post", "patch", "head", "delete"], function(method) {
+    createXHR[method === "delete" ? "del" : method] = function(uri, options, callback) {
+        options = initParams(uri, options, callback)
+        options.method = method.toUpperCase()
+        return _createXHR(options)
+    }
+})
+
+function forEachArray(array, iterator) {
+    for (var i = 0; i < array.length; i++) {
+        iterator(array[i])
+    }
+}
+
+function isEmpty(obj){
+    for(var i in obj){
+        if(obj.hasOwnProperty(i)) return false
+    }
+    return true
+}
+
+function initParams(uri, options, callback) {
+    var params = uri
+
+    if (isFunction(options)) {
+        callback = options
+        if (typeof uri === "string") {
+            params = {uri:uri}
+        }
+    } else {
+        params = xtend(options, {uri: uri})
+    }
+
+    params.callback = callback
+    return params
+}
+
+function createXHR(uri, options, callback) {
+    options = initParams(uri, options, callback)
+    return _createXHR(options)
+}
+
+function _createXHR(options) {
+    if(typeof options.callback === "undefined"){
+        throw new Error("callback argument missing")
+    }
+
+    var called = false
+    var callback = function cbOnce(err, response, body){
+        if(!called){
+            called = true
+            options.callback(err, response, body)
+        }
+    }
+
+    function readystatechange() {
+        if (xhr.readyState === 4) {
+            setTimeout(loadFunc, 0)
+        }
+    }
+
+    function getBody() {
+        // Chrome with requestType=blob throws errors arround when even testing access to responseText
+        var body = undefined
+
+        if (xhr.response) {
+            body = xhr.response
+        } else {
+            body = xhr.responseText || getXml(xhr)
+        }
+
+        if (isJson) {
+            try {
+                body = JSON.parse(body)
+            } catch (e) {}
+        }
+
+        return body
+    }
+
+    function errorFunc(evt) {
+        clearTimeout(timeoutTimer)
+        if(!(evt instanceof Error)){
+            evt = new Error("" + (evt || "Unknown XMLHttpRequest Error") )
+        }
+        evt.statusCode = 0
+        return callback(evt, failureResponse)
+    }
+
+    // will load the data & process the response in a special response object
+    function loadFunc() {
+        if (aborted) return
+        var status
+        clearTimeout(timeoutTimer)
+        if(options.useXDR && xhr.status===undefined) {
+            //IE8 CORS GET successful response doesn't have a status field, but body is fine
+            status = 200
+        } else {
+            status = (xhr.status === 1223 ? 204 : xhr.status)
+        }
+        var response = failureResponse
+        var err = null
+
+        if (status !== 0){
+            response = {
+                body: getBody(),
+                statusCode: status,
+                method: method,
+                headers: {},
+                url: uri,
+                rawRequest: xhr
+            }
+            if(xhr.getAllResponseHeaders){ //remember xhr can in fact be XDR for CORS in IE
+                response.headers = parseHeaders(xhr.getAllResponseHeaders())
+            }
+        } else {
+            err = new Error("Internal XMLHttpRequest Error")
+        }
+        return callback(err, response, response.body)
+    }
+
+    var xhr = options.xhr || null
+
+    if (!xhr) {
+        if (options.cors || options.useXDR) {
+            xhr = new createXHR.XDomainRequest()
+        }else{
+            xhr = new createXHR.XMLHttpRequest()
+        }
+    }
+
+    var key
+    var aborted
+    var uri = xhr.url = options.uri || options.url
+    var method = xhr.method = options.method || "GET"
+    var body = options.body || options.data
+    var headers = xhr.headers = options.headers || {}
+    var sync = !!options.sync
+    var isJson = false
+    var timeoutTimer
+    var failureResponse = {
+        body: undefined,
+        headers: {},
+        statusCode: 0,
+        method: method,
+        url: uri,
+        rawRequest: xhr
+    }
+
+    if ("json" in options && options.json !== false) {
+        isJson = true
+        headers["accept"] || headers["Accept"] || (headers["Accept"] = "application/json") //Don't override existing accept header declared by user
+        if (method !== "GET" && method !== "HEAD") {
+            headers["content-type"] || headers["Content-Type"] || (headers["Content-Type"] = "application/json") //Don't override existing accept header declared by user
+            body = JSON.stringify(options.json === true ? body : options.json)
+        }
+    }
+
+    xhr.onreadystatechange = readystatechange
+    xhr.onload = loadFunc
+    xhr.onerror = errorFunc
+    // IE9 must have onprogress be set to a unique function.
+    xhr.onprogress = function () {
+        // IE must die
+    }
+    xhr.onabort = function(){
+        aborted = true;
+    }
+    xhr.ontimeout = errorFunc
+    xhr.open(method, uri, !sync, options.username, options.password)
+    //has to be after open
+    if(!sync) {
+        xhr.withCredentials = !!options.withCredentials
+    }
+    // Cannot set timeout with sync request
+    // not setting timeout on the xhr object, because of old webkits etc. not handling that correctly
+    // both npm's request and jquery 1.x use this kind of timeout, so this is being consistent
+    if (!sync && options.timeout > 0 ) {
+        timeoutTimer = setTimeout(function(){
+            if (aborted) return
+            aborted = true//IE9 may still call readystatechange
+            xhr.abort("timeout")
+            var e = new Error("XMLHttpRequest timeout")
+            e.code = "ETIMEDOUT"
+            errorFunc(e)
+        }, options.timeout )
+    }
+
+    if (xhr.setRequestHeader) {
+        for(key in headers){
+            if(headers.hasOwnProperty(key)){
+                xhr.setRequestHeader(key, headers[key])
+            }
+        }
+    } else if (options.headers && !isEmpty(options.headers)) {
+        throw new Error("Headers cannot be set on an XDomainRequest object")
+    }
+
+    if ("responseType" in options) {
+        xhr.responseType = options.responseType
+    }
+
+    if ("beforeSend" in options &&
+        typeof options.beforeSend === "function"
+    ) {
+        options.beforeSend(xhr)
+    }
+
+    // Microsoft Edge browser sends "undefined" when send is called with undefined value.
+    // XMLHttpRequest spec says to pass null as body to indicate no body
+    // See https://github.com/naugtur/xhr/issues/100.
+    xhr.send(body || null)
+
+    return xhr
+
+
+}
+
+function getXml(xhr) {
+    // xhr.responseXML will throw Exception "InvalidStateError" or "DOMException"
+    // See https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest/responseXML.
+    try {
+        if (xhr.responseType === "document") {
+            return xhr.responseXML
+        }
+        var firefoxBugTakenEffect = xhr.responseXML && xhr.responseXML.documentElement.nodeName === "parsererror"
+        if (xhr.responseType === "" && !firefoxBugTakenEffect) {
+            return xhr.responseXML
+        }
+    } catch (e) {}
+
+    return null
+}
+
+function noop() {}
+
 
 /***/ }),
 
@@ -420,74 +8149,619 @@ eval("\nvar window = __webpack_require__(/*! global/window */ \"./node_modules/g
 /*! no static exports found */
 /***/ (function(module, exports) {
 
-eval("module.exports = extend\n\nvar hasOwnProperty = Object.prototype.hasOwnProperty;\n\nfunction extend() {\n    var target = {}\n\n    for (var i = 0; i < arguments.length; i++) {\n        var source = arguments[i]\n\n        for (var key in source) {\n            if (hasOwnProperty.call(source, key)) {\n                target[key] = source[key]\n            }\n        }\n    }\n\n    return target\n}\n\n\n//# sourceURL=webpack:///./node_modules/xtend/immutable.js?");
+module.exports = extend
+
+var hasOwnProperty = Object.prototype.hasOwnProperty;
+
+function extend() {
+    var target = {}
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments[i]
+
+        for (var key in source) {
+            if (hasOwnProperty.call(source, key)) {
+                target[key] = source[key]
+            }
+        }
+    }
+
+    return target
+}
+
 
 /***/ }),
 
-/***/ "./src/components/CodeEditor.js":
+/***/ "./src/components/CodeEditor.ts":
 /*!**************************************!*\
-  !*** ./src/components/CodeEditor.js ***!
+  !*** ./src/components/CodeEditor.ts ***!
   \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// Edits Formality Code\n\nconst h = __webpack_require__(/*! inferno-hyperscript */ \"./node_modules/inferno-hyperscript/dist/index.esm.js\").h;\n\nconst Editor = ({code, on_input_code}) => {\n  return h(\"textarea\", {\n    \"oninput\": (e) => on_input_code(e.target.value),\n    \"value\": code,\n    \"style\": {\n      \"font-family\": \"monospace\",\n      \"font-size\": \"14px\",\n      \"padding\": \"7px\",\n      \"width\": \"100%\",\n      \"height\": \"100%\"\n    },\n  }, [])\n};\n\nmodule.exports = Editor;\n\n\n//# sourceURL=webpack:///./src/components/CodeEditor.js?");
+"use strict";
+
+// Edits Formality Code
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var Editor = function (_a) {
+    var code = _a.code, on_input_code = _a.on_input_code;
+    return inferno_hyperscript_1.h("textarea", {
+        "oninput": function (e) { return on_input_code(e.target.value); },
+        "value": code,
+        "style": {
+            "font-family": "monospace",
+            "font-size": "14px",
+            "padding": "7px",
+            "width": "100%",
+            "height": "100%"
+        }
+    }, []);
+};
+exports["default"] = Editor;
+
 
 /***/ }),
 
-/***/ "./src/components/CodeRender.js":
+/***/ "./src/components/CodeRender.ts":
 /*!**************************************!*\
-  !*** ./src/components/CodeRender.js ***!
+  !*** ./src/components/CodeRender.ts ***!
   \**************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// Renders Formality code with syntax highlighting\n\nconst h = __webpack_require__(/*! inferno-hyperscript */ \"./node_modules/inferno-hyperscript/dist/index.esm.js\").h;\n\nconst CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) => {\n  if (code === \"<error>\") {\n    return h(\"div\", {\"style\": {\"padding\": \"8px\"}}, \"Failed to load code.\");\n  }\n\n  if (!tokens) {\n    return h(\"div\", {\"style\": {\"padding\": \"8px\"}}, \"Loading code from FPM. This may take a while...\");\n  }\n\n  // Makes spans for each code chunk\n  var code_chunks = [];\n  for (let i = 0; i < tokens.length; ++i) {\n    let child = tokens[i][1];\n    let elem = (() => {\n      switch (tokens[i][0]) {\n        case \"txt\":\n          return h(\"span\", {style: {\"color\": \"black\"}}, child);\n        case \"sym\":\n          return h(\"span\", {style: {\"color\": \"#15568f\"}}, child);\n        case \"cmm\":\n          return h(\"span\", {style: {\"color\": \"#A2A8D3\"}}, child);\n        case \"num\":\n          return h(\"span\", {style: {\"color\": \"green\"}}, child);\n        case \"var\":\n          return h(\"span\", {style: {\"color\": \"black\"}}, child);\n        case \"imp\":\n          return h(\"a\", {\n            href: window.location.origin + \"/\" + tokens[i][1],\n            style: {\n              \"color\": \"black\",\n              \"text-decoration\": \"underline\",\n              \"font-weight\": \"bold\",\n              \"cursor\": \"pointer\"\n            },\n            on_click: e => {\n              on_click_imp(tokens[i][1])(e);\n              e.preventDefault();\n            }}, child);\n        case \"ref\":\n          return h(\"a\", {\n            href: window.location.origin + \"/\" + tokens[i][2].replace(new RegExp(\"/.*$\"), \"\"),\n            style: {\n              \"color\": \"#38598B\",\n              \"text-decoration\": \"underline\",\n              \"font-weight\": \"bold\",\n              \"cursor\": \"pointer\"\n            },\n            on_click: e => {\n              on_click_ref(tokens[i][2])(e);\n              e.preventDefault();\n            }}, child);\n        case \"def\":\n          return h(\"span\", {\n            style: {\n              \"color\": \"#4384e6\",\n              \"text-decoration\": \"underline\",\n              \"font-weight\": \"bold\",\n              \"cursor\": \"pointer\"\n            },\n            on_click: e => {\n              on_click_def(tokens[i][2])(e);\n            }\n          }, child);\n        default:\n          return h(\"span\", {}, child);\n      }\n    })();\n    code_chunks.push(elem);\n  }\n\n  return h(\"code\", {\n    \"style\": {\n      \"padding\": \"8px\",\n      \"overflow\": \"scroll\",\n      \"flex-grow\": 1\n    }\n  }, [\n    h(\"pre\", {}, [code_chunks])\n  ]);\n};\n\nmodule.exports = CodeRender;\n\n\n//# sourceURL=webpack:///./src/components/CodeRender.js?");
+"use strict";
+
+// Renders Formality code with syntax highlighting
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var CodeRender = function (_a) {
+    var code = _a.code, tokens = _a.tokens, on_click_def = _a.on_click_def, on_click_imp = _a.on_click_imp, on_click_ref = _a.on_click_ref;
+    if (code === "<error>") {
+        return inferno_hyperscript_1.h("div", { "style": { "padding": "8px" } }, "Failed to load code.");
+    }
+    if (!tokens) {
+        return inferno_hyperscript_1.h("div", { "style": { "padding": "8px" } }, "Loading code from FPM. This may take a while...");
+    }
+    // Makes spans for each code chunk
+    var code_chunks = [];
+    var _loop_1 = function (i) {
+        var child = tokens[i][1];
+        var elem = (function () {
+            switch (tokens[i][0]) {
+                case "txt":
+                    return inferno_hyperscript_1.h("span", { style: { "color": "black" } }, child);
+                case "sym":
+                    return inferno_hyperscript_1.h("span", { style: { "color": "#15568f" } }, child);
+                case "cmm":
+                    return inferno_hyperscript_1.h("span", { style: { "color": "#A2A8D3" } }, child);
+                case "num":
+                    return inferno_hyperscript_1.h("span", { style: { "color": "green" } }, child);
+                case "var":
+                    return inferno_hyperscript_1.h("span", { style: { "color": "black" } }, child);
+                case "imp":
+                    return inferno_hyperscript_1.h("a", {
+                        href: window.location.origin + "/" + tokens[i][1],
+                        style: {
+                            "color": "black",
+                            "text-decoration": "underline",
+                            "font-weight": "bold",
+                            "cursor": "pointer"
+                        },
+                        on_click: function (e) {
+                            on_click_imp(tokens[i][1])(e);
+                            e.preventDefault();
+                        }
+                    }, child);
+                case "ref":
+                    return inferno_hyperscript_1.h("a", {
+                        href: window.location.origin + "/" + tokens[i][2].replace(new RegExp("/.*$"), ""),
+                        style: {
+                            "color": "#38598B",
+                            "text-decoration": "underline",
+                            "font-weight": "bold",
+                            "cursor": "pointer"
+                        },
+                        on_click: function (e) {
+                            on_click_ref(tokens[i][2])(e);
+                            e.preventDefault();
+                        }
+                    }, child);
+                case "def":
+                    return inferno_hyperscript_1.h("span", {
+                        style: {
+                            "color": "#4384e6",
+                            "text-decoration": "underline",
+                            "font-weight": "bold",
+                            "cursor": "pointer"
+                        },
+                        on_click: function (e) {
+                            on_click_def(tokens[i][2])(e);
+                        }
+                    }, child);
+                default:
+                    return inferno_hyperscript_1.h("span", {}, child);
+            }
+        })();
+        code_chunks.push(elem);
+    };
+    for (var i = 0; i < tokens.length; ++i) {
+        _loop_1(i);
+    }
+    return inferno_hyperscript_1.h("code", {
+        "style": {
+            "padding": "8px",
+            "overflow": "scroll",
+            "flex-grow": 1
+        }
+    }, [
+        inferno_hyperscript_1.h("pre", {}, [code_chunks])
+    ]);
+};
+exports["default"] = CodeRender;
+
 
 /***/ }),
 
-/***/ "./src/components/Console.js":
+/***/ "./src/components/Console.ts":
 /*!***********************************!*\
-  !*** ./src/components/Console.js ***!
+  !*** ./src/components/Console.ts ***!
   \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// The bottom console of the site, with cited_by, output, tools, etc.\n\nconst h = __webpack_require__(/*! inferno-hyperscript */ \"./node_modules/inferno-hyperscript/dist/index.esm.js\").h;\n\nconst Console = ({load_file, cited_by}) => {\n  // Builds the cited_by links\n  var links = [];\n  if (cited_by) {\n    for (var i = 0; i < cited_by.length; ++i) {\n      let parent_file = cited_by[i];\n      links.push(h(\"div\", {\n        \"onClick\": e => {\n          load_file(parent_file);\n        },\n        \"style\": {\n          \"cursor\": \"pointer\",\n          \"text-decoration\": \"underline\"\n        }\n      }, parent_file));\n    }\n  }\n\n  return h(\"div\", {\n    \"style\": {\n      \"padding\": \"8px\",\n      \"border-left\": \"1px dashed gray\",\n      \"background-color\": \"rgb(240,240,240)\",\n      \"overflow-bottom\": \"scroll\"\n    }\n  }, [\n    h(\"div\", {\n      \"style\": {\n        \"font-weight\": \"bold\"\n      }\n    }, \"Cited by:\"),\n    links\n  ]);\n};\n\nmodule.exports = Console;\n\n\n//# sourceURL=webpack:///./src/components/Console.js?");
+"use strict";
+
+// The bottom console of the site, with cited_by, output, tools, etc.
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var Console = function (_a) {
+    var load_file = _a.load_file, cited_by = _a.cited_by;
+    // Builds the cited_by links
+    var links = [];
+    if (cited_by) {
+        var _loop_1 = function () {
+            var parent_file = cited_by[i];
+            links.push(inferno_hyperscript_1.h("div", {
+                "onClick": function (e) {
+                    load_file(parent_file);
+                },
+                "style": {
+                    "cursor": "pointer",
+                    "text-decoration": "underline"
+                }
+            }, parent_file));
+        };
+        for (var i = 0; i < cited_by.length; ++i) {
+            _loop_1();
+        }
+    }
+    return inferno_hyperscript_1.h("div", {
+        "style": {
+            "padding": "8px",
+            "border-left": "1px dashed gray",
+            "background-color": "rgb(240,240,240)",
+            "overflow-bottom": "scroll"
+        }
+    }, [
+        inferno_hyperscript_1.h("div", {
+            "style": {
+                "font-weight": "bold"
+            }
+        }, "Cited by:"),
+        links
+    ]);
+};
+exports["default"] = Console;
+
 
 /***/ }),
 
-/***/ "./src/components/Moonad.js":
+/***/ "./src/components/Moonad.ts":
 /*!**********************************!*\
-  !*** ./src/components/Moonad.js ***!
+  !*** ./src/components/Moonad.ts ***!
   \**********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("// Moonad: a Formality browser and application player\n\nconst {Component, render} = __webpack_require__(/*! inferno */ \"./node_modules/inferno/index.esm.js\");\nconst h = __webpack_require__(/*! inferno-hyperscript */ \"./node_modules/inferno-hyperscript/dist/index.esm.js\").h;\nconst fm = __webpack_require__(/*! formality-lang */ \"./node_modules/formality-lang/src/fm-lib.js\");\n\n// Components\nconst CodeEditor = __webpack_require__(/*! ./CodeEditor.js */ \"./src/components/CodeEditor.js\");\nconst CodeRender = __webpack_require__(/*! ./CodeRender.js */ \"./src/components/CodeRender.js\");\nconst Console = __webpack_require__(/*! ./Console.js */ \"./src/components/Console.js\");\nconst TopMenu = __webpack_require__(/*! ./TopMenu.js */ \"./src/components/TopMenu.js\");\n\nclass Moonad extends Component {\n  constructor(props) {\n    super(props);\n\n    // Application state\n    this.version = \"0\";   // change this to clear the cache\n    this.file = null;     // String           -- name of the loaded file\n    this.code = null;     // String           -- the loaded code\n    this.defs = null;     // {[String]: Term} -- the loaded module\n    this.cited_by = null; // [String]         -- files that imported this.file\n    this.tokens = null;   // [[String, Info]] -- chunks of code with syntax highlight info\n    this.history = [];    // [String]         -- name of past loaded files\n    this.editing = false; // Bool             -- are we editing the code?\n\n    this.load_file(window.location.pathname.slice(1) || \"Base@0\");\n  }\n\n  componentDidMount() {\n    const cached_fm_version = window.localStorage.getItem(\"cached_fm_version\");\n    const cached_moonad_version = window.localStorage.getItem(\"cached_moonad_version\");\n    if (cached_fm_version !== fm.lang.version || cached_moonad_version !== this.version) {\n      window.localStorage.clear();\n      window.localStorage.setItem(\"cached_moonad_version\", this.version);\n      window.localStorage.setItem(\"cached_fm_version\", fm.lang.version);\n    }\n    window.onpopstate = (e) => this.load_file(e.state, false);\n  }\n\n  // Loads file/code from propps\n  componentWillReceiveProps(props) {\n    if (props.code) this.load_code(props.code);\n    if (props.file) this.load_file(props.file);\n  }\n\n  // Loads a file (ex: \"Data.Bool@0\")\n  async load_file(file, push_history = true) {\n    if (file.slice(-3) === \".fm\") {\n      file = file.slice(0, -3);\n    }\n    if (file.indexOf(\"@\") === -1) {\n      file = file + \"@0\";\n    }\n    if (push_history) {\n      this.history.push(file);\n      window.history.pushState(file, file, file);\n    }\n    this.editing = false;\n    this.file = file;\n    try {\n      this.cited_by = [];\n      await this.load_code(await fm.forall.with_local_storage_cache(fm.forall.load_file)(file));\n      this.cited_by = await fm.forall.load_file_parents(file);\n    } catch (e) {\n      console.log(e);\n      this.code = \"<error>\";\n    }\n    this.forceUpdate();\n  }\n\n  // Loads a code\n  async load_code(code) {\n    this.code = code;\n    var loader = fm.forall.with_local_storage_cache(fm.forall.load_file);\n    var {defs, tokens} = await fm.lang.parse(this.code, {file: this.file, tokenify: true, loader});\n    this.defs = defs;\n    this.tokens = tokens;\n    this.forceUpdate();\n  }\n\n  // Type-checks a definition \n  typecheck(name) {\n    try {\n      var type = fm.lang.run(\"TYPE\", name, \"TYPE\", {defs: this.defs});\n      var good = true;\n    } catch (e) {\n      var type = e.toString().replace(/\\[[0-9]m/g, \"\").replace(/\\[[0-9][0-9]m/g, \"\");\n      var good = false;\n    }\n    var text = \":: Type ::\\n\";\n    if (good) {\n      text += \"✓ \" + fm.lang.show(type);\n    } else {\n      text += \"✗ \" + type;\n    }\n    try {\n      var norm = fm.lang.run(\"REDUCE_DEBUG\", name, {defs: this.defs, erased: true, unbox: true, logging: true});\n      text += \"\\n\\n:: Output ::\\n\";\n      text += fm.lang.show(norm, [], {full_refs: false});\n    } catch (e) {};\n    alert(text);\n  }\n\n  // Normalizes a definition\n  normalize(name) {\n    try {\n      var norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, \"DEBUG\", {}));\n    } catch (e) {\n      var norm = \"<unable_to_normalize>\";\n    };\n    alert(norm);\n  }\n\n  // Event when user clicks a definition \n  on_click_def(path) {\n    return e => {\n      if (!e.shiftKey) {\n        return this.typecheck(path);\n      } else {\n        return this.normalize(path);\n      }\n    }\n  }\n\n  // Event when user clicks a reference\n  on_click_ref(path) {\n    return e => {\n      this.load_file(path.slice(0, path.indexOf(\"/\")));\n    }\n  }\n\n  // Event when user clicks an import\n  on_click_imp(file) {\n    return e => {\n      this.load_file(file);\n    }\n  }\n\n  on_click_edit() {\n    if (!this.editing) {\n      this.file = \"local\";\n      this.editing = true;\n    } else {\n      this.editing = false;\n      this.load_code(this.code);\n    }\n    this.forceUpdate();\n  }\n\n  on_input_code(code) {\n    this.code = code;\n    this.forceUpdate();\n  }\n\n  async on_click_save() {\n    var file = prompt(\"File name:\");\n    try {\n      if (file) {\n        var unam = await fm.lang.save_file(file, this.code);\n        this.load_file(unam);\n      } else {\n        throw \"\";\n      }\n    } catch (e) {\n      alert(\"Couldn't save file.\");\n    }\n  }\n\n  // Renders the interface\n  render() {\n    // Creates bound variables for states and local methods\n    const editing = this.editing;\n    const file = this.file;\n    const code = this.code;\n    const tokens = this.tokens;\n    const cited_by = this.cited_by;\n    const load_file = () => this.load_file();\n    const on_click_edit = () => this.on_click_edit();\n    const on_click_save = () => this.on_click_save();\n    const on_click_def = (path) => this.on_click_def(path);\n    const on_click_imp = (path) => this.on_click_imp(path);\n    const on_click_ref = (path) => this.on_click_ref(path);\n    const on_input_code = (code) => this.on_input_code(code);\n\n    // Renders the site\n    return h(\"div\", {\n      style: {\n        \"font-family\": \"Gotham Book\",\n        \"height\": \"100%\",\n        \"display\": \"flex\",\n        \"flex-flow\": \"column nowrap\",\n        \"height\": \"100%\",\n        \"background\": \"rgb(253,253,254)\"\n    }}, [\n      // Top of the site\n      TopMenu({editing, file, on_click_edit, on_click_save, load_file}),\n\n      // Middle of the site\n      this.editing\n        ? CodeEditor({code, on_input_code})\n        : CodeRender({code, tokens, on_click_def, on_click_imp, on_click_ref}),\n\n      // Bottom of the site\n      Console({load_file, cited_by})\n    ]);\n  }\n}\n\nmodule.exports = Moonad;\n\n\n//# sourceURL=webpack:///./src/components/Moonad.js?");
+"use strict";
+
+// Moonad: a Formality browser and application player
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __generator = (this && this.__generator) || function (thisArg, body) {
+    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
+    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
+    function verb(n) { return function (v) { return step([n, v]); }; }
+    function step(op) {
+        if (f) throw new TypeError("Generator is already executing.");
+        while (_) try {
+            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+            if (y = 0, t) op = [op[0] & 2, t.value];
+            switch (op[0]) {
+                case 0: case 1: t = op; break;
+                case 4: _.label++; return { value: op[1], done: false };
+                case 5: _.label++; y = op[1]; op = [0]; continue;
+                case 7: op = _.ops.pop(); _.trys.pop(); continue;
+                default:
+                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
+                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
+                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
+                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
+                    if (t[2]) _.ops.pop();
+                    _.trys.pop(); continue;
+            }
+            op = body.call(thisArg, _);
+        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
+        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
+    }
+};
+exports.__esModule = true;
+var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var formality_lang_1 = __webpack_require__(/*! formality-lang */ "./node_modules/formality-lang/src/fm-lib.js");
+// Components
+var CodeEditor_1 = __webpack_require__(/*! ./CodeEditor */ "./src/components/CodeEditor.ts");
+var CodeRender_1 = __webpack_require__(/*! ./CodeRender */ "./src/components/CodeRender.ts");
+var Console_1 = __webpack_require__(/*! ./Console */ "./src/components/Console.ts");
+var TopMenu_1 = __webpack_require__(/*! ./TopMenu */ "./src/components/TopMenu.ts");
+var Moonad = /** @class */ (function (_super) {
+    __extends(Moonad, _super);
+    function Moonad(props) {
+        var _this = _super.call(this, props) || this;
+        _this.version = "0";
+        _this.file = null;
+        _this.code = null;
+        _this.defs = null;
+        _this.cited_by = null;
+        _this.tokens = null;
+        _this.history = null;
+        _this.editing = false;
+        // Application state
+        //this.version = "0";   // change this to clear the cache
+        //this.file = null;     // String           -- name of the loaded file
+        //this.code = null;     // String           -- the loaded code
+        //this.defs = null;     // {[String]: Term} -- the loaded module
+        //this.cited_by = null; // [String]         -- files that imported this.file
+        //this.tokens = null;   // [[String, Info]] -- chunks of code with syntax highlight info
+        //this.history = [];    // [String]         -- name of past loaded files
+        //this.editing = false; // Bool             -- are we editing the code?
+        _this.load_file(window.location.pathname.slice(1) || "Base@0");
+        return _this;
+    }
+    Moonad.prototype.componentDidMount = function () {
+        var _this = this;
+        var cached_fm_version = window.localStorage.getItem("cached_fm_version");
+        var cached_moonad_version = window.localStorage.getItem("cached_moonad_version");
+        if (cached_fm_version !== formality_lang_1["default"].lang.version || cached_moonad_version !== this.version) {
+            window.localStorage.clear();
+            window.localStorage.setItem("cached_moonad_version", this.version);
+            window.localStorage.setItem("cached_fm_version", formality_lang_1["default"].lang.version);
+        }
+        window.onpopstate = function (e) { return _this.load_file(e.state, false); };
+    };
+    // Loads file/code from propps
+    Moonad.prototype.componentWillReceiveProps = function (props) {
+        if (props.code)
+            this.load_code(props.code);
+        if (props.file)
+            this.load_file(props.file);
+    };
+    // Loads a file (ex: "Data.Bool@0")
+    Moonad.prototype.load_file = function (file, push_history) {
+        if (push_history === void 0) { push_history = true; }
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, _b, e_1;
+            return __generator(this, function (_c) {
+                switch (_c.label) {
+                    case 0:
+                        if (file.slice(-3) === ".fm") {
+                            file = file.slice(0, -3);
+                        }
+                        if (file.indexOf("@") === -1) {
+                            file = file + "@0";
+                        }
+                        if (push_history) {
+                            this.history.push(file);
+                            window.history.pushState(file, file, file);
+                        }
+                        this.editing = false;
+                        this.file = file;
+                        _c.label = 1;
+                    case 1:
+                        _c.trys.push([1, 5, , 6]);
+                        this.cited_by = [];
+                        _a = this.load_code;
+                        return [4 /*yield*/, formality_lang_1["default"].forall.with_local_storage_cache(formality_lang_1["default"].forall.load_file)(file)];
+                    case 2: return [4 /*yield*/, _a.apply(this, [_c.sent()])];
+                    case 3:
+                        _c.sent();
+                        _b = this;
+                        return [4 /*yield*/, formality_lang_1["default"].forall.load_file_parents(file)];
+                    case 4:
+                        _b.cited_by = _c.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        e_1 = _c.sent();
+                        console.log(e_1);
+                        this.code = "<error>";
+                        return [3 /*break*/, 6];
+                    case 6:
+                        this.forceUpdate();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    // Loads a code
+    Moonad.prototype.load_code = function (code) {
+        return __awaiter(this, void 0, void 0, function () {
+            var loader, _a, defs, tokens;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        this.code = code;
+                        loader = formality_lang_1["default"].forall.with_local_storage_cache(formality_lang_1["default"].forall.load_file);
+                        return [4 /*yield*/, formality_lang_1["default"].lang.parse(this.code, { file: this.file, tokenify: true, loader: loader })];
+                    case 1:
+                        _a = _b.sent(), defs = _a.defs, tokens = _a.tokens;
+                        this.defs = defs;
+                        this.tokens = tokens;
+                        this.forceUpdate();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    // Type-checks a definition 
+    Moonad.prototype.typecheck = function (name) {
+        try {
+            var type = formality_lang_1["default"].lang.run("TYPE", name, "TYPE", { defs: this.defs });
+            var good = true;
+        }
+        catch (e) {
+            var type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
+            var good = false;
+        }
+        var text = ":: Type ::\n";
+        if (good) {
+            text += "✓ " + formality_lang_1["default"].lang.show(type);
+        }
+        else {
+            text += "✗ " + type;
+        }
+        try {
+            var norm = formality_lang_1["default"].lang.run("REDUCE_DEBUG", name, { defs: this.defs, erased: true, unbox: true, logging: true });
+            text += "\n\n:: Output ::\n";
+            text += formality_lang_1["default"].lang.show(norm, [], { full_refs: false });
+        }
+        catch (e) { }
+        ;
+        alert(text);
+    };
+    // Normalizes a definition
+    Moonad.prototype.normalize = function (name) {
+        try {
+            var norm = formality_lang_1["default"].lang.show(formality_lang_1["default"].lang.norm(this.defs[name], this.defs, "DEBUG", {}));
+        }
+        catch (e) {
+            var norm = "<unable_to_normalize>";
+        }
+        ;
+        alert(norm);
+    };
+    // Event when user clicks a definition 
+    Moonad.prototype.on_click_def = function (path) {
+        var _this = this;
+        return function (e) {
+            if (!e.shiftKey) {
+                return _this.typecheck(path);
+            }
+            else {
+                return _this.normalize(path);
+            }
+        };
+    };
+    // Event when user clicks a reference
+    Moonad.prototype.on_click_ref = function (path) {
+        var _this = this;
+        return function (e) {
+            _this.load_file(path.slice(0, path.indexOf("/")));
+        };
+    };
+    // Event when user clicks an import
+    Moonad.prototype.on_click_imp = function (file) {
+        var _this = this;
+        return function (e) {
+            _this.load_file(file);
+        };
+    };
+    Moonad.prototype.on_click_edit = function () {
+        if (!this.editing) {
+            this.file = "local";
+            this.editing = true;
+        }
+        else {
+            this.editing = false;
+            this.load_code(this.code);
+        }
+        this.forceUpdate();
+    };
+    Moonad.prototype.on_input_code = function (code) {
+        this.code = code;
+        this.forceUpdate();
+    };
+    Moonad.prototype.on_click_save = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var file, unam, e_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        file = prompt("File name:");
+                        _a.label = 1;
+                    case 1:
+                        _a.trys.push([1, 5, , 6]);
+                        if (!file) return [3 /*break*/, 3];
+                        return [4 /*yield*/, formality_lang_1["default"].lang.save_file(file, this.code)];
+                    case 2:
+                        unam = _a.sent();
+                        this.load_file(unam);
+                        return [3 /*break*/, 4];
+                    case 3: throw "";
+                    case 4: return [3 /*break*/, 6];
+                    case 5:
+                        e_2 = _a.sent();
+                        alert("Couldn't save file.");
+                        return [3 /*break*/, 6];
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    // Renders the interface
+    Moonad.prototype.render = function () {
+        var _this = this;
+        // Creates bound variables for states and local methods
+        var editing = this.editing;
+        var file = this.file;
+        var code = this.code;
+        var tokens = this.tokens;
+        var cited_by = this.cited_by;
+        var load_file = function (file, push) { return _this.load_file(file, push); };
+        var on_click_edit = function () { return _this.on_click_edit(); };
+        var on_click_save = function () { return _this.on_click_save(); };
+        var on_click_def = function (path) { return _this.on_click_def(path); };
+        var on_click_imp = function (path) { return _this.on_click_imp(path); };
+        var on_click_ref = function (path) { return _this.on_click_ref(path); };
+        var on_input_code = function (code) { return _this.on_input_code(code); };
+        // Renders the site
+        return inferno_hyperscript_1.h("div", {
+            style: {
+                "font-family": "Gotham Book",
+                "display": "flex",
+                "flex-flow": "column nowrap",
+                "height": "100%",
+                "background": "rgb(253,253,254)"
+            }
+        }, [
+            // Top of the site
+            TopMenu_1["default"]({ editing: editing, file: file, on_click_edit: on_click_edit, on_click_save: on_click_save, load_file: load_file }),
+            // h(PathBar, {path: "Base@0", load_code: load_file}),
+            // Middle of the site
+            this.editing
+                ? CodeEditor_1["default"]({ code: code, on_input_code: on_input_code })
+                : CodeRender_1["default"]({ code: code, tokens: tokens, on_click_def: on_click_def, on_click_imp: on_click_imp, on_click_ref: on_click_ref }),
+            // Bottom of the site
+            Console_1["default"]({ load_file: load_file, cited_by: cited_by })
+        ]);
+    };
+    return Moonad;
+}(inferno_1.Component));
+exports["default"] = Moonad;
+
 
 /***/ }),
 
-/***/ "./src/components/TopMenu.js":
+/***/ "./src/components/TopMenu.ts":
 /*!***********************************!*\
-  !*** ./src/components/TopMenu.js ***!
+  !*** ./src/components/TopMenu.ts ***!
   \***********************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("const h = __webpack_require__(/*! inferno-hyperscript */ \"./node_modules/inferno-hyperscript/dist/index.esm.js\").h;\n\nconst TopMenu = ({editing, file, load_file, on_click_edit, on_click_save}) => {\n  return h(\"div\", {\n    \"style\": {\n      \"background\": \"rgb(240,240,240)\",\n      \"height\": \"26px\",\n      \"font-family\": \"monospace\",\n      \"font-size\": \"16px\",\n      \"display\": \"flex\",\n      \"user-select\": \"none\",\n      \"flex-flow\": \"row nowrap\",\n      \"justify-content\": \"flex-begin\",\n      \"align-items\": \"center\",\n      \"border-bottom\": \"1px solid rgb(180,180,180)\"\n    }\n  }, [\n    h(\"span\", {\n      \"onClick\": () => {\n        var file = prompt(\"File name:\");\n        if (file) load_file(file);\n      },\n      \"style\": {\n        \"cursor\": \"pointer\",\n        \"flex-grow\": \"1\"\n      }\n    }, file),\n    h(\"span\", {\n      \"onClick\": () => on_click_edit(),\n      \"style\": {\n        \"padding-right\": \"8px\",\n        \"cursor\": \"pointer\"\n      }\n    }, editing ? \"✓\" : \"✎\"),\n    h(\"span\", {\n      \"onClick\": () => on_click_save(),\n      \"style\": {\n        \"padding-right\": \"8px\",\n        \"cursor\": \"pointer\",\n        \"user-select\": \"none\",\n        \"opacity\": file === \"local\" && !editing ? \"1.0\" : \"0.4\"}\n      }, \"💾\")\n  ]);\n};\n\nmodule.exports = TopMenu;\n\n\n//# sourceURL=webpack:///./src/components/TopMenu.js?");
+"use strict";
+
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var TopMenu = function (_a) {
+    var editing = _a.editing, file = _a.file, load_file = _a.load_file, on_click_edit = _a.on_click_edit, on_click_save = _a.on_click_save;
+    return inferno_hyperscript_1.h("div", {
+        "style": {
+            "background": "rgb(240,240,240)",
+            "height": "26px",
+            "font-family": "monospace",
+            "font-size": "16px",
+            "display": "flex",
+            "user-select": "none",
+            "flex-flow": "row nowrap",
+            "justify-content": "flex-begin",
+            "align-items": "center",
+            "border-bottom": "1px solid rgb(180,180,180)"
+        }
+    }, [
+        inferno_hyperscript_1.h("span", {
+            "onClick": function () {
+                var file = prompt("File name:");
+                if (file)
+                    load_file(file);
+            },
+            "style": {
+                "cursor": "pointer",
+                "flex-grow": "1"
+            }
+        }, file),
+        inferno_hyperscript_1.h("span", {
+            "onClick": function () { return on_click_edit(); },
+            "style": {
+                "padding-right": "8px",
+                "cursor": "pointer"
+            }
+        }, editing ? "✓" : "✎"),
+        inferno_hyperscript_1.h("span", {
+            "onClick": function () { return on_click_save(); },
+            "style": {
+                "padding-right": "8px",
+                "cursor": "pointer",
+                "user-select": "none",
+                "opacity": file === "local" && !editing ? "1.0" : "0.4"
+            }
+        }, "💾")
+    ]);
+};
+exports["default"] = TopMenu;
+
 
 /***/ }),
 
-/***/ "./src/index.js":
+/***/ "./src/index.ts":
 /*!**********************!*\
-  !*** ./src/index.js ***!
+  !*** ./src/index.ts ***!
   \**********************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-eval("const render = __webpack_require__(/*! inferno */ \"./node_modules/inferno/index.esm.js\").render;\nconst h = __webpack_require__(/*! inferno-hyperscript */ \"./node_modules/inferno-hyperscript/dist/index.esm.js\").h;\nconst Moonad = __webpack_require__(/*! ./components/Moonad.js */ \"./src/components/Moonad.js\");\n\nwindow.onload = () => {\n  render(h(Moonad, {}), document.getElementById(\"main\"));\n};\n\n\n//# sourceURL=webpack:///./src/index.js?");
+"use strict";
+
+exports.__esModule = true;
+var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var Moonad_1 = __webpack_require__(/*! ./components/Moonad */ "./src/components/Moonad.ts");
+window.onload = function () {
+    inferno_1.render(inferno_hyperscript_1.h(Moonad_1["default"], {}), document.getElementById("main"));
+};
+
 
 /***/ })
 
 /******/ });
+//# sourceMappingURL=index.js.map
