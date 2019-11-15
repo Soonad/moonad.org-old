@@ -6,6 +6,8 @@ import DocRender from "./DocRender"
 declare var require: any
 const fm = require("formality-lang");
 
+const App = "App@0";
+
 // Plays an application
 class CodePlayer extends Component {
   app_error = null;
@@ -29,9 +31,11 @@ class CodePlayer extends Component {
     const file = this.file;
 
     if (defs && defs[`${file}/main`]) {
-      var get_state = fm.to_js.compile(fm.lang.erase(defs[`App@0/get_state`]), {defs});
-      var get_render = fm.to_js.compile(fm.lang.erase(defs[`App@0/get_render`]), {defs});
-      var get_update = fm.to_js.compile(fm.lang.erase(defs[`App@0/get_update`]), {defs});
+      var get_state = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_state`]), {defs});
+      var get_render = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_render`]), {defs});
+      var get_update = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_update`]), {defs});
+      var mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${App}/mouseclick`]), {defs});
+      var keypress = fm.to_js.compile(fm.lang.erase(defs[`${App}/keypress`]), {defs});
 
       var app = fm.to_js.compile(fm.lang.erase(defs[`${file}/main`]), {defs});
       var app_state = get_state(app);
@@ -39,6 +43,8 @@ class CodePlayer extends Component {
       var app_update = get_update(app);
 
       this.app_funcs = {
+        mouseclick,
+        keypress,
         state: app_state,
         render: app_render,
         update: app_update,
@@ -60,8 +66,8 @@ class CodePlayer extends Component {
 
     const style = {"flex-grow": 1};
 
-    const onClick = () => {
-      this.app_state = app_funcs.update(null)(app_state);
+    const onClick = (e) => {
+      this.app_state = app_funcs.update(app_funcs.mouseclick(e.pageX)(e.pageY))(app_state);
       this.forceUpdate();
     };
     

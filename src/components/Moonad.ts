@@ -22,7 +22,7 @@ type Mode = "EDIT" | "PLAY" | "VIEW";
 class Moonad extends Component {
 
   // Application state
-  version  : string        = "0";    // change to clear the user's caches
+  version  : string        = "1";    // change to clear the user's caches
   file     : string        = null;   // name of the current file being rendered
   code     : string        = null;   // contents of the current file
   tokens   : Tokens        = null;   // chunks of code with syntax highlight info
