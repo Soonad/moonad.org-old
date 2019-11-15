@@ -1,6 +1,6 @@
 // Renders Formality code with syntax highlighting
 
-const h = require("inferno-hyperscript").h;
+import {h} from "inferno-hyperscript"
 
 const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) => {
   if (code === "<error>") {
@@ -83,4 +83,4 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
   ]);
 };
 
-module.exports = CodeRender;
+export default CodeRender

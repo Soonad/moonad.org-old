@@ -1,28 +1,40 @@
 // Moonad: a Formality browser and application player
 
-const {Component, render} = require("inferno");
-const h = require("inferno-hyperscript").h;
-const fm = require("formality-lang");
+import {Component, render} from "inferno"
+import {h} from "inferno-hyperscript"
+import fm from "formality-lang"
 
 // Components
-const CodeEditor = require("./CodeEditor.js");
-const CodeRender = require("./CodeRender.js");
-const Console = require("./Console.js");
-const TopMenu = require("./TopMenu.js");
+import CodeEditor from "./CodeEditor"
+import CodeRender from "./CodeRender"
+import Console from "./Console"
+import TopMenu from "./TopMenu"
 
 class Moonad extends Component {
+
+
+  version = "0";
+  file = null;
+  code = null;
+  defs = null;
+  cited_by = null;
+  tokens = null;
+  history = null;
+  editing = false;
+  
+  
   constructor(props) {
     super(props);
 
     // Application state
-    this.version = "0";   // change this to clear the cache
-    this.file = null;     // String           -- name of the loaded file
-    this.code = null;     // String           -- the loaded code
-    this.defs = null;     // {[String]: Term} -- the loaded module
-    this.cited_by = null; // [String]         -- files that imported this.file
-    this.tokens = null;   // [[String, Info]] -- chunks of code with syntax highlight info
-    this.history = [];    // [String]         -- name of past loaded files
-    this.editing = false; // Bool             -- are we editing the code?
+    //this.version = "0";   // change this to clear the cache
+    //this.file = null;     // String           -- name of the loaded file
+    //this.code = null;     // String           -- the loaded code
+    //this.defs = null;     // {[String]: Term} -- the loaded module
+    //this.cited_by = null; // [String]         -- files that imported this.file
+    //this.tokens = null;   // [[String, Info]] -- chunks of code with syntax highlight info
+    //this.history = [];    // [String]         -- name of past loaded files
+    //this.editing = false; // Bool             -- are we editing the code?
 
     this.load_file(window.location.pathname.slice(1) || "Base@0");
   }
@@ -187,7 +199,6 @@ class Moonad extends Component {
     return h("div", {
       style: {
         "font-family": "Gotham Book",
-        "height": "100%",
         "display": "flex",
         "flex-flow": "column nowrap",
         "height": "100%",
@@ -207,4 +218,4 @@ class Moonad extends Component {
   }
 }
 
-module.exports = Moonad;
+export default Moonad

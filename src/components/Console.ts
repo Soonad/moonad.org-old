@@ -1,6 +1,6 @@
 // The bottom console of the site, with cited_by, output, tools, etc.
 
-const h = require("inferno-hyperscript").h;
+import {h} from "inferno-hyperscript"
 
 const Console = ({load_file, cited_by}) => {
   // Builds the cited_by links
@@ -37,4 +37,4 @@ const Console = ({load_file, cited_by}) => {
   ]);
 };
 
-module.exports = Console;
+export default Console
