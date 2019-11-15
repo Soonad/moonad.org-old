@@ -1,6 +1,6 @@
 import {h} from "inferno-hyperscript"
 
-const TopMenu = ({editing, file, load_file, on_click_edit, on_click_save}) => {
+const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_play, on_click_save}) => {
   return h("div", {
     "style": {
       "background": "rgb(240,240,240)",
@@ -26,19 +26,36 @@ const TopMenu = ({editing, file, load_file, on_click_edit, on_click_save}) => {
       }
     }, file),
     h("span", {
+      "onClick": () => on_click_view(),
+      "style": {
+        "padding-right": "8px",
+        "cursor": "pointer",
+        "font-weight": mode === "VIEW" ? "bold" : null
+      }
+    }, " [view] "),
+    h("span", {
       "onClick": () => on_click_edit(),
       "style": {
         "padding-right": "8px",
-        "cursor": "pointer"
+        "cursor": "pointer",
+        "font-weight": mode === "EDIT" ? "bold" : null
       }
-    }, editing ? "✓" : "✎"),
+    }, " [edit] "),
+    h("span", {
+      "onClick": () => on_click_play(),
+      "style": {
+        "padding-right": "8px",
+        "cursor": "pointer",
+        "font-weight": mode === "PLAY" ? "bold" : null
+      }
+    }, " [play] "),
     h("span", {
       "onClick": () => on_click_save(),
       "style": {
         "padding-right": "8px",
         "cursor": "pointer",
         "user-select": "none",
-        "opacity": file === "local" && !editing ? "1.0" : "0.4"}
+        "opacity": file === "local" && mode === "VIEW" ? "1.0" : "0.4"}
       }, "💾")
   ]);
 };

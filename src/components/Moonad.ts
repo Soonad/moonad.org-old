@@ -9,6 +9,7 @@ const fm = require("formality-lang");
 
 // Components
 import CodeEditor from "./CodeEditor"
+import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
 import Console from "./Console"
 import TopMenu from "./TopMenu"
@@ -16,18 +17,19 @@ import TopMenu from "./TopMenu"
 type Tokens = Array<[string, [string, string]]>;
 type Defs = {[key : string] : any}; // `any` is a Formality Term
 type Bool = true | false;
+type Mode = "EDIT" | "PLAY" | "VIEW";
 
 class Moonad extends Component {
 
   // Application state
-  version  : string        = "0";   // change to clear the user's caches
-  file     : string        = null;  // name of the current file being rendered
-  code     : string        = null;  // contents of the current file
-  tokens   : Tokens        = null;  // chunks of code with syntax highlight info
-  cited_by : Array<string> = null;  // files that import the current file
-  history  : Array<string> = [];    // previous files
-  defs     : Defs          = null;  // loaded formality token
-  editing  : Bool          = false; // are we editing this file?
+  version  : string        = "0";    // change to clear the user's caches
+  file     : string        = null;   // name of the current file being rendered
+  code     : string        = null;   // contents of the current file
+  tokens   : Tokens        = null;   // chunks of code with syntax highlight info
+  cited_by : Array<string> = null;   // files that import the current file
+  history  : Array<string> = [];     // previous files
+  defs     : Defs          = null;   // loaded formality token
+  mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
   
   constructor(props) {
     super(props);
@@ -51,6 +53,18 @@ class Moonad extends Component {
     if (props.file) this.load_file(props.file);
   }
 
+  loader(file) {
+    return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
+  }
+
+  // Re-parses the code to build defs and tokens
+  async parse() {
+    const parsed = await fm.lang.parse(this.code, {file: this.file, tokenify: true, loader: this.loader});
+    this.defs = parsed.defs;
+    this.tokens = parsed.tokens;
+    this.forceUpdate();
+  }
+
   // Loads a file (ex: "Data.Bool@0")
   async load_file(file, push_history = true) {
     if (file.slice(-3) === ".fm") {
@@ -63,27 +77,25 @@ class Moonad extends Component {
       this.history.push(file);
       window.history.pushState(file, file, file);
     }
-    this.editing = false;
+    this.mode = "VIEW";
     this.file = file;
     try {
       this.cited_by = [];
-      await this.load_code(await fm.forall.with_local_storage_cache(fm.forall.load_file)(file));
+      this.code = await this.loader(this.file);
+      this.parse();
       this.cited_by = await fm.forall.load_file_parents(file);
     } catch (e) {
       console.log(e);
       this.code = "<error>";
+      this.forceUpdate();
     }
-    this.forceUpdate();
   }
 
-  // Loads a code
+  // Loads a code without a file (local)
   async load_code(code) {
+    this.file = "local";
     this.code = code;
-    var loader = fm.forall.with_local_storage_cache(fm.forall.load_file);
-    var {defs, tokens} = await fm.lang.parse(this.code, {file: this.file, tokenify: true, loader});
-    this.defs = defs;
-    this.tokens = tokens;
-    this.forceUpdate();
+    this.parse();
   }
 
   // Type-checks a definition 
@@ -144,15 +156,20 @@ class Moonad extends Component {
       this.load_file(file);
     }
   }
+  
+  on_click_view() {
+    this.mode = "VIEW";
+    this.load_code(this.code);
+    this.forceUpdate();
+  }
 
   on_click_edit() {
-    if (!this.editing) {
-      this.file = "local";
-      this.editing = true;
-    } else {
-      this.editing = false;
-      this.load_code(this.code);
-    }
+    this.mode = "EDIT";
+    this.forceUpdate();
+  }
+
+  on_click_play() {
+    this.mode = "PLAY";
     this.forceUpdate();
   }
 
@@ -165,12 +182,13 @@ class Moonad extends Component {
     var file = prompt("File name:");
     try {
       if (file) {
-        var unam = await fm.lang.save_file(file, this.code);
+        var unam = await fm.forall.save_file(file, this.code);
         this.load_file(unam);
       } else {
         throw "";
       }
     } catch (e) {
+      console.log(e);
       alert("Couldn't save file.");
     }
   }
@@ -178,14 +196,17 @@ class Moonad extends Component {
   // Renders the interface
   render() {
     // Creates bound variables for states and local methods
-    const editing = this.editing;
+    const mode = this.mode;
     const file = this.file;
+    const defs = this.defs;
     const code = this.code;
     const tokens = this.tokens;
     const cited_by = this.cited_by;
     const load_file = (file, push) => this.load_file(file, push);
+    const on_click_view = () => this.on_click_view();
     const on_click_edit = () => this.on_click_edit();
     const on_click_save = () => this.on_click_save();
+    const on_click_play = () => this.on_click_play();
     const on_click_def = (path) => this.on_click_def(path);
     const on_click_imp = (path) => this.on_click_imp(path);
     const on_click_ref = (path) => this.on_click_ref(path);
@@ -201,12 +222,13 @@ class Moonad extends Component {
         "background": "rgb(253,253,254)"
     }}, [
       // Top of the site
-      TopMenu({editing, file, on_click_edit, on_click_save, load_file}),
+      TopMenu({mode, file, on_click_view, on_click_edit, on_click_save, on_click_play, load_file}),
 
       // Middle of the site
-      this.editing
-        ? CodeEditor({code, on_input_code})
-        : CodeRender({code, tokens, on_click_def, on_click_imp, on_click_ref}),
+      ( this.mode === "EDIT" ? CodeEditor({code, on_input_code})
+      : this.mode === "VIEW" ? CodeRender({code, tokens, on_click_def, on_click_imp, on_click_ref})
+      : this.mode === "PLAY" ? h(CodePlayer, {defs, file})
+      : null),
 
       // Bottom of the site
       Console({load_file, cited_by})
