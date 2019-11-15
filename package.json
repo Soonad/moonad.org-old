@@ -20,10 +20,12 @@
   },
   "homepage": "https://gitlab.com/moonad/fm-lab#readme",
   "devDependencies": {
+    "awesome-typescript-loader": "^5.2.1",
     "formality-lang": "^0.1.178",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
     "raw-loader": "^3.1.0",
+    "typescript": "^3.7.2",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
   },

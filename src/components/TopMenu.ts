@@ -1,4 +1,4 @@
-const h = require("inferno-hyperscript").h;
+import {h} from "inferno-hyperscript"
 
 const TopMenu = ({editing, file, load_file, on_click_edit, on_click_save}) => {
   return h("div", {
@@ -43,4 +43,4 @@ const TopMenu = ({editing, file, load_file, on_click_edit, on_click_save}) => {
   ]);
 };
 
-module.exports = TopMenu;
+export default TopMenu

@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "sourceMap": true,
+    "lib": ["es2016", "dom"]
+  },
+  "noImplicitAny": false
+}

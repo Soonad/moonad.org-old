@@ -1,6 +1,6 @@
 // Edits Formality Code
 
-const h = require("inferno-hyperscript").h;
+import {h} from "inferno-hyperscript"
 
 const Editor = ({code, on_input_code}) => {
   return h("textarea", {
@@ -16,4 +16,4 @@ const Editor = ({code, on_input_code}) => {
   }, [])
 };
 
-module.exports = Editor;
+export default Editor
