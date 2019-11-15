@@ -175,7 +175,7 @@ class Moonad extends Component {
     const code = this.code;
     const tokens = this.tokens;
     const cited_by = this.cited_by;
-    const load_file = () => this.load_file();
+    const load_file = (file, push) => this.load_file(file, push);
     const on_click_edit = () => this.on_click_edit();
     const on_click_save = () => this.on_click_save();
     const on_click_def = (path) => this.on_click_def(path);
