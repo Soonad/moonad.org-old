@@ -10,32 +10,24 @@ import CodeRender from "./CodeRender"
 import Console from "./Console"
 import TopMenu from "./TopMenu"
 
+type Tokens = Array<[string, [string, string]]>;
+type Defs = {[key : string] : any}; // `any` is a Formality Term
+type Bool = true | false;
+
 class Moonad extends Component {
 
-
-  version = "0";
-  file = null;
-  code = null;
-  defs = null;
-  cited_by = null;
-  tokens = null;
-  history = null;
-  editing = false;
-  
+  // Application state
+  version  : string        = "0";   // change to clear the user's caches
+  file     : string        = null;  // name of the current file being rendered
+  code     : string        = null;  // contents of the current file
+  tokens   : Tokens        = null;  // chunks of code with syntax highlight info
+  cited_by : Array<string> = null;  // files that import the current file
+  history  : Array<string> = null;  // previous files
+  defs     : Defs          = null;  // loaded formality token
+  editing  : Bool          = false; // are we editing this file?
   
   constructor(props) {
     super(props);
-
-    // Application state
-    //this.version = "0";   // change this to clear the cache
-    //this.file = null;     // String           -- name of the loaded file
-    //this.code = null;     // String           -- the loaded code
-    //this.defs = null;     // {[String]: Term} -- the loaded module
-    //this.cited_by = null; // [String]         -- files that imported this.file
-    //this.tokens = null;   // [[String, Info]] -- chunks of code with syntax highlight info
-    //this.history = [];    // [String]         -- name of past loaded files
-    //this.editing = false; // Bool             -- are we editing the code?
-
     this.load_file(window.location.pathname.slice(1) || "Base@0");
   }
 
