@@ -22,7 +22,7 @@ type Mode = "EDIT" | "PLAY" | "VIEW";
 class Moonad extends Component {
 
   // Application state
-  version  : string        = "1";    // change to clear the user's caches
+  version  : string        = "2";    // change to clear the user's caches
   file     : string        = null;   // name of the current file being rendered
   code     : string        = null;   // contents of the current file
   tokens   : Tokens        = null;   // chunks of code with syntax highlight info
@@ -33,7 +33,7 @@ class Moonad extends Component {
   
   constructor(props) {
     super(props);
-    this.load_file(window.location.pathname.slice(1) || "Base@0");
+    this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
   }
 
   componentDidMount() {
@@ -44,7 +44,9 @@ class Moonad extends Component {
       window.localStorage.setItem("cached_moonad_version", this.version);
       window.localStorage.setItem("cached_fm_version", fm.lang.version);
     }
-    window.onpopstate = (e) => this.load_file(e.state, false);
+    window.onpopstate = (e) => {
+      this.load_file(e.state, false);
+    }
   }
 
   // Loads file/code from propps
@@ -65,13 +67,13 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  // Loads a file (ex: "Data.Bool@0")
+  // Loads a file (ex: "Data.Bool#xxxx")
   async load_file(file, push_history = true) {
     if (file.slice(-3) === ".fm") {
       file = file.slice(0, -3);
     }
-    if (file.indexOf("@") === -1) {
-      file = file + "@0";
+    if (file.indexOf("#") === -1) {
+      file = file + "#";
     }
     if (push_history) {
       this.history.push(file);

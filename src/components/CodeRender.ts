@@ -28,18 +28,21 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
         case "var":
           return h("span", {style: {"color": "black"}}, child);
         case "imp":
+          var [file, hash] = child.split("#");
           return h("a", {
             href: window.location.origin + "/" + tokens[i][1],
             style: {
               "color": "black",
               "text-decoration": "underline",
-              "font-weight": "bold",
               "cursor": "pointer"
             },
             on_click: e => {
               on_click_imp(tokens[i][1])(e);
               e.preventDefault();
-            }}, child);
+            }}, [
+              h("span", {style: {"font-weight": "bold"}}, file),
+              h("span", {style: {"color": "#B0B0B0"}}, "#" + hash)
+            ]);
         case "ref":
           return h("a", {
             href: window.location.origin + "/" + tokens[i][2].replace(new RegExp("/.*$"), ""),

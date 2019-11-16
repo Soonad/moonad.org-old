@@ -6,7 +6,7 @@ import DocRender from "./DocRender"
 declare var require: any
 const fm = require("formality-lang");
 
-const App = "App@0";
+const App = "App#48_F";
 
 // Plays an application
 class CodePlayer extends Component {
@@ -30,14 +30,16 @@ class CodePlayer extends Component {
     const defs = this.defs;
     const file = this.file;
 
-    if (defs && defs[`${file}/main`]) {
+    const main = defs[`${file}/main`] || defs[`${file}/app`] || defs[`${file}/demo_app`];
+
+    if (defs && main) {
       var get_state = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_state`]), {defs});
       var get_render = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_render`]), {defs});
       var get_update = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_update`]), {defs});
       var mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${App}/mouseclick`]), {defs});
       var keypress = fm.to_js.compile(fm.lang.erase(defs[`${App}/keypress`]), {defs});
 
-      var app = fm.to_js.compile(fm.lang.erase(defs[`${file}/main`]), {defs});
+      var app = fm.to_js.compile(fm.lang.erase(main), {defs});
       var app_state = get_state(app);
       var app_render = get_render(app);
       var app_update = get_update(app);
