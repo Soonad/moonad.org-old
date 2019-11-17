@@ -1,6 +1,6 @@
 import {h} from "inferno-hyperscript"
 
-const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_play, on_click_save}) => {
+const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_play}) => {
   return h("div", {
     "style": {
       "background": "rgb(240,240,240)",
@@ -48,15 +48,7 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
         "cursor": "pointer",
         "font-weight": mode === "PLAY" ? "bold" : null
       }
-    }, " [play] "),
-    h("span", {
-      "onClick": () => on_click_save(),
-      "style": {
-        "padding-right": "8px",
-        "cursor": "pointer",
-        "user-select": "none",
-        "opacity": file === "local" && mode === "VIEW" ? "1.0" : "0.4"}
-      }, "💾")
+    }, " [play] ")
   ]);
 };
 

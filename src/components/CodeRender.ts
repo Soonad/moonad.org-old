@@ -3,12 +3,8 @@
 import {h} from "inferno-hyperscript"
 
 const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) => {
-  if (code === "<error>") {
-    return h("div", {"style": {"padding": "8px"}}, "Failed to load code.");
-  }
-
   if (!tokens) {
-    return h("div", {"style": {"padding": "8px"}}, "Loading code from FPM. This may take a while...");
+    return h("div", {"style": {"padding": "8px", "flex-grow": 1}}, "Loading code from FPM. This may take a while...");
   }
 
   // Makes spans for each code chunk
