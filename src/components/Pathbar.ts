@@ -14,7 +14,7 @@ class Pathbar extends Component<Props> {
   
   // State
   editing = false;
-  internal_path = default_path;
+  file_name = default_path;
 
   constructor(props: Props) {
     super(props);
@@ -22,7 +22,7 @@ class Pathbar extends Component<Props> {
 
   onClick() {
     this.editing = true;
-    this.internal_path = "";
+    this.file_name = "";
     this.forceUpdate();
   }
 
@@ -31,7 +31,7 @@ class Pathbar extends Component<Props> {
     if (this.editing && evt.target) {
       const ele = evt.target as HTMLInputElement;
       this.editing = true;
-      this.internal_path = ele.value;
+      this.file_name = ele.value;
     }
     this.forceUpdate();
   }
@@ -41,18 +41,18 @@ class Pathbar extends Component<Props> {
 
     if (e.keyCode === 13 && this.editing) {
       this.editing = false;
-      const is_valid = this.verify_format(this.internal_path);
+      const is_valid = this.verify_format(this.file_name);
       // TODO: if not valid, tell the user
       if (is_valid) {
-        this.props.load_file(this.internal_path);
+        this.props.load_file(this.file_name);
       }
     }
     this.forceUpdate();
   }
 
-  verify_format(internal_path: string): boolean {
+  verify_format(file_name: string): boolean {
     const module_regex = /^[a-zA-Z_\.-@]+@\d+$/;
-    return module_regex.test(internal_path);
+    return module_regex.test(file_name);
   }
 
   render() {
@@ -64,19 +64,19 @@ class Pathbar extends Component<Props> {
       return h("input", {
         type: "text",
         style: input_style,
-        value: this.internal_path,
-        placeholder: "Search ...",
+        value: this.file_name,
+        placeholder: "Search...",
         onKeyDown,
         onInput
       });
     }
-    return h("div", { style, onClick }, this.internal_path);
+    return h("div", { style, onClick }, this.file_name);
   }
 }
 
 const style = { 
-  "heigth": "20px", 
-  "width": "50%", 
+  "heigth": "20px",
+  "width": "350px",
   "color": "#FFFFFF",
   "margin-left": "30px",
   "margin-top": "35px",
@@ -88,7 +88,7 @@ const input_style = {
   "border": "none",
   "margin-top": "23px",
   "margin-bottom": "5px",
-  "padding": "5px",
+  "padding": "3px",
   "outline": "none",
   "font-family": "monospace",
   "font-color": LayoutConstants.light_gray_color,

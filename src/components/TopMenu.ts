@@ -1,6 +1,7 @@
 import { h } from "inferno-hyperscript"
 import { LayoutConstants } from "../assets/Constants";
 import Pathbar from "./Pathbar";
+import TopMenuButton from "./TopMenuButton";
 
 // Assets
 // import logo from "../assets/moonad_logo.png";
@@ -27,47 +28,50 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
       "display": "flex",
       "user-select": "none",
       "flex-flow": "row nowrap",
-      "justify-content": "flex-begin",
-      "align-items": "center",
-      "border-bottom": "1px solid rgb(180,180,180)"
+      "justify-content": "space-between"
     }
   }, [
-    h("img", {
+    h("div", {
       style: {
-        "width": "50px",
-        "height": "40px",
-        "margin-top": "13px",
-        "margin-left": "10%",
-        "cursor": "pointer"
-      }, 
-      src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'), 
-      alt: "logo", 
-      onClick: () => { load_file("Base@0") } }), 
-    h(Pathbar, {load_file}),
-    h("span", {
-      "onClick": () => on_click_view(),
-      "style": {
-        "padding-right": "8px",
-        "cursor": "pointer",
-        "font-weight": mode === "VIEW" ? "bold" : null
+        "width": "50%",
+        "display": "flex",
+        "flex-direction": "row"
       }
-    }, " [view] "),
-    h("span", {
-      "onClick": () => on_click_edit(),
-      "style": {
-        "padding-right": "8px",
-        "cursor": "pointer",
-        "font-weight": mode === "EDIT" ? "bold" : null
-      }
-    }, " [edit] "),
-    h("span", {
-      "onClick": () => on_click_play(),
-      "style": {
-        "padding-right": "8px",
-        "cursor": "pointer",
-        "font-weight": mode === "PLAY" ? "bold" : null
-      }
-    }, " [play] ")
+    }, [
+        h("img", {
+          style: {
+            "width": "50px",
+            "height": "40px",
+            "margin-top": "18px",
+            "margin-left": "10%",
+            "cursor": "pointer"
+          }, 
+          src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'), 
+          alt: "logo", 
+          onClick: () => { load_file("Base@0") } }), 
+        h(Pathbar, {load_file}),
+       ]
+    ),
+    h("div", {className: "Buttons div", 
+      style: {
+        "width": "150px",
+        "height": "100%", 
+        "display": "flex",
+        "flex-direction": "row",
+        "justify-content": "space-between",
+        "margin-right": "5%",
+        "user-select": "none"
+      }}, [
+        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+          title: "CONSOLE",
+          onClick: () => on_click_view(),
+        }), 
+        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+          title: "EDIT",
+          onClick: () => on_click_edit(),
+        }), 
+      ]
+    )
   ]);
 };
 

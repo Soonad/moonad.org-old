@@ -8950,12 +8950,12 @@ var Pathbar = /** @class */ (function (_super) {
         var _this = _super.call(this, props) || this;
         // State
         _this.editing = false;
-        _this.internal_path = default_path;
+        _this.file_name = default_path;
         return _this;
     }
     Pathbar.prototype.onClick = function () {
         this.editing = true;
-        this.internal_path = "";
+        this.file_name = "";
         this.forceUpdate();
     };
     Pathbar.prototype.onInput = function (e) {
@@ -8963,7 +8963,7 @@ var Pathbar = /** @class */ (function (_super) {
         if (this.editing && evt.target) {
             var ele = evt.target;
             this.editing = true;
-            this.internal_path = ele.value;
+            this.file_name = ele.value;
         }
         this.forceUpdate();
     };
@@ -8972,17 +8972,17 @@ var Pathbar = /** @class */ (function (_super) {
         var onLoadCode = function (file, push) { return _this.props.load_file(file, push); };
         if (e.keyCode === 13 && this.editing) {
             this.editing = false;
-            var is_valid = this.verify_format(this.internal_path);
+            var is_valid = this.verify_format(this.file_name);
             // TODO: if not valid, tell the user
             if (is_valid) {
-                this.props.load_file(this.internal_path);
+                this.props.load_file(this.file_name);
             }
         }
         this.forceUpdate();
     };
-    Pathbar.prototype.verify_format = function (internal_path) {
+    Pathbar.prototype.verify_format = function (file_name) {
         var module_regex = /^[a-zA-Z_\.-@]+@\d+$/;
-        return module_regex.test(internal_path);
+        return module_regex.test(file_name);
     };
     Pathbar.prototype.render = function () {
         var _this = this;
@@ -8993,25 +8993,25 @@ var Pathbar = /** @class */ (function (_super) {
             return inferno_hyperscript_1.h("input", {
                 type: "text",
                 style: input_style,
-                value: this.internal_path,
-                placeholder: "Search ...",
+                value: this.file_name,
+                placeholder: "Search...",
                 onKeyDown: onKeyDown,
                 onInput: onInput
             });
         }
-        return inferno_hyperscript_1.h("div", { style: style, onClick: onClick }, this.internal_path);
+        return inferno_hyperscript_1.h("div", { style: style, onClick: onClick }, this.file_name);
     };
     return Pathbar;
 }(inferno_1.Component));
 var style = {
     "heigth": "20px",
-    "width": "50%",
+    "width": "350px",
     "color": "#FFFFFF",
     "margin-left": "30px",
     "margin-top": "35px",
     "font-size": "16px"
 };
-var input_style = __assign(__assign({}, style), { "border": "none", "margin-top": "23px", "margin-bottom": "5px", "padding": "5px", "outline": "none", "font-family": "monospace", "font-color": Constants_1.LayoutConstants.light_gray_color, "background-color": Constants_1.LayoutConstants.primary_shadow_color });
+var input_style = __assign(__assign({}, style), { "border": "none", "margin-top": "23px", "margin-bottom": "5px", "padding": "3px", "outline": "none", "font-family": "monospace", "font-color": Constants_1.LayoutConstants.light_gray_color, "background-color": Constants_1.LayoutConstants.primary_shadow_color });
 exports["default"] = Pathbar;
 
 
@@ -9030,6 +9030,7 @@ exports.__esModule = true;
 var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
 var Constants_1 = __webpack_require__(/*! ../assets/Constants */ "./src/assets/Constants.ts");
 var Pathbar_1 = __webpack_require__(/*! ./Pathbar */ "./src/components/Pathbar.ts");
+var TopMenuButton_1 = __webpack_require__(/*! ./TopMenuButton */ "./src/components/TopMenuButton.ts");
 var TopMenu = function (_a) {
     var mode = _a.mode, file = _a.file, load_file = _a.load_file, on_click_view = _a.on_click_view, on_click_edit = _a.on_click_edit, on_click_play = _a.on_click_play;
     return inferno_hyperscript_1.h("div", {
@@ -9041,51 +9042,139 @@ var TopMenu = function (_a) {
             "display": "flex",
             "user-select": "none",
             "flex-flow": "row nowrap",
-            "justify-content": "flex-begin",
-            "align-items": "center",
-            "border-bottom": "1px solid rgb(180,180,180)"
+            "justify-content": "space-between"
         }
     }, [
-        inferno_hyperscript_1.h("img", {
+        inferno_hyperscript_1.h("div", {
             style: {
-                "width": "50px",
-                "height": "40px",
-                "margin-top": "13px",
-                "margin-left": "10%",
-                "cursor": "pointer"
-            },
-            src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'),
-            alt: "logo",
-            onClick: function () { load_file("Base@0"); }
-        }),
-        inferno_hyperscript_1.h(Pathbar_1["default"], { load_file: load_file }),
-        inferno_hyperscript_1.h("span", {
-            "onClick": function () { return on_click_view(); },
-            "style": {
-                "padding-right": "8px",
-                "cursor": "pointer",
-                "font-weight": mode === "VIEW" ? "bold" : null
+                "width": "50%",
+                "display": "flex",
+                "flex-direction": "row"
             }
-        }, " [view] "),
-        inferno_hyperscript_1.h("span", {
-            "onClick": function () { return on_click_edit(); },
-            "style": {
-                "padding-right": "8px",
-                "cursor": "pointer",
-                "font-weight": mode === "EDIT" ? "bold" : null
-            }
-        }, " [edit] "),
-        inferno_hyperscript_1.h("span", {
-            "onClick": function () { return on_click_play(); },
-            "style": {
-                "padding-right": "8px",
-                "cursor": "pointer",
-                "font-weight": mode === "PLAY" ? "bold" : null
-            }
-        }, " [play] ")
+        }, [
+            inferno_hyperscript_1.h("img", {
+                style: {
+                    "width": "50px",
+                    "height": "40px",
+                    "margin-top": "18px",
+                    "margin-left": "10%",
+                    "cursor": "pointer"
+                },
+                src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'),
+                alt: "logo",
+                onClick: function () { load_file("Base@0"); }
+            }),
+            inferno_hyperscript_1.h(Pathbar_1["default"], { load_file: load_file }),
+        ]),
+        inferno_hyperscript_1.h("div", { className: "Buttons div",
+            style: {
+                "width": "150px",
+                "height": "100%",
+                "display": "flex",
+                "flex-direction": "row",
+                "justify-content": "space-between",
+                "margin-right": "5%",
+                "user-select": "none"
+            } }, [
+            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+                title: "CONSOLE",
+                onClick: function () { return on_click_view(); }
+            }),
+            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+                title: "EDIT",
+                onClick: function () { return on_click_edit(); }
+            }),
+        ])
     ]);
 };
 exports["default"] = TopMenu;
+
+
+/***/ }),
+
+/***/ "./src/components/TopMenuButton.ts":
+/*!*****************************************!*\
+  !*** ./src/components/TopMenuButton.ts ***!
+  \*****************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __assign = (this && this.__assign) || function () {
+    __assign = Object.assign || function(t) {
+        for (var s, i = 1, n = arguments.length; i < n; i++) {
+            s = arguments[i];
+            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
+                t[p] = s[p];
+        }
+        return t;
+    };
+    return __assign.apply(this, arguments);
+};
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var Constants_1 = __webpack_require__(/*! ../assets/Constants */ "./src/assets/Constants.ts");
+var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
+var TopMenuButton = /** @class */ (function (_super) {
+    __extends(TopMenuButton, _super);
+    function TopMenuButton(props) {
+        var _this = _super.call(this, props) || this;
+        _this.hover = false;
+        return _this;
+    }
+    TopMenuButton.prototype.render = function () {
+        var _this = this;
+        var style_btn = this.hover ? button_hover_style : button_style;
+        return inferno_hyperscript_1.h("div", {
+            style: style_btn,
+            onClick: this.props.onClick,
+            onMouseEnter: function () { _this.hover = true; _this.forceUpdate(); },
+            onMouseLeave: function () { _this.hover = false; _this.forceUpdate(); }
+        }, [
+            inferno_hyperscript_1.h("img", {
+                src: this.props.icon,
+                style: {
+                    "width": "30px",
+                    "height": "30px",
+                    "margin-top": "09px"
+                }
+            }),
+            inferno_hyperscript_1.h("p", {
+                style: {
+                    "color": "#FFFFFF",
+                    "font-size": "14px",
+                    "font-family": "monospace",
+                    "margin": "0px"
+                }
+            }, this.props.title)
+        ]);
+    };
+    return TopMenuButton;
+}(inferno_1.Component));
+var button_style = {
+    "width": "70px",
+    "height": "100%",
+    "flex-direction": "column",
+    "align-items": "center",
+    "text-align": "center",
+    "cursor": "pointer"
+};
+var button_hover_style = __assign(__assign({}, button_style), { "background-color": Constants_1.LayoutConstants.primary_shadow_color });
+exports["default"] = TopMenuButton;
 
 
 /***/ }),
