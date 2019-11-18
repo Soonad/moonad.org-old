@@ -6,8 +6,6 @@ import DocRender from "./DocRender"
 declare var require: any
 const fm = require("formality-lang");
 
-const App = "App#H66n";
-
 // Plays an application
 class CodePlayer extends Component {
   app_error = null;
@@ -26,19 +24,29 @@ class CodePlayer extends Component {
     this.compile();
   }
 
+  find_app_prefix() {
+    for (var key in this.defs) {
+      if (key.slice(0,4) === "App#") {
+        return key.slice(0, key.indexOf("/"));
+      }
+    }
+    return null;
+  }
+
   compile() {
     const defs = this.defs;
     const file = this.file;
 
     const main = defs[`${file}/main`] || defs[`${file}/app`] || defs[`${file}/demo_app`];
+    const app_lib = this.find_app_prefix();
 
-    if (defs && main) {
-      var get_state = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_state`]), {defs});
-      var get_render = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_render`]), {defs});
-      var get_update = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_update`]), {defs});
-      var mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${App}/mouseclick`]), {defs});
-      var mousemove = fm.to_js.compile(fm.lang.erase(defs[`${App}/mousemove`]), {defs});
-      var keypress = fm.to_js.compile(fm.lang.erase(defs[`${App}/keypress`]), {defs});
+    if (defs && main && app_lib) {
+      var get_state = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_state`]), {defs});
+      var get_render = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_render`]), {defs});
+      var get_update = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_update`]), {defs});
+      var mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mouseclick`]), {defs});
+      var mousemove = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mousemove`]), {defs});
+      var keypress = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/keypress`]), {defs});
 
       var app = fm.to_js.compile(fm.lang.erase(main), {defs});
       var app_state = get_state(app);
@@ -55,11 +63,10 @@ class CodePlayer extends Component {
       };
 
       this.app_state = app_state;
-
-      this.forceUpdate();
     } else {
-      this.app_error = "No main found.";
+      this.app_error = "Error compiling App.";
     }
+    this.forceUpdate();
   }
 
   render() {
