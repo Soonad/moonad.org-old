@@ -1,6 +1,7 @@
 // Converts a `Doc` value from Formality to an Inferno element
 
 import {h} from "inferno-hyperscript"
+import Image from "./Image"
 
 const read_string = value => {
   var str = "";
@@ -22,6 +23,10 @@ const DocRender = (doc) => {
 
   const case_num = (value) => {
     return h("span", {}, String(value));
+  };
+
+  const case_img = (size) => (data) => {
+    return h(Image, {size, data}, []);
   };
 
   const case_box = (tag) => (props) => (child) => {
@@ -59,7 +64,7 @@ const DocRender = (doc) => {
 
     return h(tag_str, props_obj, child_arr);
   };
-  return doc(case_txt)(case_num)(case_box);
+  return doc(case_txt)(case_num)(case_img)(case_box);
 };
 
 export default DocRender
