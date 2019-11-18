@@ -2,87 +2,97 @@ import { Component, render } from "inferno";
 import { h } from "inferno-hyperscript";
 import { LayoutConstants } from "../assets/Constants";
 
-const defaultPath = "Base@0";
+const default_path = "Base@0";
 
-
-type LoadFile = (module_or_term: string, push_history: boolean) => any;
+type LoadFile = (module_or_term: string, push_history?: boolean) => any;
 
 export interface Props {
-  path: string;
-  load_code: LoadFile;
+  load_file: LoadFile;
 }
 
-class PathBar extends Component<Props> {
+class Pathbar extends Component<Props> {
   
   // State
   editing = false;
-  internal_path = "";
+  internal_path = default_path;
 
   constructor(props: Props) {
     super(props);
-
-    // State
-    // this.editing = false;
-    // this.path = "";
-
   }
 
   onClick() {
     this.editing = true;
-    this.props.path = "";
+    this.internal_path = "";
+    this.forceUpdate();
   }
 
   onInput(e) {
-    if (this.editing) {
+    const evt = e as InputEvent;
+    if (this.editing && evt.target) {
+      const ele = evt.target as HTMLInputElement;
       this.editing = true;
-      console.log(">> Path bar, e value: "+e);
-      // this.internal_path = e
+      this.internal_path = ele.value;
     }
+    this.forceUpdate();
   }
 
-  onKeyPress(e) {
-    console.log(">> [Path baar] onKeyPress: "+e);
+  onKeyDown(e) {
+    const onLoadCode = (file, push) => this.props.load_file(file, push);
+
     if (e.keyCode === 13 && this.editing) {
       this.editing = false;
-      // TODO: check is the path is correct
-      this.props.load_code(this.internal_path, true);
+      const is_valid = this.verify_format(this.internal_path);
+      // TODO: if not valid, tell the user
+      if (is_valid) {
+        this.props.load_file(this.internal_path);
+      }
     }
+    this.forceUpdate();
   }
 
-  render(){
+  verify_format(internal_path: string): boolean {
+    const module_regex = /^[a-zA-Z_\.-@]+@\d+$/;
+    return module_regex.test(internal_path);
+  }
+
+  render() {
+    const onClick = () => this.onClick();
+    const onKeyDown = (e) => this.onKeyDown(e);
+    const onInput = (e) => this.onInput(e);
+
     if (this.editing) {
       return h("input", {
         type: "text",
         style: input_style,
         value: this.internal_path,
         placeholder: "Search ...",
-        onKeyPress: this.onKeyPress,
-        onInput: this.onInput,
+        onKeyDown,
+        onInput
       });
     }
-    return h("div", { style, onClick: this.onClick }, this.props.path);
+    return h("div", { style, onClick }, this.internal_path);
   }
 }
 
 const style = { 
-  heigth: "20px", 
-  width: "50%", 
-  color: "#FFFFFF",
-  marginLeft: "30px",
-  marginTop: "35px",
-  fontSize: "16px",
+  "heigth": "20px", 
+  "width": "50%", 
+  "color": "#FFFFFF",
+  "margin-left": "30px",
+  "margin-top": "35px",
+  "font-size": "16px",
 };
 
 const input_style = {
   ...style,
-  border: "none",
-  marginTop: "23px",
-  marginBottom: "5px",
-  // borderBottom: `1px solid ${LayoutConstants.light_gray_shadow_color}`,
-  outline: "none",
-  fontFamily: "monospace",
-  fontColor: LayoutConstants.light_gray_color,
-  backgroundColor: LayoutConstants.primary_shadow_color
+  "border": "none",
+  "margin-top": "23px",
+  "margin-bottom": "5px",
+  "padding": "5px",
+  "outline": "none",
+  "font-family": "monospace",
+  "font-color": LayoutConstants.light_gray_color,
+  "background-color": LayoutConstants.primary_shadow_color
 };
 
-export default PathBar
+export default Pathbar

@@ -21,6 +21,7 @@
   "homepage": "https://gitlab.com/moonad/fm-lab#readme",
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
+    "file-loader": "^4.2.0",
     "formality-lang": "^0.1.180",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",

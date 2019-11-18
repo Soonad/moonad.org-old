@@ -13,7 +13,7 @@ import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
 import Console from "./Console"
 import TopMenu from "./TopMenu"
-import PathBar from "./Pathbar"
+import Pathbar from "./Pathbar"
 
 type Tokens = Array<[string, [string, string]]>;
 type Defs = {[key : string] : any}; // `any` is a Formality Term
@@ -223,8 +223,8 @@ class Moonad extends Component {
         "background": "rgb(253,253,254)"
     }}, [
       // Top of the site
-      TopMenu({mode, file, on_click_view, on_click_edit, on_click_save, on_click_play, load_file}),
-      // h(PathBar, {path: "Base@0", load_code: load_file}),
+      TopMenu({mode, file, on_click_view, on_click_edit, on_click_play, load_file}),
+      // h(Pathbar, {load_file}),
 
       // Middle of the site
       ( this.mode === "EDIT" ? CodeEditor({code, on_input_code})
