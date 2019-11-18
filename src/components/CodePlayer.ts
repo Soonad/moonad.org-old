@@ -6,7 +6,7 @@ import DocRender from "./DocRender"
 declare var require: any
 const fm = require("formality-lang");
 
-const App = "App#K_OT";
+const App = "App#H66n";
 
 // Plays an application
 class CodePlayer extends Component {
