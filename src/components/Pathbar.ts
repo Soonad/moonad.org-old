@@ -58,7 +58,6 @@ class Pathbar extends Component<Props> {
     const onClick = () => this.onClick();
     const onKeyDown = (e) => this.onKeyDown(e);
     const onInput = (e) => this.onInput(e);
-    console.log("[pathbar] file name: "+this.file_name);
     if (this.editing) {
       return h("input", {
         type: "text",
@@ -73,7 +72,7 @@ class Pathbar extends Component<Props> {
   }
 }
 
-const style = { 
+const style = {
   "heigth": "20px",
   "width": "350px",
   "color": "#FFFFFF",

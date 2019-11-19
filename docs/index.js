@@ -8527,7 +8527,10 @@ var CodeRender = function (_a) {
         _loop_1(i);
     }
     return inferno_hyperscript_1.h("code", {
-        "style": {
+        className: "CodeRender div",
+        style: {
+            "margin-left": "10%",
+            "margin-right": "10%",
             "padding": "8px",
             "overflow": "scroll",
             "flex-grow": 1
@@ -9160,7 +9163,6 @@ var Pathbar = /** @class */ (function (_super) {
         var onClick = function () { return _this.onClick(); };
         var onKeyDown = function (e) { return _this.onKeyDown(e); };
         var onInput = function (e) { return _this.onInput(e); };
-        console.log("[pathbar] file name: " + this.file_name);
         if (this.editing) {
             return inferno_hyperscript_1.h("input", {
                 type: "text",
@@ -9240,7 +9242,7 @@ var TopMenu = function (_a) {
         ]),
         inferno_hyperscript_1.h("div", { className: "Buttons div",
             style: {
-                "width": "150px",
+                "width": "230px",
                 "height": "100%",
                 "display": "flex",
                 "flex-direction": "row",
@@ -9255,6 +9257,10 @@ var TopMenu = function (_a) {
             inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
                 title: "EDIT",
                 onClick: function () { return on_click_edit(); }
+            }),
+            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+                title: "PLAY",
+                onClick: function () { return on_click_play(); }
             }),
         ])
     ]);

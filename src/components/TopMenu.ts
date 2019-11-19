@@ -54,7 +54,7 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
     ),
     h("div", {className: "Buttons div", 
       style: {
-        "width": "150px",
+        "width": "230px",
         "height": "100%", 
         "display": "flex",
         "flex-direction": "row",
@@ -69,6 +69,10 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
         h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
           title: "EDIT",
           onClick: () => on_click_edit(),
+        }), 
+        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+          title: "PLAY",
+          onClick: () => on_click_play(),
         }), 
       ]
     )
