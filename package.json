@@ -22,7 +22,7 @@
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
     "file-loader": "^4.2.0",
-    "formality-lang": "^0.1.180",
+    "formality-lang": "^0.1.188",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
     "raw-loader": "^3.1.0",

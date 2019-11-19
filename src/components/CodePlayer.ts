@@ -6,8 +6,6 @@ import DocRender from "./DocRender"
 declare var require: any
 const fm = require("formality-lang");
 
-const App = "App@0";
-
 // Plays an application
 class CodePlayer extends Component {
   app_error = null;
@@ -26,24 +24,38 @@ class CodePlayer extends Component {
     this.compile();
   }
 
+  find_app_prefix() {
+    for (var key in this.defs) {
+      if (key.slice(0,4) === "App#") {
+        return key.slice(0, key.indexOf("/"));
+      }
+    }
+    return null;
+  }
+
   compile() {
     const defs = this.defs;
     const file = this.file;
 
-    if (defs && defs[`${file}/main`]) {
-      var get_state = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_state`]), {defs});
-      var get_render = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_render`]), {defs});
-      var get_update = fm.to_js.compile(fm.lang.erase(defs[`${App}/get_update`]), {defs});
-      var mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${App}/mouseclick`]), {defs});
-      var keypress = fm.to_js.compile(fm.lang.erase(defs[`${App}/keypress`]), {defs});
+    const main = defs[`${file}/main`] || defs[`${file}/app`] || defs[`${file}/demo_app`];
+    const app_lib = this.find_app_prefix();
 
-      var app = fm.to_js.compile(fm.lang.erase(defs[`${file}/main`]), {defs});
+    if (defs && main && app_lib) {
+      var get_state = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_state`]), {defs});
+      var get_render = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_render`]), {defs});
+      var get_update = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_update`]), {defs});
+      var mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mouseclick`]), {defs});
+      var mousemove = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mousemove`]), {defs});
+      var keypress = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/keypress`]), {defs});
+
+      var app = fm.to_js.compile(fm.lang.erase(main), {defs});
       var app_state = get_state(app);
       var app_render = get_render(app);
       var app_update = get_update(app);
 
       this.app_funcs = {
         mouseclick,
+        mousemove,
         keypress,
         state: app_state,
         render: app_render,
@@ -51,11 +63,10 @@ class CodePlayer extends Component {
       };
 
       this.app_state = app_state;
-
-      this.forceUpdate();
     } else {
-      this.app_error = "No main found.";
+      this.app_error = "Error compiling App.";
     }
+    this.forceUpdate();
   }
 
   render() {
@@ -66,17 +77,37 @@ class CodePlayer extends Component {
 
     const style = {"flex-grow": 1};
 
+    const onMouseMove = (e) => {
+      this.app_state = app_funcs.update(app_funcs.mousemove(e.pageX)(e.pageY))(app_state);
+      this.forceUpdate();
+    };
+
     const onClick = (e) => {
       this.app_state = app_funcs.update(app_funcs.mouseclick(e.pageX)(e.pageY))(app_state);
       this.forceUpdate();
     };
-    
+
+    const onKeyPress = (e) => {
+      this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
+      this.forceUpdate();
+    };
+
+    const onKeyDown = (e) => {
+      this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
+      this.forceUpdate();
+    };
+
+    const onKeyUp = (e) => {
+      this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
+      this.forceUpdate();
+    };
+
     if (this.app_error) {
       return h("div", {style}, this.app_error);
     } else if (app_state === null || app_funcs === null) {
       return h("div", {style}, "Compiling application...");
     } else {
-      return h("div", {style, onClick}, DocRender(app_funcs.render(app_state)));
+      return h("div", {tabindex: 0, style, onMouseMove, onClick, onKeyPress, onKeyDown, onKeyUp}, DocRender(app_funcs.render(app_state)));
     }
   }
 };

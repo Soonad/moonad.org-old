@@ -23,7 +23,7 @@ type Mode = "EDIT" | "PLAY" | "VIEW";
 class Moonad extends Component {
 
   // Application state
-  version  : string        = "1";    // change to clear the user's caches
+  version  : string        = "2";    // change to clear the user's caches
   file     : string        = null;   // name of the current file being rendered
   code     : string        = null;   // contents of the current file
   tokens   : Tokens        = null;   // chunks of code with syntax highlight info
@@ -34,7 +34,9 @@ class Moonad extends Component {
   
   constructor(props) {
     super(props);
-    this.load_file(window.location.pathname.slice(1) || "Base@0");
+    console.log(window.location.pathname);
+    console.log(window.location.hash);
+    this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
   }
 
   componentDidMount() {
@@ -45,13 +47,9 @@ class Moonad extends Component {
       window.localStorage.setItem("cached_moonad_version", this.version);
       window.localStorage.setItem("cached_fm_version", fm.lang.version);
     }
-    window.onpopstate = (e) => this.load_file(e.state, false);
-  }
-
-  // Loads file/code from propps
-  componentWillReceiveProps(props) {
-    if (props.code) this.load_code(props.code);
-    if (props.file) this.load_file(props.file);
+    window.onpopstate = (e) => {
+      this.load_file(e.state, false);
+    }
   }
 
   loader(file) {
@@ -66,13 +64,13 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  // Loads a file (ex: "Data.Bool@0")
+  // Loads a file (ex: "Data.Bool#xxxx")
   async load_file(file, push_history = true) {
     if (file.slice(-3) === ".fm") {
       file = file.slice(0, -3);
     }
-    if (file.indexOf("@") === -1) {
-      file = file + "@0";
+    if (file.indexOf("#") === -1) {
+      file = file + "#";
     }
     if (push_history) {
       this.history.push(file);
@@ -80,22 +78,21 @@ class Moonad extends Component {
     }
     this.mode = "VIEW";
     this.file = file;
+    this.cited_by = [];
     try {
-      this.cited_by = [];
       this.code = await this.loader(this.file);
-      this.parse();
-      this.cited_by = await fm.forall.load_file_parents(file);
     } catch (e) {
-      console.log(e);
-      this.code = "<error>";
-      this.forceUpdate();
+      this.code = "";
     }
+    this.parse();
+    this.cited_by = await fm.forall.load_file_parents(file);
   }
 
   // Loads a code without a file (local)
-  async load_code(code) {
-    this.file = "local";
+  async save_code(code) {
     this.code = code;
+    this.parse();
+    this.file = await fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code);
     this.parse();
   }
 
@@ -160,7 +157,7 @@ class Moonad extends Component {
   
   on_click_view() {
     this.mode = "VIEW";
-    this.load_code(this.code);
+    this.save_code(this.code);
     this.forceUpdate();
   }
 
@@ -179,20 +176,20 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  async on_click_save() {
-    var file = prompt("File name:");
-    try {
-      if (file) {
-        var unam = await fm.forall.save_file(file, this.code);
-        this.load_file(unam);
-      } else {
-        throw "";
-      }
-    } catch (e) {
-      console.log(e);
-      alert("Couldn't save file.");
-    }
-  }
+  //async on_click_save() {
+    //var file = prompt("File name:");
+    //try {
+      //if (file) {
+        //var unam = await fm.forall.save_file(file, this.code);
+        //this.load_file(unam);
+      //} else {
+        //throw "";
+      //}
+    //} catch (e) {
+      //console.log(e);
+      //alert("Couldn't save file.");
+    //}
+  //}
 
   // Renders the interface
   render() {
@@ -206,7 +203,6 @@ class Moonad extends Component {
     const load_file = (file, push) => this.load_file(file, push);
     const on_click_view = () => this.on_click_view();
     const on_click_edit = () => this.on_click_edit();
-    const on_click_save = () => this.on_click_save();
     const on_click_play = () => this.on_click_play();
     const on_click_def = (path) => this.on_click_def(path);
     const on_click_imp = (path) => this.on_click_imp(path);
@@ -224,7 +220,6 @@ class Moonad extends Component {
     }}, [
       // Top of the site
       TopMenu({mode, file, on_click_view, on_click_edit, on_click_play, load_file}),
-      // h(Pathbar, {load_file}),
 
       // Middle of the site
       ( this.mode === "EDIT" ? CodeEditor({code, on_input_code})

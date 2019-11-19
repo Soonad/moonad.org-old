@@ -196,10 +196,10 @@ module.exports = function (encodedURI) {
 /*!**************************************************!*\
   !*** ./node_modules/formality-lang/package.json ***!
   \**************************************************/
-/*! exports provided: _args, _development, _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _spec, _where, author, bin, bugs, dependencies, description, homepage, license, main, name, repository, scripts, version, default */
+/*! exports provided: _from, _id, _inBundle, _integrity, _location, _phantomChildren, _requested, _requiredBy, _resolved, _shasum, _spec, _where, author, bin, bugs, bundleDependencies, dependencies, deprecated, description, homepage, license, main, name, repository, scripts, version, default */
 /***/ (function(module) {
 
-module.exports = JSON.parse("{\"_args\":[[\"formality-lang@0.1.180\",\"/Users/maisa/Documents/Provit\"]],\"_development\":true,\"_from\":\"formality-lang@0.1.180\",\"_id\":\"formality-lang@0.1.180\",\"_inBundle\":false,\"_integrity\":\"sha512-sFf9AcLX0nkvOQPvFVMvAeuDVqWLzRn9ndDeT2nCfx3YbXKW/wBacAsBsWXjHNpq0dlhGxfNi8RoD8Gn4bwjtA==\",\"_location\":\"/formality-lang\",\"_phantomChildren\":{},\"_requested\":{\"type\":\"version\",\"registry\":true,\"raw\":\"formality-lang@0.1.180\",\"name\":\"formality-lang\",\"escapedName\":\"formality-lang\",\"rawSpec\":\"0.1.180\",\"saveSpec\":null,\"fetchSpec\":\"0.1.180\"},\"_requiredBy\":[\"#DEV:/\"],\"_resolved\":\"https://registry.npmjs.org/formality-lang/-/formality-lang-0.1.180.tgz\",\"_spec\":\"0.1.180\",\"_where\":\"/Users/maisa/Documents/Provit\",\"author\":{\"name\":\"Victor Maia\"},\"bin\":{\"fm\":\"src/main.js\"},\"bugs\":{\"url\":\"https://github.com/moonad/formality-core/issues\"},\"dependencies\":{\"xhr-request-promise\":\"^0.1.2\"},\"description\":\"![](archive/images/formality-banner-white.png)\",\"homepage\":\"https://github.com/moonad/formality-core#readme\",\"license\":\"MIT\",\"main\":\"src/fm-lib.js\",\"name\":\"formality-lang\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/moonad/formality-core.git\"},\"scripts\":{\"test\":\"echo \\\"Error: no test specified\\\" && exit 1\"},\"version\":\"0.1.180\"}");
+module.exports = JSON.parse("{\"_from\":\"formality-lang@^0.1.187\",\"_id\":\"formality-lang@0.1.188\",\"_inBundle\":false,\"_integrity\":\"sha512-sEipztubDRTkfQwToSHMhX0WrRVqKbFaqK8ik1JctsSSaK6duOQg/J8hmLTQr/raSvcJSBy7HYA3O2kzcupSnA==\",\"_location\":\"/formality-lang\",\"_phantomChildren\":{},\"_requested\":{\"type\":\"range\",\"registry\":true,\"raw\":\"formality-lang@^0.1.187\",\"name\":\"formality-lang\",\"escapedName\":\"formality-lang\",\"rawSpec\":\"^0.1.187\",\"saveSpec\":null,\"fetchSpec\":\"^0.1.187\"},\"_requiredBy\":[\"#DEV:/\"],\"_resolved\":\"https://registry.npmjs.org/formality-lang/-/formality-lang-0.1.188.tgz\",\"_shasum\":\"83a70786922051212fb244b22634886072f943c9\",\"_spec\":\"formality-lang@^0.1.187\",\"_where\":\"/Users/maisa/Documents/Provit\",\"author\":{\"name\":\"Victor Maia\"},\"bin\":{\"fm\":\"src/main.js\"},\"bugs\":{\"url\":\"https://github.com/moonad/formality-core/issues\"},\"bundleDependencies\":false,\"dependencies\":{\"xhr-request-promise\":\"^0.1.2\"},\"deprecated\":false,\"description\":\"![](archive/images/formality-banner-white.png)\",\"homepage\":\"https://github.com/moonad/formality-core#readme\",\"license\":\"MIT\",\"main\":\"src/fm-lib.js\",\"name\":\"formality-lang\",\"repository\":{\"type\":\"git\",\"url\":\"git+https://github.com/moonad/formality-core.git\"},\"scripts\":{\"test\":\"echo \\\"Error: no test specified\\\" && exit 1\"},\"version\":\"0.1.188\"}");
 
 /***/ }),
 
@@ -1824,7 +1824,7 @@ const show = ([ctor, args], nams = [], opts = {}) => {
       var text = "[";
       for (var i = 0; i < names.length; ++i) {
         text += erase[i] === 1 ? "~" : "";
-        text += names[i] + " : " + types[i];
+        text += names[i] + (names[i] ? " " : "") + ": " + types[i];
         text += erase[i] === 2 ? " ~ " : ", ";
       }
       text += show(term, nams.concat(names), opts);
@@ -1923,7 +1923,7 @@ const parse = async (code, opts, root = true, loaded = {}) => {
 
   // Imports a local/global file, merging its definitions
   async function do_import(import_file) {
-    if (import_file.indexOf("@") === -1) {
+    if (import_file.indexOf("#") === -1) {
       local_imports[import_file] = true;
     }
     if (!loaded[import_file]) {
@@ -2022,8 +2022,8 @@ const parse = async (code, opts, root = true, loaded = {}) => {
       return Ref(path, false, loc(str.length));
     } else {
       error("Attempted to use a syntax-sugar which requires `" + str + "` to be in scope, but it isn't.\n"
-          + "To solve that, add `import Base@0` to the start of your file.\n"
-          + "See http://docs.formality-lang.org/en/latest/language/Hello,-world!.html for more info.");
+          + "To solve that, add `import Base#` at the start of your file. This imports the official base libs.\n"
+          + "See https://github.com/moonad/Formality/blob/master/DOCUMENTATION.md for more info.");
     }
   }
 
@@ -2081,11 +2081,11 @@ const parse = async (code, opts, root = true, loaded = {}) => {
     , ".==."  : 1
   };
 
-  const op_inits     = [".", "=", "->"];
+  const op_inits     = [".", "->"];
   const is_op_init   = str => { for (var k of op_inits) if (str === k || str[0] === k) return str; return null; };
-  const is_num_char  = build_charset("0123456789");
-  const is_name_char = build_charset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-@/");
-  const is_op_char   = build_charset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.-@+*/%^!<>=&|");
+  const is_num_char  = build_charset("0123456789abcdefABCDEF");
+  const is_name_char = build_charset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.#-@/");
+  const is_op_char   = build_charset("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.#-@+*/%^!<>=&|");
   const is_spacy     = build_charset(" \t\n\r;");
   const is_space     = build_charset(" ");
   const is_newline   = build_charset("\n");
@@ -2203,6 +2203,19 @@ const parse = async (code, opts, root = true, loaded = {}) => {
       define(name+"i", term);
     }
     return Ref(name+"i", false, loc(name.length + 1));
+  }
+
+  // Constructs a string
+  function build_str(text, init) {
+    var nums = [];
+    for (var i = 0; i < text.length; ++i) {
+      nums.push(text.charCodeAt(i));
+    }
+    var term = App(base_ref("nil"), Num(), true);
+    for (var i = nums.length - 1; i >= 0; --i) {
+      var term = App(App(App(base_ref("cons"), Num(), true), Val(nums[i]), false), term, false);
+    }
+    return Ann(base_ref("String"), term, false, loc(idx - init));
   }
 
   // Constructs a nat
@@ -2546,15 +2559,7 @@ const parse = async (code, opts, root = true, loaded = {}) => {
         next();
       }
       next();
-      var nums = [];
-      for (var i = 0; i < text.length; ++i) {
-        nums.push(text.charCodeAt(i));
-      }
-      var term = App(base_ref("nil"), Num(), true);
-      for (var i = nums.length - 1; i >= 0; --i) {
-        var term = App(App(App(base_ref("cons"), Num(), true), Val(nums[i]), false), term, false);
-      }
-      return Ann(base_ref("String"), term, false, loc(idx - init));
+      return build_str(text);
     }
   }
 
@@ -2562,7 +2567,8 @@ const parse = async (code, opts, root = true, loaded = {}) => {
   function parse_chr(nams) {
     var init = idx;
     if (match("'")) {
-      var name = parse_name();
+      var name = code[idx];
+      next();
       var skip = parse_exact("'");
       return Val(name.charCodeAt(0));
     }
@@ -2902,17 +2908,55 @@ const parse = async (code, opts, root = true, loaded = {}) => {
     if (match("<", is_space)) {
       var type = parse_term(nams);
       var skip = parse_exact(">");
-      var list = [];
-      var skip = parse_exact("[");
-      while (idx < code.length && !match("]")) {
-        list.push(parse_term(nams));
-        if (match("]")) break; else parse_exact(",");
+      if (match("{")) {
+        var list = [];
+        while (idx < code.length && !match("}")) {
+          var mkey = parse_term(nams);
+          var skip = parse_exact(":");
+          var mval = parse_term(nams);
+          list.push(Par(mkey, mval, 0));
+          if (match("}")) break; else parse_exact(",");
+        }
+      } else if (match("[")) {
+        var list = [];
+        while (idx < code.length && !match("]")) {
+          list.push(parse_term(nams));
+          if (match("]")) break; else parse_exact(",");
+        }
+      } else {
+        error("Unexpected symbol. Expected `{` or `[` to start list literal.");
       }
       var term = App(base_ref("nil"), type, true, loc(idx - init));
       for (var i = list.length - 1; i >= 0; --i) {
         var term = App(App(App(base_ref("cons"), type, true), list[i], false), term, false, loc(idx - init));
       }
       return term;
+    }
+  }
+
+  // Parses the do notation
+  function parse_do_notation(nams) {
+    var init = idx;
+    if (match("do<", is_space)) {
+      var type = parse_term(nams);
+      var skip = parse_exact(">");
+      var bind = match("with") ? parse_name() : "bind";
+      function parse_do_statement(nams) {
+        if (match("bind")) {
+          var name = parse_name();
+          var skip = parse_exact(":");
+          var vtyp = parse_term(nams);
+          var skip = parse_exact("=");
+          var call = parse_term(nams);
+          var body = parse_do_statement(nams.concat([name]));
+          return App(App(App(App(base_ref(bind), vtyp, true), type, true), call, false), Lam(name, null, body, false), false);
+        } else {
+          var term = parse_term(nams);
+          return term;
+        }
+      };
+      var result = parse_do_statement(nams);
+      return result;
     }
   }
 
@@ -2997,6 +3041,7 @@ const parse = async (code, opts, root = true, loaded = {}) => {
     else if (parsed = parse_op2_not(nams));
     else if (parsed = parse_var(nams));
     else if (parsed = parse_list_literal(nams));
+    else if (parsed = parse_do_notation(nams));
     else     parsed = parse_atom(nams);
 
     // Parses spaced operators
@@ -8290,7 +8335,6 @@ var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index
 var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
 var DocRender_1 = __webpack_require__(/*! ./DocRender */ "./src/components/DocRender.ts");
 var fm = __webpack_require__(/*! formality-lang */ "./node_modules/formality-lang/src/fm-lib.js");
-var App = "App@0";
 // Plays an application
 var CodePlayer = /** @class */ (function (_super) {
     __extends(CodePlayer, _super);
@@ -8313,32 +8357,44 @@ var CodePlayer = /** @class */ (function (_super) {
             });
         });
     };
+    CodePlayer.prototype.find_app_prefix = function () {
+        for (var key in this.defs) {
+            if (key.slice(0, 4) === "App#") {
+                return key.slice(0, key.indexOf("/"));
+            }
+        }
+        return null;
+    };
     CodePlayer.prototype.compile = function () {
         var defs = this.defs;
         var file = this.file;
-        if (defs && defs[file + "/main"]) {
-            var get_state = fm.to_js.compile(fm.lang.erase(defs[App + "/get_state"]), { defs: defs });
-            var get_render = fm.to_js.compile(fm.lang.erase(defs[App + "/get_render"]), { defs: defs });
-            var get_update = fm.to_js.compile(fm.lang.erase(defs[App + "/get_update"]), { defs: defs });
-            var mouseclick = fm.to_js.compile(fm.lang.erase(defs[App + "/mouseclick"]), { defs: defs });
-            var keypress = fm.to_js.compile(fm.lang.erase(defs[App + "/keypress"]), { defs: defs });
-            var app = fm.to_js.compile(fm.lang.erase(defs[file + "/main"]), { defs: defs });
+        var main = defs[file + "/main"] || defs[file + "/app"] || defs[file + "/demo_app"];
+        var app_lib = this.find_app_prefix();
+        if (defs && main && app_lib) {
+            var get_state = fm.to_js.compile(fm.lang.erase(defs[app_lib + "/get_state"]), { defs: defs });
+            var get_render = fm.to_js.compile(fm.lang.erase(defs[app_lib + "/get_render"]), { defs: defs });
+            var get_update = fm.to_js.compile(fm.lang.erase(defs[app_lib + "/get_update"]), { defs: defs });
+            var mouseclick = fm.to_js.compile(fm.lang.erase(defs[app_lib + "/mouseclick"]), { defs: defs });
+            var mousemove = fm.to_js.compile(fm.lang.erase(defs[app_lib + "/mousemove"]), { defs: defs });
+            var keypress = fm.to_js.compile(fm.lang.erase(defs[app_lib + "/keypress"]), { defs: defs });
+            var app = fm.to_js.compile(fm.lang.erase(main), { defs: defs });
             var app_state = get_state(app);
             var app_render = get_render(app);
             var app_update = get_update(app);
             this.app_funcs = {
                 mouseclick: mouseclick,
+                mousemove: mousemove,
                 keypress: keypress,
                 state: app_state,
                 render: app_render,
                 update: app_update
             };
             this.app_state = app_state;
-            this.forceUpdate();
         }
         else {
-            this.app_error = "No main found.";
+            this.app_error = "Error compiling App.";
         }
+        this.forceUpdate();
     };
     CodePlayer.prototype.render = function () {
         var _this = this;
@@ -8347,8 +8403,24 @@ var CodePlayer = /** @class */ (function (_super) {
         var defs = this.defs;
         var file = this.file;
         var style = { "flex-grow": 1 };
+        var onMouseMove = function (e) {
+            _this.app_state = app_funcs.update(app_funcs.mousemove(e.pageX)(e.pageY))(app_state);
+            _this.forceUpdate();
+        };
         var onClick = function (e) {
             _this.app_state = app_funcs.update(app_funcs.mouseclick(e.pageX)(e.pageY))(app_state);
+            _this.forceUpdate();
+        };
+        var onKeyPress = function (e) {
+            _this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
+            _this.forceUpdate();
+        };
+        var onKeyDown = function (e) {
+            _this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
+            _this.forceUpdate();
+        };
+        var onKeyUp = function (e) {
+            _this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
             _this.forceUpdate();
         };
         if (this.app_error) {
@@ -8358,7 +8430,7 @@ var CodePlayer = /** @class */ (function (_super) {
             return inferno_hyperscript_1.h("div", { style: style }, "Compiling application...");
         }
         else {
-            return inferno_hyperscript_1.h("div", { style: style, onClick: onClick }, DocRender_1["default"](app_funcs.render(app_state)));
+            return inferno_hyperscript_1.h("div", { tabindex: 0, style: style, onMouseMove: onMouseMove, onClick: onClick, onKeyPress: onKeyPress, onKeyDown: onKeyDown, onKeyUp: onKeyUp }, DocRender_1["default"](app_funcs.render(app_state)));
         }
     };
     return CodePlayer;
@@ -8383,11 +8455,8 @@ exports.__esModule = true;
 var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
 var CodeRender = function (_a) {
     var code = _a.code, tokens = _a.tokens, on_click_def = _a.on_click_def, on_click_imp = _a.on_click_imp, on_click_ref = _a.on_click_ref;
-    if (code === "<error>") {
-        return inferno_hyperscript_1.h("div", { "style": { "padding": "8px" } }, "Failed to load code.");
-    }
     if (!tokens) {
-        return inferno_hyperscript_1.h("div", { "style": { "padding": "8px" } }, "Loading code from FPM. This may take a while...");
+        return inferno_hyperscript_1.h("div", { "style": { "padding": "8px", "flex-grow": 1 } }, "Loading code from FPM. This may take a while...");
     }
     // Makes spans for each code chunk
     var code_chunks = [];
@@ -8406,19 +8475,22 @@ var CodeRender = function (_a) {
                 case "var":
                     return inferno_hyperscript_1.h("span", { style: { "color": "black" } }, child);
                 case "imp":
+                    var _a = child.split("#"), file = _a[0], hash = _a[1];
                     return inferno_hyperscript_1.h("a", {
                         href: window.location.origin + "/" + tokens[i][1],
                         style: {
                             "color": "black",
                             "text-decoration": "underline",
-                            "font-weight": "bold",
                             "cursor": "pointer"
                         },
                         on_click: function (e) {
                             on_click_imp(tokens[i][1])(e);
                             e.preventDefault();
                         }
-                    }, child);
+                    }, [
+                        inferno_hyperscript_1.h("span", { style: { "font-weight": "bold" } }, file),
+                        inferno_hyperscript_1.h("span", { style: { "color": "#B0B0B0" } }, "#" + hash)
+                    ]);
                 case "ref":
                     return inferno_hyperscript_1.h("a", {
                         href: window.location.origin + "/" + tokens[i][2].replace(new RegExp("/.*$"), ""),
@@ -8535,37 +8607,149 @@ exports["default"] = Console;
 // Converts a `Doc` value from Formality to an Inferno element
 exports.__esModule = true;
 var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var Image_1 = __webpack_require__(/*! ./Image */ "./src/components/Image.ts");
+var read_string = function (value) {
+    var str = "";
+    (function go(value) {
+        var case_nil = "";
+        var case_cons = function (head) { return function (tail) {
+            str += String.fromCharCode(head);
+            go(tail);
+        }; };
+        value(case_nil)(case_cons);
+    })(value);
+    return str;
+};
 var DocRender = function (doc) {
-    var case_text = function (value) {
-        var str = "";
-        (function go(value) {
-            var case_nil = "";
-            var case_cons = function (head) { return function (tail) {
-                str += String.fromCharCode(head);
-                go(tail);
-            }; };
-            value(case_nil)(case_cons);
-        })(value);
-        return inferno_hyperscript_1.h("span", {}, str);
+    var case_txt = function (value) {
+        return inferno_hyperscript_1.h("span", {}, read_string(value));
     };
-    var case_numb = function (value) {
+    var case_num = function (value) {
         return inferno_hyperscript_1.h("span", {}, String(value));
     };
-    var case_many = function (value) {
-        var arr = [];
-        (function go(value) {
+    var case_img = function (size) { return function (data) {
+        return inferno_hyperscript_1.h(Image_1["default"], { size: size, data: data }, []);
+    }; };
+    var case_box = function (tag) { return function (props) { return function (child) {
+        var props_obj = {};
+        var child_arr = [];
+        // Builds tag
+        var tag_str = read_string(tag);
+        // Builds props
+        (function go(props) {
             var case_nil = null;
             var case_cons = function (head) { return function (tail) {
-                arr.push(inferno_hyperscript_1.h("div", {}, DocRender(head)));
+                var key = read_string(head[0]);
+                var val = read_string(head[1]);
+                props_obj[key] = val;
                 go(tail);
             }; };
-            value(case_nil)(case_cons);
-        })(value);
-        return inferno_hyperscript_1.h("div", {}, arr);
-    };
-    return doc(case_text)(case_numb)(case_many);
+            props(case_nil)(case_cons);
+        })(props);
+        // Builds child
+        (function go(child) {
+            var case_nil = null;
+            var case_cons = function (head) { return function (tail) {
+                child_arr.push(DocRender(head));
+                go(tail);
+            }; };
+            child(case_nil)(case_cons);
+        })(child);
+        // Adds styles
+        props_obj.style = {};
+        if (props_obj.border)
+            props_obj.style.border = props_obj.border;
+        return inferno_hyperscript_1.h(tag_str, props_obj, child_arr);
+    }; }; };
+    return doc(case_txt)(case_num)(case_img)(case_box);
 };
 exports["default"] = DocRender;
+
+
+/***/ }),
+
+/***/ "./src/components/Image.ts":
+/*!*********************************!*\
+  !*** ./src/components/Image.ts ***!
+  \*********************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+exports.__esModule = true;
+var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+function hash(nums) {
+    var hash = 0;
+    for (var i = 0; i < nums.length; i++) {
+        hash = ((hash << 5) - hash) + nums[i];
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+}
+var cache = {};
+var Image = /** @class */ (function (_super) {
+    __extends(Image, _super);
+    function Image(props) {
+        var _this = _super.call(this, props) || this;
+        _this.size = [0, 0];
+        _this.data = null;
+        _this.hash = 0;
+        _this.canvas = null;
+        _this.context2d = null;
+        _this.image_data = null;
+        _this.image_u8 = null;
+        _this.image_u32 = null;
+        _this.size = props.size;
+        _this.data = props.data;
+        _this.hash = hash(_this.data);
+        _this.canvas = document.createElement("canvas");
+        _this.canvas.width = _this.size[0];
+        _this.canvas.height = _this.size[1];
+        _this.context2d = _this.canvas.getContext("2d");
+        _this.image_data = _this.context2d.getImageData(0, 0, _this.size[0], _this.size[1]);
+        _this.image_u8 = _this.image_data.data.buffer;
+        _this.image_u32 = new Uint32Array(_this.image_u8);
+        return _this;
+    }
+    Image.prototype.componentWillReceiveProps = function (props) {
+        this.size = props.size;
+        this.data = props.data;
+        this.hash = hash(this.data);
+    };
+    Image.prototype.render = function () {
+        var _this = this;
+        for (var i = 0; i < this.image_u32.length; ++i) {
+            this.image_u32[i] = this.data([i % this.size[0], Math.floor(i / this.size[0])]);
+        }
+        this.image_data.data.set(this.image_u8);
+        this.context2d.putImageData(this.image_data, 0, 0);
+        return inferno_hyperscript_1.h("div", {
+            key: String(this.hash),
+            ref: function (e) {
+                if (e) {
+                    e.appendChild(_this.canvas);
+                }
+            }
+        }, []);
+    };
+    return Image;
+}(inferno_1.Component));
+exports["default"] = Image;
 
 
 /***/ }),
@@ -8644,7 +8828,7 @@ var Moonad = /** @class */ (function (_super) {
     function Moonad(props) {
         var _this = _super.call(this, props) || this;
         // Application state
-        _this.version = "1"; // change to clear the user's caches
+        _this.version = "2"; // change to clear the user's caches
         _this.file = null; // name of the current file being rendered
         _this.code = null; // contents of the current file
         _this.tokens = null; // chunks of code with syntax highlight info
@@ -8652,7 +8836,9 @@ var Moonad = /** @class */ (function (_super) {
         _this.history = []; // previous files
         _this.defs = null; // loaded formality token
         _this.mode = "VIEW"; // are we editing, playing or viewing this file?
-        _this.load_file(window.location.pathname.slice(1) || "Base@0");
+        console.log(window.location.pathname);
+        console.log(window.location.hash);
+        _this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
         return _this;
     }
     Moonad.prototype.componentDidMount = function () {
@@ -8664,14 +8850,9 @@ var Moonad = /** @class */ (function (_super) {
             window.localStorage.setItem("cached_moonad_version", this.version);
             window.localStorage.setItem("cached_fm_version", fm.lang.version);
         }
-        window.onpopstate = function (e) { return _this.load_file(e.state, false); };
-    };
-    // Loads file/code from propps
-    Moonad.prototype.componentWillReceiveProps = function (props) {
-        if (props.code)
-            this.load_code(props.code);
-        if (props.file)
-            this.load_file(props.file);
+        window.onpopstate = function (e) {
+            _this.load_file(e.state, false);
+        };
     };
     Moonad.prototype.loader = function (file) {
         return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
@@ -8693,19 +8874,19 @@ var Moonad = /** @class */ (function (_super) {
             });
         });
     };
-    // Loads a file (ex: "Data.Bool@0")
+    // Loads a file (ex: "Data.Bool#xxxx")
     Moonad.prototype.load_file = function (file, push_history) {
         if (push_history === void 0) { push_history = true; }
         return __awaiter(this, void 0, void 0, function () {
-            var _a, _b, e_1;
+            var _a, e_1, _b;
             return __generator(this, function (_c) {
                 switch (_c.label) {
                     case 0:
                         if (file.slice(-3) === ".fm") {
                             file = file.slice(0, -3);
                         }
-                        if (file.indexOf("@") === -1) {
-                            file = file + "@0";
+                        if (file.indexOf("#") === -1) {
+                            file = file + "#";
                         }
                         if (push_history) {
                             this.history.push(file);
@@ -8713,39 +8894,46 @@ var Moonad = /** @class */ (function (_super) {
                         }
                         this.mode = "VIEW";
                         this.file = file;
+                        this.cited_by = [];
                         _c.label = 1;
                     case 1:
-                        _c.trys.push([1, 4, , 5]);
-                        this.cited_by = [];
+                        _c.trys.push([1, 3, , 4]);
                         _a = this;
                         return [4 /*yield*/, this.loader(this.file)];
                     case 2:
                         _a.code = _c.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        e_1 = _c.sent();
+                        this.code = "";
+                        return [3 /*break*/, 4];
+                    case 4:
                         this.parse();
                         _b = this;
                         return [4 /*yield*/, fm.forall.load_file_parents(file)];
-                    case 3:
+                    case 5:
                         _b.cited_by = _c.sent();
-                        return [3 /*break*/, 5];
-                    case 4:
-                        e_1 = _c.sent();
-                        console.log(e_1);
-                        this.code = "<error>";
-                        this.forceUpdate();
-                        return [3 /*break*/, 5];
-                    case 5: return [2 /*return*/];
+                        return [2 /*return*/];
                 }
             });
         });
     };
     // Loads a code without a file (local)
-    Moonad.prototype.load_code = function (code) {
+    Moonad.prototype.save_code = function (code) {
         return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                this.file = "local";
-                this.code = code;
-                this.parse();
-                return [2 /*return*/];
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        this.code = code;
+                        this.parse();
+                        _a = this;
+                        return [4 /*yield*/, fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code)];
+                    case 1:
+                        _a.file = _b.sent();
+                        this.parse();
+                        return [2 /*return*/];
+                }
             });
         });
     };
@@ -8815,7 +9003,7 @@ var Moonad = /** @class */ (function (_super) {
     };
     Moonad.prototype.on_click_view = function () {
         this.mode = "VIEW";
-        this.load_code(this.code);
+        this.save_code(this.code);
         this.forceUpdate();
     };
     Moonad.prototype.on_click_edit = function () {
@@ -8830,34 +9018,20 @@ var Moonad = /** @class */ (function (_super) {
         this.code = code;
         this.forceUpdate();
     };
-    Moonad.prototype.on_click_save = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var file, unam, e_2;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        file = prompt("File name:");
-                        _a.label = 1;
-                    case 1:
-                        _a.trys.push([1, 5, , 6]);
-                        if (!file) return [3 /*break*/, 3];
-                        return [4 /*yield*/, fm.forall.save_file(file, this.code)];
-                    case 2:
-                        unam = _a.sent();
-                        this.load_file(unam);
-                        return [3 /*break*/, 4];
-                    case 3: throw "";
-                    case 4: return [3 /*break*/, 6];
-                    case 5:
-                        e_2 = _a.sent();
-                        console.log(e_2);
-                        alert("Couldn't save file.");
-                        return [3 /*break*/, 6];
-                    case 6: return [2 /*return*/];
-                }
-            });
-        });
-    };
+    //async on_click_save() {
+    //var file = prompt("File name:");
+    //try {
+    //if (file) {
+    //var unam = await fm.forall.save_file(file, this.code);
+    //this.load_file(unam);
+    //} else {
+    //throw "";
+    //}
+    //} catch (e) {
+    //console.log(e);
+    //alert("Couldn't save file.");
+    //}
+    //}
     // Renders the interface
     Moonad.prototype.render = function () {
         var _this = this;
@@ -8871,7 +9045,6 @@ var Moonad = /** @class */ (function (_super) {
         var load_file = function (file, push) { return _this.load_file(file, push); };
         var on_click_view = function () { return _this.on_click_view(); };
         var on_click_edit = function () { return _this.on_click_edit(); };
-        var on_click_save = function () { return _this.on_click_save(); };
         var on_click_play = function () { return _this.on_click_play(); };
         var on_click_def = function (path) { return _this.on_click_def(path); };
         var on_click_imp = function (path) { return _this.on_click_imp(path); };
@@ -8889,7 +9062,6 @@ var Moonad = /** @class */ (function (_super) {
         }, [
             // Top of the site
             TopMenu_1["default"]({ mode: mode, file: file, on_click_view: on_click_view, on_click_edit: on_click_edit, on_click_play: on_click_play, load_file: load_file }),
-            // h(Pathbar, {load_file}),
             // Middle of the site
             (this.mode === "EDIT" ? CodeEditor_1["default"]({ code: code, on_input_code: on_input_code })
                 : this.mode === "VIEW" ? CodeRender_1["default"]({ code: code, tokens: tokens, on_click_def: on_click_def, on_click_imp: on_click_imp, on_click_ref: on_click_ref })
