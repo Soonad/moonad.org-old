@@ -11,7 +11,7 @@ const fm = require("formality-lang");
 import CodeEditor from "./CodeEditor"
 import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
-import Console from "./Console"
+import Console from "./Console/Console"
 import TopMenu from "./TopMenu"
 import Pathbar from "./Pathbar"
 
@@ -82,7 +82,7 @@ class Moonad extends Component {
     }
     this.parse();
     this.cited_by = await fm.forall.load_file_parents(file);
-    console.log("load_file, cited_by: "+this.cited_by);
+    this.forceUpdate();
   }
 
   // async load_parents(file) {
@@ -210,7 +210,6 @@ class Moonad extends Component {
     const on_click_ref = (path) => this.on_click_ref(path);
     const on_input_code = (code) => this.on_input_code(code);
 
-    console.log("[render], cited_by: "+cited_by);
     // Renders the site
     return h("div", {
       style: {
@@ -230,7 +229,7 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      h(Console, {load_file, cited_by})
+      h(Console, {load_file, cited_by, mode})
     ]);
   }
 }

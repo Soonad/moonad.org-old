@@ -5,7 +5,7 @@ const LayoutConstants = {
   light_gray_color: "#F2F2F2",
   light_gray_shadow_color: "#F6F6F6",
   dark_gray_color: "#4A4A4A",
-  medium_gray_color: "#A9A9A9"
+  medium_gray_color: "#C5C5C5"
 }
 
 const ElementsId = {

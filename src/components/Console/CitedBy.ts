@@ -7,24 +7,31 @@ export interface Props {
 }
 
 const CitedBy = ({parents, load_file }: Props) => {
-  console.log("Cited by!! Parents: "+parents);
-  return h(
-    "ul",
-    { 
-      className: "Cited by component",
-      style: {
-        "padding": "0px"
-      } },
-      parents.map( (parent: string) =>
-        h("li", { 
-          style: {
-            "list-style": "none",
-            "text-decoration": "underline",
-            "cursor": "pointer"
-          }, 
-          onClick: () => load_file(parent) }, parent)
-    )
-  );
+  // console.log("Cited by!! Parents: "+parents.toString);
+  if (parents.length > 0) {
+    return h(
+      "ul",
+      { 
+        desc: "Cited by component",
+        style: {
+          "padding": "0px"
+        } },
+        parents.map( (parent: string) =>
+          h("li", { 
+            style: {
+              "list-style": "none",
+              "text-decoration": "underline",
+              "cursor": "pointer",
+              "margin-top": "7px",
+              "font-family": "monospace",
+              "font-size": "12px"
+            }, 
+            onClick: () => load_file(parent) }, parent)
+      )
+    );
+  } else {
+    return h("div")
+  }
 }
 
 export default CitedBy;

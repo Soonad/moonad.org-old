@@ -8229,7 +8229,7 @@ var LayoutConstants = {
     light_gray_color: "#F2F2F2",
     light_gray_shadow_color: "#F6F6F6",
     dark_gray_color: "#4A4A4A",
-    medium_gray_color: "#A9A9A9"
+    medium_gray_color: "#C5C5C5"
 };
 exports.LayoutConstants = LayoutConstants;
 var ElementsId = {
@@ -8551,16 +8551,58 @@ exports["default"] = CodeRender;
 
 /***/ }),
 
-/***/ "./src/components/Console.ts":
-/*!***********************************!*\
-  !*** ./src/components/Console.ts ***!
-  \***********************************/
+/***/ "./src/components/Console/CitedBy.ts":
+/*!*******************************************!*\
+  !*** ./src/components/Console/CitedBy.ts ***!
+  \*******************************************/
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-// The bottom console of the site, with cited_by, output, tools, etc.
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var CitedBy = function (_a) {
+    var parents = _a.parents, load_file = _a.load_file;
+    // console.log("Cited by!! Parents: "+parents.toString);
+    if (parents.length > 0) {
+        return inferno_hyperscript_1.h("ul", {
+            desc: "Cited by component",
+            style: {
+                "padding": "0px"
+            }
+        }, parents.map(function (parent) {
+            return inferno_hyperscript_1.h("li", {
+                style: {
+                    "list-style": "none",
+                    "text-decoration": "underline",
+                    "cursor": "pointer",
+                    "margin-top": "7px",
+                    "font-family": "monospace",
+                    "font-size": "12px"
+                },
+                onClick: function () { return load_file(parent); }
+            }, parent);
+        }));
+    }
+    else {
+        return inferno_hyperscript_1.h("div");
+    }
+};
+exports["default"] = CitedBy;
+
+
+/***/ }),
+
+/***/ "./src/components/Console/Console.ts":
+/*!*******************************************!*\
+  !*** ./src/components/Console/Console.ts ***!
+  \*******************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
@@ -8575,70 +8617,48 @@ var __extends = (this && this.__extends) || (function () {
     };
 })();
 exports.__esModule = true;
-var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
-var Constants_1 = __webpack_require__(/*! ../assets/Constants */ "./src/assets/Constants.ts");
-var ConsoleTopBar_1 = __webpack_require__(/*! ./Console/ConsoleTopBar */ "./src/components/Console/ConsoleTopBar.ts");
+// The bottom console of the site, with cited_by, output, tools, etc.
 var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var Constants_1 = __webpack_require__(/*! ../../assets/Constants */ "./src/assets/Constants.ts");
+var ConsoleTopBar_1 = __webpack_require__(/*! ./ConsoleTopBar */ "./src/components/Console/ConsoleTopBar.ts");
+var ConsoleView_1 = __webpack_require__(/*! ./ConsoleView */ "./src/components/Console/ConsoleView.ts");
+// The div which displays the Bottom elmeent of the screen
 var Console = /** @class */ (function (_super) {
     __extends(Console, _super);
     function Console(props) {
         var _this = _super.call(this, props) || this;
         _this.view_on_focus = "cited_by";
-        console.log("Console!! Parents: " + _this.props.cited_by);
         return _this;
     }
-    // Builds the cited_by links
-    // var links = [];
-    // if (cited_by) {
-    //   for (var i = 0; i < cited_by.length; ++i) {
-    //     let parent_file = cited_by[i];
-    //     links.push(h("div", {
-    //       "onClick": e => {
-    //         load_file(parent_file);
-    //       },
-    //       "style": {
-    //         "cursor": "pointer",
-    //         "text-decoration": "underline"
-    //       }
-    //     }, parent_file));
-    //   }
-    // }
-    // console.log(">> Console, links: "+links);
     Console.prototype.render = function () {
         var _this = this;
         var tabs = [
             {
-                tab: {
-                    is_on_focus: this.view_on_focus === "cited_by",
-                    title: "Cited By",
-                    onClick: function () { _this.view_on_focus = "cited_by"; }
-                },
-                view: "cited_by"
+                is_on_focus: this.view_on_focus === "cited_by",
+                title: "Cited By",
+                onClick: function () { _this.view_on_focus = "cited_by"; _this.forceUpdate(); }
             },
             {
-                tab: {
-                    is_on_focus: this.view_on_focus === "console",
-                    title: "Check all",
-                    onClick: function () { _this.view_on_focus = "console"; }
-                },
-                view: "console"
+                is_on_focus: this.view_on_focus === "console",
+                title: "Console",
+                onClick: function () { _this.view_on_focus = "console"; _this.forceUpdate(); }
             }
         ];
         return inferno_hyperscript_1.h("div", {
             style: {
                 "height": "180px",
+                "min-height": "120px",
                 "width": "100%",
                 "background-color": Constants_1.LayoutConstants.light_gray_color,
-                "overflow-bottom": "scroll"
+                "overflow": "scroll"
             }
         }, [
-            inferno_hyperscript_1.h(ConsoleTopBar_1["default"], {
-                tabs: tabs.map(function (_a) {
-                    var tab = _a.tab, view = _a.view;
-                    return tab;
-                }),
-                view_on_focus: this.view_on_focus
-            }),
+            inferno_hyperscript_1.h(ConsoleTopBar_1["default"], { tabs: tabs }),
+            ConsoleView_1["default"]({ view_on_focus: this.view_on_focus,
+                mode: this.props.mode,
+                load_file: this.props.load_file,
+                parents: this.props.cited_by }),
         ]);
     };
     return Console;
@@ -8687,13 +8707,16 @@ var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./no
 var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
 var Constants_1 = __webpack_require__(/*! ../../assets/Constants */ "./src/assets/Constants.ts");
 var ConsoleTopBar = function (_a) {
-    var tabs = _a.tabs, tab_on_focus = _a.tab_on_focus;
+    var tabs = _a.tabs;
     return inferno_hyperscript_1.h("div", {
+        desc: "Console TopBar div",
         style: {
             "height": "25px",
             "width": "100%",
-            "border-top": "1px solid " + Constants_1.LayoutConstants.light_gray_shadow_color,
-            "background-color": "#FFFFFF"
+            "border-top": "1px solid " + Constants_1.LayoutConstants.medium_gray_color,
+            "border-bottom": "1px solid " + Constants_1.LayoutConstants.medium_gray_color,
+            "background-color": "#FFFFFF",
+            "position": "fixed"
         }
     }, [
         inferno_hyperscript_1.h("div", {
@@ -8704,11 +8727,12 @@ var ConsoleTopBar = function (_a) {
                 "width": "60%",
                 "height": "100%",
                 "display": "flex",
-                "flex-direction": "row"
+                "flex-direction": "row",
+                "aling-text": "center"
             }
         }, [
             tabs.map(function (tab) { return inferno_hyperscript_1.h(ConsoleTab, {
-                is_on_focus: tab_on_focus === tab.title,
+                is_on_focus: tab.is_on_focus,
                 title: tab.title,
                 onClick: tab.onClick
             }); })
@@ -8728,12 +8752,28 @@ var ConsoleTab = /** @class */ (function (_super) {
         return inferno_hyperscript_1.h("div", {
             onClick: this.props.onClick,
             style: this.props.is_on_focus ? console_tab_style_focus : style_btn,
-            onMouseEnter: function () { _this.hover = true; },
-            onMouseLeave: function () { _this.hover = false; }
+            onMouseEnter: function () { _this.hover = true; _this.forceUpdate(); },
+            onMouseLeave: function () { _this.hover = false; _this.forceUpdate(); }
         }, this.props.title);
     };
     return ConsoleTab;
 }(inferno_1.Component));
+var console_tab_style = {
+    "align-self": "center",
+    "text-align": "baseline",
+    "cursor": "pointer",
+    "padding-right": "20px",
+    "padding-left": "20px",
+    "padding-top": "5px",
+    "min-height": "25px",
+    "user-select": "none",
+    "aling-self": "baseline",
+    "font-family": "monospace",
+    "font-size": "14px",
+    "color": Constants_1.LayoutConstants.dark_gray_color
+};
+var console_tab_style_focus = __assign(__assign({}, console_tab_style), { "border-bottom": "2px solid " + Constants_1.LayoutConstants.secondary_color });
+var console_tab_style_hover = __assign(__assign({}, console_tab_style), { "background-color": Constants_1.LayoutConstants.light_gray_shadow_color, "height": "100%" });
 // TODO: add image src
 var CloseButton = function (_a) {
     var onClick = _a.onClick;
@@ -8748,22 +8788,74 @@ var CloseButton = function (_a) {
         inferno_hyperscript_1.h("img", { src: "", style: { width: "15px", height: "15px" } })
     ]);
 };
-// ----
-// Tabs
-// ----
-var console_tab_style = {
-    "align-self": "center",
-    "text-align": "baseline",
-    "cursor": "pointer",
-    "padding-right": "20px",
-    "padding-left": "20px",
-    "padding-top": "5px",
-    "min-height": "30px",
-    "user-select": "none"
-};
-var console_tab_style_focus = __assign(__assign({}, console_tab_style), { "border-bottom": "2px solid " + Constants_1.LayoutConstants.secondary_color });
-var console_tab_style_hover = __assign(__assign({}, console_tab_style), { "background-color": Constants_1.LayoutConstants.light_gray_shadow_color, "height": "100%" });
 exports["default"] = ConsoleTopBar;
+
+
+/***/ }),
+
+/***/ "./src/components/Console/ConsoleView.ts":
+/*!***********************************************!*\
+  !*** ./src/components/Console/ConsoleView.ts ***!
+  \***********************************************/
+/*! no static exports found */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+exports.__esModule = true;
+var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
+var Constants_1 = __webpack_require__(/*! ../../assets/Constants */ "./src/assets/Constants.ts");
+var CitedBy_1 = __webpack_require__(/*! ./CitedBy */ "./src/components/Console/CitedBy.ts");
+var ConsoleView = function (_a) {
+    var view_on_focus = _a.view_on_focus, mode = _a.mode, load_file = _a.load_file, parents = _a.parents;
+    console.log(">> Console view: " + parents);
+    switch (mode) {
+        case "EDIT":
+            return inferno_hyperscript_1.h("div", { style: style });
+        case "VIEW":
+            switch (view_on_focus) {
+                case "cited_by":
+                    return inferno_hyperscript_1.h("div", { style: style }, cited_by_view(parents, load_file));
+                case "console":
+                    return inferno_hyperscript_1.h("div", { style: style }, "View for console");
+            }
+        case "PLAY":
+            return inferno_hyperscript_1.h("div", { style: style });
+    }
+};
+var style = {
+    "margin-left": "10%",
+    "margin-right": "10%",
+    "margin-top": "25px",
+    "padding-bottom": "15px",
+    "font-family": "monospace",
+    "font-size": "13px",
+    "padding-top": "10px"
+};
+// Auxiliary functions
+var result_aux = inferno_hyperscript_1.h("span", { style: { "color": Constants_1.LayoutConstants.secondary_color } }, "► ");
+var format_console_msg = function (msg) {
+    return inferno_hyperscript_1.h("span", {
+        style: {
+            "color": Constants_1.LayoutConstants.dark_gray_color,
+            "font-weight": "bold",
+            "font-family": "monospace"
+        }
+    }, msg);
+};
+// -----
+// Views
+// -----
+var cited_by_view = function (parents, load_file) {
+    var qtd = parents.length || 0;
+    var cited_by_msg = format_console_msg(qtd > 1 ? qtd + " results" : qtd + " result");
+    var cited_by = inferno_hyperscript_1.h(CitedBy_1["default"], { parents: parents, load_file: load_file });
+    return inferno_hyperscript_1.h("div", {}, [
+        result_aux, cited_by_msg,
+        cited_by
+    ]);
+};
+exports["default"] = ConsoleView;
 
 
 /***/ }),
@@ -8994,7 +9086,7 @@ var fm = __webpack_require__(/*! formality-lang */ "./node_modules/formality-lan
 var CodeEditor_1 = __webpack_require__(/*! ./CodeEditor */ "./src/components/CodeEditor.ts");
 var CodePlayer_1 = __webpack_require__(/*! ./CodePlayer */ "./src/components/CodePlayer.ts");
 var CodeRender_1 = __webpack_require__(/*! ./CodeRender */ "./src/components/CodeRender.ts");
-var Console_1 = __webpack_require__(/*! ./Console */ "./src/components/Console.ts");
+var Console_1 = __webpack_require__(/*! ./Console/Console */ "./src/components/Console/Console.ts");
 var TopMenu_1 = __webpack_require__(/*! ./TopMenu */ "./src/components/TopMenu.ts");
 var Moonad = /** @class */ (function (_super) {
     __extends(Moonad, _super);
@@ -9085,7 +9177,7 @@ var Moonad = /** @class */ (function (_super) {
                         return [4 /*yield*/, fm.forall.load_file_parents(file)];
                     case 5:
                         _b.cited_by = _c.sent();
-                        console.log("load_file, cited_by: " + this.cited_by);
+                        this.forceUpdate();
                         return [2 /*return*/];
                 }
             });
@@ -9226,7 +9318,6 @@ var Moonad = /** @class */ (function (_super) {
         var on_click_imp = function (path) { return _this.on_click_imp(path); };
         var on_click_ref = function (path) { return _this.on_click_ref(path); };
         var on_input_code = function (code) { return _this.on_input_code(code); };
-        console.log("[render], cited_by: " + cited_by);
         // Renders the site
         return inferno_hyperscript_1.h("div", {
             style: {
@@ -9245,7 +9336,7 @@ var Moonad = /** @class */ (function (_super) {
                     : this.mode === "PLAY" ? inferno_hyperscript_1.h(CodePlayer_1["default"], { defs: defs, file: file })
                         : null),
             // Bottom of the site
-            inferno_hyperscript_1.h(Console_1["default"], { load_file: load_file, cited_by: cited_by })
+            inferno_hyperscript_1.h(Console_1["default"], { load_file: load_file, cited_by: cited_by, mode: mode })
         ]);
     };
     return Moonad;
