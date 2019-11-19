@@ -34,8 +34,6 @@ class Moonad extends Component {
   
   constructor(props) {
     super(props);
-    console.log(window.location.pathname);
-    console.log(window.location.hash);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
   }
 

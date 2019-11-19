@@ -25,6 +25,13 @@ class Pathbar extends Component<Props> {
     this.forceUpdate();
   }
 
+  onBlur() {
+    this.editing = false;
+    this.file_name = this.props.path;
+    console.log("[pathbar] Onblur!!");
+    this.forceUpdate();
+  }
+
   onInput(e) {
     const evt = e as InputEvent;
     if (this.editing && evt.target) {
@@ -56,6 +63,7 @@ class Pathbar extends Component<Props> {
 
   render() {
     const onClick = () => this.onClick();
+    const onBlur = () => this.onBlur();
     const onKeyDown = (e) => this.onKeyDown(e);
     const onInput = (e) => this.onInput(e);
     if (this.editing) {
@@ -65,7 +73,8 @@ class Pathbar extends Component<Props> {
         value: this.file_name,
         placeholder: "Search...",
         onKeyDown,
-        onInput
+        onInput,
+        onBlur
       });
     }
     return h("div", { style, onClick }, this.file_name);

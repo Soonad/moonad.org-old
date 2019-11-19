@@ -22,7 +22,7 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
   return h("div", {
     style: {
       "background": LayoutConstants.primary_color,
-      "height": "65px",
+      "min-height": "65px",
       "font-family": "monospace",
       "font-size": "16px",
       "display": "flex",
@@ -63,12 +63,12 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
         "user-select": "none"
       }}, [
         h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
-          title: "CONSOLE",
-          onClick: () => on_click_view(),
-        }), 
-        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
           title: "EDIT",
           onClick: () => on_click_edit(),
+        }), 
+        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+          title: "CONSOLE",
+          onClick: () => on_click_view(),
         }), 
         h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
           title: "PLAY",

@@ -72,10 +72,11 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
   }
 
   return h("code", {
-    className: "CodeRender div",
+    role: "CodeRender div",
     style: {
       "margin-left": "10%",
       "margin-right": "10%",
+      "font-size": "14px",
       "padding": "8px",
       "overflow": "scroll",
       "flex-grow": 1

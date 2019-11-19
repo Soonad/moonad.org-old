@@ -8256,14 +8256,20 @@ var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./no
 var Editor = function (_a) {
     var code = _a.code, on_input_code = _a.on_input_code;
     return inferno_hyperscript_1.h("textarea", {
-        "oninput": function (e) { return on_input_code(e.target.value); },
-        "value": code,
-        "style": {
+        oninput: function (e) { return on_input_code(e.target.value); },
+        value: code,
+        style: {
+            "margin-left": "10%",
+            "margin-right": "10%",
+            "border": "none",
+            "outline": "none",
             "font-family": "monospace",
             "font-size": "14px",
-            "padding": "7px",
+            "padding": "8px",
             "width": "100%",
-            "height": "100%"
+            "height": "100%",
+            "spellcheck": "false",
+            "data-gramm": "false"
         }
     }, []);
 };
@@ -8527,10 +8533,11 @@ var CodeRender = function (_a) {
         _loop_1(i);
     }
     return inferno_hyperscript_1.h("code", {
-        className: "CodeRender div",
+        role: "CodeRender div",
         style: {
             "margin-left": "10%",
             "margin-right": "10%",
+            "font-size": "14px",
             "padding": "8px",
             "overflow": "scroll",
             "flex-grow": 1
@@ -8839,8 +8846,6 @@ var Moonad = /** @class */ (function (_super) {
         _this.history = []; // previous files
         _this.defs = null; // loaded formality token
         _this.mode = "VIEW"; // are we editing, playing or viewing this file?
-        console.log(window.location.pathname);
-        console.log(window.location.hash);
         _this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
         return _this;
     }
@@ -9132,6 +9137,12 @@ var Pathbar = /** @class */ (function (_super) {
         this.file_name = "";
         this.forceUpdate();
     };
+    Pathbar.prototype.onBlur = function () {
+        this.editing = false;
+        this.file_name = this.props.path;
+        console.log("[pathbar] Onblur!!");
+        this.forceUpdate();
+    };
     Pathbar.prototype.onInput = function (e) {
         var evt = e;
         if (this.editing && evt.target) {
@@ -9161,6 +9172,7 @@ var Pathbar = /** @class */ (function (_super) {
     Pathbar.prototype.render = function () {
         var _this = this;
         var onClick = function () { return _this.onClick(); };
+        var onBlur = function () { return _this.onBlur(); };
         var onKeyDown = function (e) { return _this.onKeyDown(e); };
         var onInput = function (e) { return _this.onInput(e); };
         if (this.editing) {
@@ -9170,7 +9182,8 @@ var Pathbar = /** @class */ (function (_super) {
                 value: this.file_name,
                 placeholder: "Search...",
                 onKeyDown: onKeyDown,
-                onInput: onInput
+                onInput: onInput,
+                onBlur: onBlur
             });
         }
         return inferno_hyperscript_1.h("div", { style: style, onClick: onClick }, this.file_name);
@@ -9210,7 +9223,7 @@ var TopMenu = function (_a) {
     return inferno_hyperscript_1.h("div", {
         style: {
             "background": Constants_1.LayoutConstants.primary_color,
-            "height": "65px",
+            "min-height": "65px",
             "font-family": "monospace",
             "font-size": "16px",
             "display": "flex",
@@ -9251,12 +9264,12 @@ var TopMenu = function (_a) {
                 "user-select": "none"
             } }, [
             inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
-                title: "CONSOLE",
-                onClick: function () { return on_click_view(); }
-            }),
-            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
                 title: "EDIT",
                 onClick: function () { return on_click_edit(); }
+            }),
+            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+                title: "CONSOLE",
+                onClick: function () { return on_click_view(); }
             }),
             inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
                 title: "PLAY",
