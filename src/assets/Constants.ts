@@ -13,4 +13,31 @@ const ElementsId = {
   layout_id: "layout-root"
 }
 
-export { LayoutConstants, ElementsId }
+// Common Types
+type Tokens = Array<[string, [string, string]]>;
+type Defs = {[key : string] : any}; // `any` is a Formality Term
+type Bool = true | false;
+type Mode = "EDIT" | "PLAY" | "VIEW";
+type LoadFile = (module_or_term: string, push_history?: boolean) => any;
+type CitedByParent = Array<string>;
+
+export interface Module {
+  path: string;
+  cited_by: CitedByParent;
+  tokens: Tokens[];
+  code: string;
+  // term: (term_name: string) => Term;
+}
+
+export interface ConsoleTabs {
+  is_on_focus: boolean;
+  title: string;
+  onClick: () => void;
+}
+
+
+export { 
+  LayoutConstants, 
+  ElementsId, 
+  Tokens, Defs, Bool, Mode, CitedByParent, 
+  LoadFile}

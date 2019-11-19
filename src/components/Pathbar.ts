@@ -1,8 +1,6 @@
 import { Component, render } from "inferno";
 import { h } from "inferno-hyperscript";
-import { LayoutConstants } from "../assets/Constants";
-
-type LoadFile = (module_or_term: string, push_history?: boolean) => any;
+import { LayoutConstants, LoadFile } from "../assets/Constants";
 
 export interface Props {
   load_file: LoadFile;

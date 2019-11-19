@@ -15,10 +15,7 @@ import Console from "./Console"
 import TopMenu from "./TopMenu"
 import Pathbar from "./Pathbar"
 
-type Tokens = Array<[string, [string, string]]>;
-type Defs = {[key : string] : any}; // `any` is a Formality Term
-type Bool = true | false;
-type Mode = "EDIT" | "PLAY" | "VIEW";
+import { Tokens, Defs, Bool, Mode, CitedByParent } from "../assets/Constants";
 
 class Moonad extends Component {
 
@@ -27,7 +24,7 @@ class Moonad extends Component {
   file     : string        = null;   // name of the current file being rendered
   code     : string        = null;   // contents of the current file
   tokens   : Tokens        = null;   // chunks of code with syntax highlight info
-  cited_by : Array<string> = null;   // files that import the current file
+  cited_by : CitedByParent = null;   // files that import the current file
   history  : Array<string> = [];     // previous files
   defs     : Defs          = null;   // loaded formality token
   mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
@@ -35,6 +32,7 @@ class Moonad extends Component {
   constructor(props) {
     super(props);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
+    console.log("constructor, cited_by: "+this.cited_by);
   }
 
   componentDidMount() {
@@ -84,7 +82,12 @@ class Moonad extends Component {
     }
     this.parse();
     this.cited_by = await fm.forall.load_file_parents(file);
+    console.log("load_file, cited_by: "+this.cited_by);
   }
+
+  // async load_parents(file) {
+  //   return await fm.forall.load_file_parents(file);
+  // }
 
   // Loads a code without a file (local)
   async save_code(code) {
@@ -207,6 +210,7 @@ class Moonad extends Component {
     const on_click_ref = (path) => this.on_click_ref(path);
     const on_input_code = (code) => this.on_input_code(code);
 
+    console.log("[render], cited_by: "+cited_by);
     // Renders the site
     return h("div", {
       style: {
@@ -226,7 +230,7 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      Console({load_file, cited_by})
+      h(Console, {load_file, cited_by})
     ]);
   }
 }

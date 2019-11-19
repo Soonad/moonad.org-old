@@ -1,13 +1,10 @@
 import { h } from "inferno-hyperscript"
-import { LayoutConstants } from "../assets/Constants";
+import { LayoutConstants, LoadFile, Mode } from "../assets/Constants";
 import Pathbar from "./Pathbar";
 import TopMenuButton from "./TopMenuButton";
 
 // Assets
 // import logo from "../assets/moonad_logo.png";
-
-type Mode = "EDIT" | "PLAY" | "VIEW";
-type LoadFile = (module_or_term: string, push_history?: boolean) => any;
 
 export interface Props {
   mode: Mode;
