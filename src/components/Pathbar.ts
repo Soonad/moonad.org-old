@@ -2,19 +2,18 @@ import { Component, render } from "inferno";
 import { h } from "inferno-hyperscript";
 import { LayoutConstants } from "../assets/Constants";
 
-const default_path = "Base@0";
-
 type LoadFile = (module_or_term: string, push_history?: boolean) => any;
 
 export interface Props {
   load_file: LoadFile;
+  path: string;
 }
 
 class Pathbar extends Component<Props> {
   
   // State
   editing = false;
-  file_name = default_path;
+  file_name = this.props.path;
 
   constructor(props: Props) {
     super(props);
@@ -51,7 +50,7 @@ class Pathbar extends Component<Props> {
   }
 
   verify_format(file_name: string): boolean {
-    const module_regex = /^[a-zA-Z_\.-@]+@\d+$/;
+    const module_regex = /^[a-zA-Z_\.-@]+#\w+$/;
     return module_regex.test(file_name);
   }
 
@@ -59,7 +58,7 @@ class Pathbar extends Component<Props> {
     const onClick = () => this.onClick();
     const onKeyDown = (e) => this.onKeyDown(e);
     const onInput = (e) => this.onInput(e);
-
+    console.log("[pathbar] file name: "+this.file_name);
     if (this.editing) {
       return h("input", {
         type: "text",

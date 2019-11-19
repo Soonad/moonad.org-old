@@ -48,8 +48,8 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
           }, 
           src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'), 
           alt: "logo", 
-          onClick: () => { load_file("Base@0") } }), 
-        h(Pathbar, {load_file}),
+          onClick: () => { load_file("Base#") } }),
+        h(Pathbar, {load_file, path: file}),
        ]
     ),
     h("div", {className: "Buttons div", 

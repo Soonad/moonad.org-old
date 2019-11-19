@@ -9115,14 +9115,13 @@ exports.__esModule = true;
 var inferno_1 = __webpack_require__(/*! inferno */ "./node_modules/inferno/index.esm.js");
 var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./node_modules/inferno-hyperscript/dist/index.esm.js");
 var Constants_1 = __webpack_require__(/*! ../assets/Constants */ "./src/assets/Constants.ts");
-var default_path = "Base@0";
 var Pathbar = /** @class */ (function (_super) {
     __extends(Pathbar, _super);
     function Pathbar(props) {
         var _this = _super.call(this, props) || this;
         // State
         _this.editing = false;
-        _this.file_name = default_path;
+        _this.file_name = _this.props.path;
         return _this;
     }
     Pathbar.prototype.onClick = function () {
@@ -9153,7 +9152,7 @@ var Pathbar = /** @class */ (function (_super) {
         this.forceUpdate();
     };
     Pathbar.prototype.verify_format = function (file_name) {
-        var module_regex = /^[a-zA-Z_\.-@]+@\d+$/;
+        var module_regex = /^[a-zA-Z_\.-@]+#\w+$/;
         return module_regex.test(file_name);
     };
     Pathbar.prototype.render = function () {
@@ -9161,6 +9160,7 @@ var Pathbar = /** @class */ (function (_super) {
         var onClick = function () { return _this.onClick(); };
         var onKeyDown = function (e) { return _this.onKeyDown(e); };
         var onInput = function (e) { return _this.onInput(e); };
+        console.log("[pathbar] file name: " + this.file_name);
         if (this.editing) {
             return inferno_hyperscript_1.h("input", {
                 type: "text",
@@ -9234,9 +9234,9 @@ var TopMenu = function (_a) {
                 },
                 src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'),
                 alt: "logo",
-                onClick: function () { load_file("Base@0"); }
+                onClick: function () { load_file("Base#"); }
             }),
-            inferno_hyperscript_1.h(Pathbar_1["default"], { load_file: load_file }),
+            inferno_hyperscript_1.h(Pathbar_1["default"], { load_file: load_file, path: file }),
         ]),
         inferno_hyperscript_1.h("div", { className: "Buttons div",
             style: {
