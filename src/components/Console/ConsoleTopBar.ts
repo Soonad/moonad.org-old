@@ -13,6 +13,7 @@ const ConsoleTopBar = ({tabs}: Props) => {
   return h("div", {
     desc: "Console TopBar div",
     style: {
+      "min-height": "25px",
       "height": "25px",
       "width": "100%",
       "border-top": `1px solid ${LayoutConstants.medium_gray_color}`,
@@ -81,6 +82,7 @@ const console_tab_style = {
   "padding-left": "20px",
   "padding-top": "5px",
   "min-height": "25px",
+  "height": "25px",
   "user-select": "none",
   "aling-self": "baseline",
   "font-family": "monospace",
@@ -96,7 +98,9 @@ const console_tab_style_focus = {
 const console_tab_style_hover = {
   ...console_tab_style,
   "background-color": LayoutConstants.light_gray_shadow_color,
-  "height": "100%",
+  "padding-top": "4px",
+  "border-bottom": "1px solid "+ LayoutConstants.medium_gray_color,
+  "border-top": "1px solid "+ LayoutConstants.medium_gray_color,
 }
 
 // -------------
