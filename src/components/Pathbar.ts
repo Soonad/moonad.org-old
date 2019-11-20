@@ -75,7 +75,7 @@ class Pathbar extends Component<Props> {
         onBlur
       });
     }
-    return h("div", { style, onClick }, this.file_name);
+    return h("div", { style, onClick }, this.props.path);
   }
 }
 
@@ -93,7 +93,7 @@ const input_style = {
   "border": "none",
   "margin-top": "23px",
   "margin-bottom": "5px",
-  "padding": "3px",
+  "padding": "5px",
   "outline": "none",
   "font-family": "monospace",
   "font-color": LayoutConstants.light_gray_color,
