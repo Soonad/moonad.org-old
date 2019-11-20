@@ -1,6 +1,7 @@
 // Renders Formality code with syntax highlighting
 
 import {h} from "inferno-hyperscript"
+import CountLines from "./CountLines";
 
 const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) => {
   if (!tokens) {
@@ -82,6 +83,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
       "flex-grow": 1
     }
   }, [
+    // CountLines(4),
     h("pre", {}, [code_chunks])
   ]);
 };

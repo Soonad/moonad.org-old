@@ -38,11 +38,6 @@ class Console extends Component<Props> {
         is_on_focus: this.view_on_focus === "console",
         title: "Console",
         onClick: () => { this.view_on_focus = "console"; this.forceUpdate(); }
-      },
-      {
-        is_on_focus: this.view_on_focus === "console",
-        title: "Console",
-        onClick: () => { this.view_on_focus = "console"; this.forceUpdate(); }
       }
     ];
 

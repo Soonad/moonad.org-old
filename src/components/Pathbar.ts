@@ -69,7 +69,7 @@ class Pathbar extends Component<Props> {
         type: "text",
         style: input_style,
         value: this.file_name,
-        placeholder: "Search...",
+        placeholder: "Enter file name...",
         onKeyDown,
         onInput,
         onBlur
