@@ -12,7 +12,13 @@ module.exports = {
     {
       test: /\.tsx?$/,
       loader: 'awesome-typescript-loader'
-    }
+    },
+    {
+      test: /\.(png|svg|jpg|gif)$/,
+      use: [
+        'file-loader',
+      ],
+    },
   ]},
   output: {
     filename: 'index.js',
@@ -20,5 +26,6 @@ module.exports = {
   },
   plugins: [
       new CheckerPlugin()
-  ]
+  ],
+  watch: false
 };

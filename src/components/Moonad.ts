@@ -11,13 +11,11 @@ const fm = require("formality-lang");
 import CodeEditor from "./CodeEditor"
 import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
-import Console from "./Console"
+import Console from "./Console/Console"
 import TopMenu from "./TopMenu"
+import Pathbar from "./Pathbar"
 
-type Tokens = Array<[string, [string, string]]>;
-type Defs = {[key : string] : any}; // `any` is a Formality Term
-type Bool = true | false;
-type Mode = "EDIT" | "PLAY" | "VIEW";
+import { Tokens, Defs, Bool, Mode, CitedByParent } from "../assets/Constants";
 
 class Moonad extends Component {
 
@@ -26,15 +24,13 @@ class Moonad extends Component {
   file     : string        = null;   // name of the current file being rendered
   code     : string        = null;   // contents of the current file
   tokens   : Tokens        = null;   // chunks of code with syntax highlight info
-  cited_by : Array<string> = null;   // files that import the current file
+  cited_by : CitedByParent = null;   // files that import the current file
   history  : Array<string> = [];     // previous files
   defs     : Defs          = null;   // loaded formality token
   mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
   
   constructor(props) {
     super(props);
-    console.log(window.location.pathname);
-    console.log(window.location.hash);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
   }
 
@@ -46,9 +42,15 @@ class Moonad extends Component {
       window.localStorage.setItem("cached_moonad_version", this.version);
       window.localStorage.setItem("cached_fm_version", fm.lang.version);
     }
+
     window.onpopstate = (e) => {
       this.load_file(e.state, false);
     }
+
+    //window.onresize = () => {
+      //console.log("force-update");
+      //this.forceUpdate();
+    //}
   }
 
   loader(file) {
@@ -85,7 +87,12 @@ class Moonad extends Component {
     }
     this.parse();
     this.cited_by = await fm.forall.load_file_parents(file);
+    this.forceUpdate();
   }
+
+  // async load_parents(file) {
+  //   return await fm.forall.load_file_parents(file);
+  // }
 
   // Loads a code without a file (local)
   async save_code(code) {
@@ -211,11 +218,13 @@ class Moonad extends Component {
     // Renders the site
     return h("div", {
       style: {
+        //"min-width": "400px",
         "font-family": "Gotham Book",
         "display": "flex",
         "flex-flow": "column nowrap",
+        //"align-items": "center",
         "height": "100%",
-        "background": "rgb(253,253,254)"
+        //"background": "rgb(253,253,254)"
     }}, [
       // Top of the site
       TopMenu({mode, file, on_click_view, on_click_edit, on_click_play, load_file}),
@@ -227,7 +236,7 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      Console({load_file, cited_by})
+      h(Console, {load_file, cited_by, mode})
     ]);
   }
 }
