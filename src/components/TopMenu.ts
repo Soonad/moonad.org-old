@@ -4,7 +4,10 @@ import Pathbar from "./Pathbar";
 import TopMenuButton from "./TopMenuButton";
 
 // Assets
-// import logo from "../assets/moonad_logo.png";
+const logo = "../assets/moonad_white_symbol.png";
+const icon_edit = "../assets/icons/icon_edit.png";
+const icon_console = "../assets/icons/icon_console.png";
+const icon_play = "../assets/icons/icon_play.png";
 
 export interface Props {
   mode: Mode;
@@ -37,13 +40,13 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
     }, [
         h("img", {
           style: {
-            "width": "50px",
-            "height": "40px",
+            "width": "45px",
+            "height": "35px",
             "margin-top": "18px",
             "margin-left": "10%",
             "cursor": "pointer"
           }, 
-          src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'), 
+          src: logo,
           alt: "logo", 
           onClick: () => { load_file("Base#") } }),
         h(Pathbar, {load_file, path: file}),
@@ -59,15 +62,15 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
         "margin-right": "5%",
         "user-select": "none"
       }}, [
-        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+        h(TopMenuButton, {icon: icon_edit,
           title: "EDIT",
           onClick: () => on_click_edit(),
         }), 
-        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+        h(TopMenuButton, {icon: icon_console,
           title: "CONSOLE",
           onClick: () => on_click_view(),
         }), 
-        h(TopMenuButton, {icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+        h(TopMenuButton, {icon: icon_play,
           title: "PLAY",
           onClick: () => on_click_play(),
         }), 

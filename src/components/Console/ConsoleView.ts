@@ -12,7 +12,6 @@ interface Props {
 }
 
 const ConsoleView = ({view_on_focus, mode, load_file, parents}: Props) => {
-  console.log(">> Console view: "+parents);
   switch(mode) {
     case "EDIT": 
       return h("div", {style});

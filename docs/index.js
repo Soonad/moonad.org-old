@@ -8808,7 +8808,6 @@ var Constants_1 = __webpack_require__(/*! ../../assets/Constants */ "./src/asset
 var CitedBy_1 = __webpack_require__(/*! ./CitedBy */ "./src/components/Console/CitedBy.ts");
 var ConsoleView = function (_a) {
     var view_on_focus = _a.view_on_focus, mode = _a.mode, load_file = _a.load_file, parents = _a.parents;
-    console.log(">> Console view: " + parents);
     switch (mode) {
         case "EDIT":
             return inferno_hyperscript_1.h("div", { style: style });
@@ -9102,7 +9101,6 @@ var Moonad = /** @class */ (function (_super) {
         _this.defs = null; // loaded formality token
         _this.mode = "VIEW"; // are we editing, playing or viewing this file?
         _this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
-        console.log("constructor, cited_by: " + _this.cited_by);
         return _this;
     }
     Moonad.prototype.componentDidMount = function () {
@@ -9478,6 +9476,11 @@ var inferno_hyperscript_1 = __webpack_require__(/*! inferno-hyperscript */ "./no
 var Constants_1 = __webpack_require__(/*! ../assets/Constants */ "./src/assets/Constants.ts");
 var Pathbar_1 = __webpack_require__(/*! ./Pathbar */ "./src/components/Pathbar.ts");
 var TopMenuButton_1 = __webpack_require__(/*! ./TopMenuButton */ "./src/components/TopMenuButton.ts");
+// Assets
+var logo = "../assets/moonad_white_symbol.png";
+var icon_edit = "../assets/icons/icon_edit.png";
+var icon_console = "../assets/icons/icon_console.png";
+var icon_play = "../assets/icons/icon_play.png";
 var TopMenu = function (_a) {
     var mode = _a.mode, file = _a.file, load_file = _a.load_file, on_click_view = _a.on_click_view, on_click_edit = _a.on_click_edit, on_click_play = _a.on_click_play;
     return inferno_hyperscript_1.h("div", {
@@ -9501,13 +9504,13 @@ var TopMenu = function (_a) {
         }, [
             inferno_hyperscript_1.h("img", {
                 style: {
-                    "width": "50px",
-                    "height": "40px",
+                    "width": "45px",
+                    "height": "35px",
                     "margin-top": "18px",
                     "margin-left": "10%",
                     "cursor": "pointer"
                 },
-                src: new URL('https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg'),
+                src: logo,
                 alt: "logo",
                 onClick: function () { load_file("Base#"); }
             }),
@@ -9523,15 +9526,15 @@ var TopMenu = function (_a) {
                 "margin-right": "5%",
                 "user-select": "none"
             } }, [
-            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: icon_edit,
                 title: "EDIT",
                 onClick: function () { return on_click_edit(); }
             }),
-            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: icon_console,
                 title: "CONSOLE",
                 onClick: function () { return on_click_view(); }
             }),
-            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: "https://images.pexels.com/photos/57416/cat-sweet-kitty-animals-57416.jpeg?cs=srgb&dl=animal-animal-photography-cat-57416.jpg&fm=jpg",
+            inferno_hyperscript_1.h(TopMenuButton_1["default"], { icon: icon_play,
                 title: "PLAY",
                 onClick: function () { return on_click_play(); }
             }),
