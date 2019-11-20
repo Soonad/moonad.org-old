@@ -18,8 +18,7 @@ const ConsoleTopBar = ({tabs}: Props) => {
       "width": "100%",
       "border-top": `1px solid ${LayoutConstants.medium_gray_color}`,
       "border-bottom": `1px solid ${LayoutConstants.medium_gray_color}`,
-      "background-color": "#FFFFFF",
-      "position": "fixed"
+      "background-color": "#FFFFFF"
     }
   }, [
     h("div", {

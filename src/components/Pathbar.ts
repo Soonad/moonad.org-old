@@ -80,19 +80,22 @@ class Pathbar extends Component<Props> {
 }
 
 const style = {
-  "heigth": "20px",
-  "width": "350px",
+  "max-width": "160px",
   "color": "#FFFFFF",
-  "margin-left": "30px",
-  "margin-top": "35px",
-  "font-size": "16px",
+  "display": "flex",
+  "justify-content": "flex-start",
+  "align-items": "center",
+  //"margin-left": "30px",
+  "margin-bottom": "6px",
+  "font-size": "20px",
+  "flex-grow": 1,
 };
 
 const input_style = {
   ...style,
   "border": "none",
-  "margin-top": "23px",
-  "margin-bottom": "5px",
+  //"margin-top": "23px",
+  //"margin-bottom": "5px",
   "padding": "5px",
   "outline": "none",
   "font-family": "monospace",

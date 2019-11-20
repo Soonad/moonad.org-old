@@ -3,9 +3,18 @@
 import {h} from "inferno-hyperscript"
 import CountLines from "./CountLines";
 
+//document.addEventListener("touchmove", function (evt) {
+  //evt.preventDefault();
+//}, false);
+
 const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) => {
   if (!tokens) {
-    return h("div", {"style": {"padding": "8px", "flex-grow": 1}}, "Loading code from FPM. This may take a while...");
+    return h("div", {
+      style: {
+        "padding": "8px",
+        "flex-grow": 1
+      }
+    }, "Loading code from FPM. This may take a while...");
   }
 
   // Makes spans for each code chunk
@@ -42,7 +51,8 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
             ]);
         case "ref":
           return h("a", {
-            href: window.location.origin + "/" + tokens[i][2].replace(new RegExp("/.*$"), ""),
+            href: window.location.origin
+              + "/" + tokens[i][2].replace(new RegExp("/.*$"), ""),
             style: {
               "color": "#38598B",
               "text-decoration": "underline",
@@ -72,14 +82,23 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
     code_chunks.push(elem);
   }
 
+  // TODO: comment and explain
+  var max_cols = 80;
+  var max_font_size = 14;
+  var padding = 4;
+  var width = Math.min(max_font_size * (3/5) * max_cols, window.innerWidth);
+  var font_size = Math.floor(((width - padding * 2) / max_cols) * (5/3));
+
   return h("code", {
     role: "CodeRender div",
     style: {
-      "margin-left": "10%",
-      "margin-right": "10%",
-      "font-size": "14px",
-      "padding": "8px",
-      "overflow": "scroll",
+      //"width": width + "px",
+      "width": "100%",
+      "font-size": font_size + "px",
+      "padding": padding + "px",
+      "max-width": "100%",
+      "overflow-y": "scroll",
+      "overflow-x": "hidden",
       "flex-grow": 1
     }
   }, [

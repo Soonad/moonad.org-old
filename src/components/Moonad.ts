@@ -42,9 +42,15 @@ class Moonad extends Component {
       window.localStorage.setItem("cached_moonad_version", this.version);
       window.localStorage.setItem("cached_fm_version", fm.lang.version);
     }
+
     window.onpopstate = (e) => {
       this.load_file(e.state, false);
     }
+
+    //window.onresize = () => {
+      //console.log("force-update");
+      //this.forceUpdate();
+    //}
   }
 
   loader(file) {
@@ -212,11 +218,13 @@ class Moonad extends Component {
     // Renders the site
     return h("div", {
       style: {
+        //"min-width": "400px",
         "font-family": "Gotham Book",
         "display": "flex",
         "flex-flow": "column nowrap",
+        //"align-items": "center",
         "height": "100%",
-        "background": "rgb(253,253,254)"
+        //"background": "rgb(253,253,254)"
     }}, [
       // Top of the site
       TopMenu({mode, file, on_click_view, on_click_edit, on_click_play, load_file}),

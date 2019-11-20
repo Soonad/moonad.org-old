@@ -28,15 +28,15 @@ class TopMenuButton extends Component<Props> {
         h("img", {
           src: this.props.icon,
           style: {
-            "width": "30px",
-            "height": "30px",
-            "margin-top": "09px"
+            "margin-top": "4px",
+            "width": "24px",
+            "height": "24px",
           }
         }),
         h("p", {
           style: {
             "color": "#FFFFFF",
-            "font-size": "14px",
+            "font-size": "12px",
             "font-family": "monospace",
             "margin": "0px"
           }
@@ -47,10 +47,12 @@ class TopMenuButton extends Component<Props> {
 }
 
 const button_style = {
-  "width": "70px",
+  "width": "60px",
   "height": "100%",
   "flex-direction": "column",
+  "display": "flex",
   "align-items": "center",
+  "justify-content": "center",
   "text-align": "center",
   "cursor": "pointer"
 }

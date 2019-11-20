@@ -107,7 +107,15 @@ class CodePlayer extends Component {
     } else if (app_state === null || app_funcs === null) {
       return h("div", {style}, "Compiling application...");
     } else {
-      return h("div", {tabindex: 0, style, onMouseMove, onClick, onKeyPress, onKeyDown, onKeyUp}, DocRender(app_funcs.render(app_state)));
+      return h("div", {
+        tabindex: 0,
+        style,
+        onMouseMove,
+        onClick,
+        onKeyPress,
+        onKeyDown,
+        onKeyUp
+      }, DocRender(app_funcs.render(app_state)));
     }
   }
 };

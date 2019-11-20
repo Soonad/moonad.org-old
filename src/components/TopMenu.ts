@@ -19,47 +19,58 @@ export interface Props {
 }
 
 const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_play}: Props) => {
+  var menu_height = 48;
+
   return h("div", {
     style: {
-      "background": LayoutConstants.primary_color,
-      "min-height": "65px",
+      "background": "url(assets/galaxy.jpg)",
+      "background-size": "cover",
+      "min-height": menu_height + "px",
       "font-family": "monospace",
       "font-size": "16px",
       "display": "flex",
       "user-select": "none",
+      "width": "100%",
       "flex-flow": "row nowrap",
-      "justify-content": "space-between"
+      "justify-content": "flex-start"
     }
   }, [
     h("div", {
       style: {
-        "width": "50%",
+        "width": "60px",
+        "height": menu_height + "x",
+        "cursor": "pointer",
         "display": "flex",
-        "flex-direction": "row"
+        "justify-content": "center",
+        "align-items": "center",
+      }}, [
+      h("img", {
+        style: {
+          "width": "45px",
+          "height": "35px",
+        }, 
+        src: logo,
+        alt: "logo", 
+        onClick: () => { load_file("Base#") }
+      })
+    ]),
+    h("div", {
+      style: {
+        "height": menu_height + "px",
+        "display": "flex",
+        "align-items": "flex-end",
+        "flex-grow": 1,
       }
     }, [
-        h("img", {
-          style: {
-            "width": "45px",
-            "height": "35px",
-            "margin-top": "18px",
-            "margin-left": "10%",
-            "cursor": "pointer"
-          }, 
-          src: logo,
-          alt: "logo", 
-          onClick: () => { load_file("Base#") } }),
-        h(Pathbar, {load_file, path: file}),
-       ]
-    ),
+      h(Pathbar, {load_file, path: file})
+    ]),
     h("div", {className: "Buttons div", 
       style: {
-        "width": "230px",
-        "height": "100%", 
+        //"width": "230px",
+        "height": menu_height + "px", 
         "display": "flex",
         "flex-direction": "row",
         "justify-content": "space-between",
-        "margin-right": "5%",
         "user-select": "none"
       }}, [
         h(TopMenuButton, {icon: icon_edit,
