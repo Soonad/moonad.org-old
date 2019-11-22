@@ -2,7 +2,7 @@
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
 
-import { LayoutConstants, ConsoleTabs, LoadFile, CitedByParent, Mode } from "../../assets/Constants";
+import { LayoutConstants, ConsoleTabs, LoadFile, CitedByParent, Mode, ExecCommand } from "../../assets/Constants";
 
 // Components
 import CitedBy from "./CitedBy";
@@ -16,6 +16,8 @@ export interface Props {
   load_file: LoadFile;
   cited_by: CitedByParent;
   mode: Mode;
+  exec_command: ExecCommand;
+  // exec_command: (cmd: string) => any;
 }
 
 // The div which displays the Bottom elmeent of the screen
@@ -54,7 +56,8 @@ class Console extends Component<Props> {
       ConsoleView({view_on_focus: this.view_on_focus, 
         mode: this.props.mode, 
         load_file: this.props.load_file,
-        parents: this.props.cited_by}),
+        parents: this.props.cited_by,
+        exec_command: this.props.exec_command}),
     ]);
   }
 };

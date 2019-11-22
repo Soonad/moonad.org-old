@@ -1,7 +1,7 @@
 
 import { h } from "inferno-hyperscript";
 import { Component } from "inferno";
-import { LayoutConstants, Mode, LoadFile, CitedByParent } from "../../assets/Constants";
+import { LayoutConstants, Mode, LoadFile, CitedByParent, ExecCommand } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
 import Terminal from "./Terminal";
 
@@ -12,9 +12,12 @@ interface Props {
   mode: Mode;
   load_file: LoadFile;
   parents: Array<string>;
+  // res_cmd: Array<string>;
+  exec_command: ExecCommand;
+  // exec_command: (cmd: string) => any;
 }
 
-const ConsoleView = ({view_on_focus, mode, load_file, parents}: Props) => {
+const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command}: Props) => {
   switch(mode) {
     case "EDIT": 
       return h("div", {style});
@@ -24,7 +27,7 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents}: Props) => {
         case "cited_by": 
           return h("div", {style}, cited_by_view(parents, load_file) );
         case "terminal":
-          return h(Terminal, {result_cmd: []})
+          return h(Terminal, {res_cmd: [], exec_command});
       }
 
     case "PLAY": 

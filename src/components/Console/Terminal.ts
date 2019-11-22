@@ -1,10 +1,12 @@
 import { h } from "inferno-hyperscript"
-import { LayoutConstants, ElementsId } from "../../assets/Constants";
+import { LayoutConstants, ElementsId, ExecCommand } from "../../assets/Constants";
 import { Component } from "inferno";
 
 export interface Props {
   result_cmd : Array<string>;
   file: string;
+  exec_command : ExecCommand;
+  // exec_command: (cmd: string) => any;
 }
 
 type HistoryRow = {is_command: boolean, info: string};
@@ -21,16 +23,14 @@ class Terminal extends Component<Props> {
 
   is_editing = false;
   command = "";
+  result_cmd: Array<string> = new Array<string>();
   history: History = new Array<HistoryRow>();
   
   constructor(props: Props) {
     super(props);
-    if (this.props.result_cmd !== []) {
-      this.history = this.props.result_cmd.map( (info: string) => {return {is_command: false, info: info}} )
-    } else {
-      console.log("Termianl receiving empty answer")
-    }
-    
+    // if (this.props.result_cmd.length > 0) {
+    //   this.history = this.props.result_cmd.map( (info: string) => {return {is_command: false, info: info}} )
+    // }
   }
 
   onClick() {
@@ -48,19 +48,33 @@ class Terminal extends Component<Props> {
     this.forceUpdate();
   }
 
+  // TODO: after pressing enter, the focus must continue on the input field
   onKeyDown(e) {
     if (e.keyCode === 13 && this.is_editing) {
       this.is_editing = false;
       this.history.push( {is_command: true, info: this.command} )
+      
       var input_field = document.getElementById(ElementsId.console_input_id);
       // window.setTimeout(function () { 
-        console.log("Input focus")
         // this.is_editing = true;
         input_field.focus();
       // }, 0);
+      this.get_result();
+      console.log("Terminal, result: ",this.result_cmd);
+
       // // TEST ONLY
       // this.history.push({is_command: false, info: "0. that cool"});
       // this.history.push( {is_command: false, info: "1. wooow"});
+    }
+    this.forceUpdate();
+  }
+
+  async get_result() {
+    this.result_cmd = await this.props.exec_command(this.command);
+    if (this.result_cmd !== null) {
+      this.result_cmd.map( (result: string) => {
+        this.history.push({is_command: false, info: result});
+      } );
     }
     this.forceUpdate();
   }
@@ -135,7 +149,6 @@ class Terminal extends Component<Props> {
         style: {
           "height": "35px",
           "padding-bottom": "5px",
-          // "padding-top": "5px",
         },
       }, [
         result_aux,
@@ -148,6 +161,6 @@ class Terminal extends Component<Props> {
 
 
 
-const result_aux = h("span", {style: {"color": LayoutConstants.secondary_color}}, "► ");
+const result_aux = h("span", {style: {"color": LayoutConstants.secondary_color, "font-family": "monospace", "font-size": "8px"}}, "► ");
 
 export default Terminal;
