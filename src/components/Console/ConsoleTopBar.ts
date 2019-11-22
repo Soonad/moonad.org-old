@@ -24,8 +24,8 @@ const ConsoleTopBar = ({tabs}: Props) => {
     h("div", {
       desc: "Console tabs div",
       style: {
-        "margin-left": "10%",
-        "margin-right": "10%",
+        "padding-left": "20px",
+        "padding-right": "20px",
         "width": "60%",
         "height": "100%",
         "display": "flex",

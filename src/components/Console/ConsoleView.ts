@@ -3,9 +3,12 @@ import { h } from "inferno-hyperscript";
 import { Component } from "inferno";
 import { LayoutConstants, Mode, LoadFile, CitedByParent } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
+import Terminal from "./Terminal";
+
+type TabViewType = "cited_by" | "terminal";
 
 interface Props {
-  view_on_focus: string;
+  view_on_focus: TabViewType;
   mode: Mode;
   load_file: LoadFile;
   parents: Array<string>;
@@ -20,8 +23,8 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents}: Props) => {
       switch(view_on_focus) {
         case "cited_by": 
           return h("div", {style}, cited_by_view(parents, load_file) );
-        case "console":
-          return h("div", {style}, "View for console");
+        case "terminal":
+          return h(Terminal, {result_cmd: []})
       }
 
     case "PLAY": 
@@ -30,9 +33,8 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents}: Props) => {
 }
 
 const style = {
-  "margin-left": "10%",
-  "margin-right": "10%",
-  "margin-top": "25px",
+  "margin-left": "20px",
+  "margin-right": "20px",
   "padding-bottom": "15px",
   "font-family": "monospace",
   "font-size": "13px",

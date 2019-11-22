@@ -10,7 +10,8 @@ const LayoutConstants = {
 
 const ElementsId = {
   console_id: "console",
-  layout_id: "layout-root"
+  layout_id: "layout_root",
+  console_input_id: "console_input",
 }
 
 // Common Types
