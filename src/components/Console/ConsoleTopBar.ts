@@ -18,7 +18,8 @@ const ConsoleTopBar = ({tabs}: Props) => {
       "width": "100%",
       "border-top": `1px solid ${LayoutConstants.medium_gray_color}`,
       "border-bottom": `1px solid ${LayoutConstants.medium_gray_color}`,
-      "background-color": "#FFFFFF"
+      "background-color": "#FFFFFF",
+      "position": "absolute"
     }
   }, [
     h("div", {
@@ -81,7 +82,8 @@ const console_tab_style = {
   "padding-left": "20px",
   "padding-top": "5px",
   "min-height": "25px",
-  "height": "25px",
+  "min-width": "110px",
+  "text-aling": "center",
   "user-select": "none",
   "aling-self": "baseline",
   "font-family": "monospace",

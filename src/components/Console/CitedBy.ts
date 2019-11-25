@@ -23,8 +23,6 @@ const CitedBy = ({parents, load_file }: Props) => {
               "text-decoration": "underline",
               "cursor": "pointer",
               "padding-top": "5px",
-              "font-family": "monospace",
-              "font-size": "12px"
             }, 
             onClick: () => load_file(parent) }, parent)
       )

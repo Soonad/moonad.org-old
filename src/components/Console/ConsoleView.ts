@@ -36,16 +36,17 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command}: Pr
 }
 
 const style = {
+  "margin-top": "25px",
   "margin-left": "20px",
   "margin-right": "20px",
   "padding-bottom": "15px",
   "font-family": "monospace",
-  "font-size": "13px",
-  "padding-top": "10px"
+  "font-size": "10px",
+  "padding-top": "05px"
 }
 
 // Auxiliary functions
-const result_aux = h("span", {style: {"color": LayoutConstants.secondary_color}}, "► ");
+const result_aux = h("span", {style: {"color": LayoutConstants.secondary_color, "font-size": "8px",}}, "► ");
 const format_console_msg = (msg: string) => {
   return  h("span", {
     style: {
