@@ -28,7 +28,6 @@ class Moonad extends Component {
   history  : Array<string> = [];     // previous files
   defs     : Defs          = null;   // loaded formality token
   mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
-  res_cmd  : Array<string> = null;   // response from Formality after executing a command
 
   constructor(props) {
     super(props);
@@ -116,8 +115,6 @@ class Moonad extends Component {
     output_result.push("");
     // Show fm commands
     if (cmd === "fm") { 
-      // this.res_cmd = output_result;
-      console.log("Moonad: returning output");
       return output_result;
     }
     this.forceUpdate();
@@ -235,7 +232,6 @@ class Moonad extends Component {
     const code = this.code;
     const tokens = this.tokens;
     const cited_by = this.cited_by;
-    const res_cmd = this.res_cmd;
     const load_file = (file, push) => this.load_file(file, push);
     const on_click_view = () => this.on_click_view();
     const on_click_edit = () => this.on_click_edit();

@@ -59,17 +59,12 @@ class Terminal extends Component<Props> {
         // this.is_editing = true;
         input_field.focus();
       // }, 0);
-      this.get_result();
-      console.log("Terminal, result: ",this.result_cmd);
-
-      // // TEST ONLY
-      // this.history.push({is_command: false, info: "0. that cool"});
-      // this.history.push( {is_command: false, info: "1. wooow"});
+      this.exec_command_result();
     }
     this.forceUpdate();
   }
 
-  async get_result() {
+  async exec_command_result() {
     this.result_cmd = await this.props.exec_command(this.command);
     if (this.result_cmd !== null) {
       this.result_cmd.map( (result: string) => {
@@ -95,7 +90,10 @@ class Terminal extends Component<Props> {
             "outline": "none",
             "font-family": "monospace",
             "flex-grow": 1,
-            "width": "90%",
+            "height": "20px",
+            "padding-left": "5px",
+            "padding-right": "5px",
+            "margin-left": "5px"
           },
           onClick,
           onKeydown,
@@ -103,13 +101,22 @@ class Terminal extends Component<Props> {
           autofocus: true,
         }, this.command); 
       } else {
-        return h("span", {
+        return h("div", {
           style: {
             "color": LayoutConstants.dark_gray_color, 
-            "user-select": "none" 
+            "user-select": "none",
+            "margin-left": "5px",
+            "flex-grow": 1,
+            "height": "20px"
           }, 
           onClick 
-        }, "█")
+        }, h("div", {
+          style: {
+            "width": "6px", 
+            "height": "15px",
+            "background": LayoutConstants.dark_gray_color 
+          }} )
+        )
       }
       
     };
@@ -147,8 +154,11 @@ class Terminal extends Component<Props> {
       h("div", {
         desc: "Terminal input div",
         style: {
-          "height": "35px",
+          "height": "30px",
           "padding-bottom": "5px",
+          "display": "flex",
+          "flex-direction": "row",
+          "align-items": "center"
         },
       }, [
         result_aux,
@@ -161,6 +171,11 @@ class Terminal extends Component<Props> {
 
 
 
-const result_aux = h("span", {style: {"color": LayoutConstants.secondary_color, "font-family": "monospace", "font-size": "8px"}}, "► ");
+const result_aux = h("span", {style: {
+  "color": LayoutConstants.secondary_color, 
+  "font-family": "monospace", 
+  "font-size": "8px",
+  // "align-self": "center"
+}}, "► ");
 
 export default Terminal;
