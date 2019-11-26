@@ -10,7 +10,8 @@ const LayoutConstants = {
 
 const ElementsId = {
   console_id: "console",
-  layout_id: "layout-root"
+  layout_id: "layout_root",
+  console_input_id: "console_input",
 }
 
 // Common Types
@@ -20,6 +21,7 @@ type Bool = true | false;
 type Mode = "EDIT" | "PLAY" | "VIEW";
 type LoadFile = (module_or_term: string, push_history?: boolean) => any;
 type CitedByParent = Array<string>;
+type ExecCommand = (cmd: string, code?: string) => any;
 
 export interface Module {
   path: string;
@@ -35,9 +37,8 @@ export interface ConsoleTabs {
   onClick: () => void;
 }
 
-
 export { 
   LayoutConstants, 
   ElementsId, 
   Tokens, Defs, Bool, Mode, CitedByParent, 
-  LoadFile}
+  LoadFile, ExecCommand}

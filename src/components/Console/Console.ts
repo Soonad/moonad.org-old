@@ -2,7 +2,7 @@
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
 
-import { LayoutConstants, ConsoleTabs, LoadFile, CitedByParent, Mode } from "../../assets/Constants";
+import { LayoutConstants, ConsoleTabs, LoadFile, CitedByParent, Mode, ExecCommand } from "../../assets/Constants";
 
 // Components
 import CitedBy from "./CitedBy";
@@ -10,18 +10,20 @@ import ConsoleTopBar from "./ConsoleTopBar";
 import ConsoleView from "./ConsoleView";
 
 interface TabElement {tab: ConsoleTabs, view: TabViewType}
-type TabViewType = "cited_by" | "console";
+type TabViewType = "cited_by" | "terminal";
 
 export interface Props {
   load_file: LoadFile;
   cited_by: CitedByParent;
   mode: Mode;
+  exec_command: ExecCommand;
+  // exec_command: (cmd: string) => any;
 }
 
 // The div which displays the Bottom elmeent of the screen
 class Console extends Component<Props> {
   
-  view_on_focus: TabViewType = "cited_by";
+  view_on_focus: TabViewType = "terminal";
 
   constructor(props: Props) {
     super(props);
@@ -35,9 +37,9 @@ class Console extends Component<Props> {
         onClick: () => { this.view_on_focus = "cited_by"; this.forceUpdate();}
       },
       {
-        is_on_focus: this.view_on_focus === "console",
+        is_on_focus: this.view_on_focus === "terminal",
         title: "Console",
-        onClick: () => { this.view_on_focus = "console"; this.forceUpdate(); }
+        onClick: () => { this.view_on_focus = "terminal"; this.forceUpdate(); }
       }
     ];
 
@@ -54,7 +56,8 @@ class Console extends Component<Props> {
       ConsoleView({view_on_focus: this.view_on_focus, 
         mode: this.props.mode, 
         load_file: this.props.load_file,
-        parents: this.props.cited_by}),
+        parents: this.props.cited_by,
+        exec_command: this.props.exec_command}),
     ]);
   }
 };

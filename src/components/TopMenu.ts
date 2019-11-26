@@ -23,7 +23,7 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
 
   return h("div", {
     style: {
-      "background": "url(assets/galaxy.jpg)",
+      "background": "url(assets/topbar-bg-3.png)",
       "background-size": "cover",
       "min-height": menu_height + "px",
       "font-family": "monospace",

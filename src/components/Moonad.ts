@@ -15,7 +15,7 @@ import Console from "./Console/Console"
 import TopMenu from "./TopMenu"
 import Pathbar from "./Pathbar"
 
-import { Tokens, Defs, Bool, Mode, CitedByParent } from "../assets/Constants";
+import { Tokens, Defs, Bool, Mode, CitedByParent, ExecCommand } from "../assets/Constants";
 
 class Moonad extends Component {
 
@@ -28,7 +28,7 @@ class Moonad extends Component {
   history  : Array<string> = [];     // previous files
   defs     : Defs          = null;   // loaded formality token
   mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
-  
+
   constructor(props) {
     super(props);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
@@ -93,6 +93,32 @@ class Moonad extends Component {
   // async load_parents(file) {
   //   return await fm.forall.load_file_parents(file);
   // }
+
+  async exec_command( cmd: string, code?: string ) {
+    let output_result: Array<string> = new Array<string>();
+    output_result.push("Formality");
+    output_result.push("");
+    output_result.push("Usage: fm [options] [args]");
+    output_result.push("");
+    output_result.push("Evaluation modes (default: -d):");
+    output_result.push("-d <file>/<term> debug (using HOAS interpreter)");
+    output_result.push("  -X don't erase types");
+    output_result.push("  -B don't erase boxes");
+    output_result.push("  -W stop on weak head normal form");
+    output_result.push("  -0 don't normalize anything");
+    output_result.push("-o <file>/<term> optimal (using interaction nets, lazy)");
+    output_result.push("-O <file>/<term> optimal (using interaction nets, strict)");
+    output_result.push("-j <file>/<term> JavaScript (using native functions)");
+    output_result.push("");
+    output_result.push("Type-checking modes:");
+    output_result.push("-t <file>/<term> performs a type check");
+    output_result.push("");
+    // Show fm commands
+    if (cmd === "fm") { 
+      return output_result;
+    }
+    this.forceUpdate();
+  }
 
   // Loads a code without a file (local)
   async save_code(code) {
@@ -214,7 +240,7 @@ class Moonad extends Component {
     const on_click_imp = (path) => this.on_click_imp(path);
     const on_click_ref = (path) => this.on_click_ref(path);
     const on_input_code = (code) => this.on_input_code(code);
-
+    const exec_command = (cmd) => this.exec_command(cmd, null);
     // Renders the site
     return h("div", {
       style: {
@@ -236,7 +262,7 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      h(Console, {load_file, cited_by, mode})
+      h(Console, {load_file, cited_by, mode, exec_command})
     ]);
   }
 }

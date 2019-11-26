@@ -42,7 +42,6 @@ class Pathbar extends Component<Props> {
 
   onKeyDown(e) {
     const onLoadCode = (file, push) => this.props.load_file(file, push);
-
     if (e.keyCode === 13 && this.editing) {
       this.editing = false;
       const is_valid = this.verify_format(this.file_name);
@@ -72,7 +71,8 @@ class Pathbar extends Component<Props> {
         placeholder: "Enter file name...",
         onKeyDown,
         onInput,
-        onBlur
+        onBlur,
+        autofocus: true,
       });
     }
     return h("div", { style, onClick }, this.props.path);
@@ -100,7 +100,7 @@ const input_style = {
   "outline": "none",
   "font-family": "monospace",
   "font-color": LayoutConstants.light_gray_color,
-  "background-color": LayoutConstants.primary_shadow_color
+  "background": "transparent"
 };
 
 export default Pathbar

@@ -59,7 +59,8 @@ const button_style = {
 
 const button_hover_style = {
   ...button_style,
-  "background-color": LayoutConstants.primary_shadow_color
+  // "background-color": "#000000"
+  "font-weight": "bold"
 }
 
 export default TopMenuButton;
