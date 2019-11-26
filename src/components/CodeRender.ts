@@ -12,7 +12,9 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
     return h("div", {
       style: {
         "padding": "8px",
-        "flex-grow": 1
+        "flex-grow": 1,
+        "font-family": "monospace",
+        "font-size": "14px"
       }
     }, "Loading code from FPM. This may take a while...");
   }

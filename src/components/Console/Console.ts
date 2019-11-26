@@ -23,7 +23,7 @@ export interface Props {
 // The div which displays the Bottom elmeent of the screen
 class Console extends Component<Props> {
   
-  view_on_focus: TabViewType = "terminal";
+  view_on_focus: TabViewType = "cited_by";
 
   constructor(props: Props) {
     super(props);

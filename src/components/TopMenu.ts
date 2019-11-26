@@ -78,7 +78,7 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
           onClick: () => on_click_edit(),
         }), 
         h(TopMenuButton, {icon: icon_console,
-          title: "CONSOLE",
+          title: "INSPECT",
           onClick: () => on_click_view(),
         }), 
         h(TopMenuButton, {icon: icon_play,
