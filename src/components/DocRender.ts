@@ -1,66 +1,87 @@
 // Converts a `Doc` value from Formality to an Inferno element
-
+/* tslint:disable */
 import {h} from "inferno-hyperscript"
 import Image from "./Image"
 
-const read_string = value => {
-  var str = "";
-  (function go(value) {
+const read_string = (value: any) => {
+  let str = "";
+  const go = (value: any) => {
     const case_nil = "";
-    const case_cons = (head) => (tail) => {
+    const case_cons = (head: any) => (tail: any) => {
       str += String.fromCharCode(head);
       go(tail);
     };
     value(case_nil)(case_cons);
-  })(value);
+  }
+  go(value);
+  // (function go(value) {
+  //   const case_nil = "";
+  //   const case_cons = (head) => (tail) => {
+  //     str += String.fromCharCode(head);
+  //     go(tail);
+  //   };
+  //   value(case_nil)(case_cons);
+  // })(value);
   return str;
 };
 
-const DocRender = (doc) => {
-  const case_txt = (value) => {
+const DocRender = (doc: any) => {
+  const case_txt = (value: any) => {
     return h("span", {}, read_string(value));
   };
 
-  const case_num = (value) => {
+  const case_num = (value: number) => {
     return h("span", {}, String(value));
   };
 
-  const case_img = (size) => (data) => {
+  const case_img = (size: any) => (data: any) => {
     return h(Image, {size, data}, []);
   };
 
-  const case_box = (tag) => (props) => (child) => {
-    var props_obj : any = {};
-    var child_arr : any = [];
+  const case_box = (tag: any) => (props: any) => (child: any) => {
+    const props_obj : any = {};
+    const child_arr : any = [];
 
     // Builds tag
-    var tag_str = read_string(tag);
+    const tag_str = read_string(tag);
 
     // Builds props
-    (function go(props) {
+    const go = (props: any) => {
       const case_nil = null;
-      const case_cons = (head) => (tail) => {
-        var key = read_string(head[0]);
-        var val = read_string(head[1]);
+      const case_cons = (head: any) => (tail: any) => {
+        const key = read_string(head[0]);
+        const val = read_string(head[1]);
         props_obj[key] = val;
         go(tail);
       };
       props(case_nil)(case_cons);
-    })(props);
+    }
+    go(props);
+    // (function go(props) {
+    //   const case_nil = null;
+    //   const case_cons = (head) => (tail) => {
+    //     const key = read_string(head[0]);
+    //     const val = read_string(head[1]);
+    //     props_obj[key] = val;
+    //     go(tail);
+    //   };
+    //   props(case_nil)(case_cons);
+    // })(props);
 
     // Builds child
-    (function go(child) {
-      const case_nil = null;
-      const case_cons = (head) => (tail) => {
-        child_arr.push(DocRender(head));
-        go(tail);
-      };
-      child(case_nil)(case_cons);
-    })(child);
+   const go_push = (child: any) => {
+    const case_nil = null;
+    const case_cons = (head: any) => (tail: any) => {
+      child_arr.push(DocRender(head));
+      go(tail);
+    };
+    child(case_nil)(case_cons);
+   }
+   go_push(child);
 
     // Adds styles
     props_obj.style = {};
-    if (props_obj.border) props_obj.style.border = props_obj.border;
+    if (props_obj.border) { props_obj.style.border = props_obj.border; }
 
     return h(tag_str, props_obj, child_arr);
   };

@@ -1,5 +1,5 @@
 import { h } from "inferno-hyperscript"
-import { LoadFile, CitedByParent } from "../../assets/Constants";
+import { CitedByParent, LoadFile } from "../../assets/Constants";
 
 export interface Props {
   parents: CitedByParent;
@@ -27,9 +27,9 @@ const CitedBy = ({parents, load_file }: Props) => {
             onClick: () => load_file(parent) }, parent)
       )
     );
-  } else {
+  } 
     return h("div")
-  }
+  
 }
 
 export default CitedBy;

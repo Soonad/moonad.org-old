@@ -1,6 +1,6 @@
+import { Component } from "inferno";
 import { h } from "inferno-hyperscript"
 import { LayoutConstants } from "../assets/Constants";
-import { Component } from "inferno";
 
 export interface Props {
   icon: string;
@@ -10,13 +10,13 @@ export interface Props {
 
 class TopMenuButton extends Component<Props> {
 
-  hover = false;
+  public hover = false;
 
   constructor(props: Props) {
     super(props);
   }
 
-  render() {
+  public render() {
     const style_btn = this.hover ? button_hover_style : button_style;
 
     return h("div", {

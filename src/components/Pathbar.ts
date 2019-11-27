@@ -10,27 +10,27 @@ export interface Props {
 class Pathbar extends Component<Props> {
   
   // State
-  editing = false;
-  file_name = this.props.path;
+  public editing = false;
+  public file_name = this.props.path;
 
   constructor(props: Props) {
     super(props);
   }
 
-  onClick() {
+  public onClick() {
     this.editing = true;
     this.file_name = "";
     this.forceUpdate();
   }
 
-  onBlur() {
+  public onBlur() {
     this.editing = false;
     this.file_name = this.props.path;
     console.log("[pathbar] Onblur!!");
     this.forceUpdate();
   }
 
-  onInput(e) {
+  public onInput(e: Event) {
     const evt = e as InputEvent;
     if (this.editing && evt.target) {
       const ele = evt.target as HTMLInputElement;
@@ -40,8 +40,8 @@ class Pathbar extends Component<Props> {
     this.forceUpdate();
   }
 
-  onKeyDown(e) {
-    const onLoadCode = (file, push) => this.props.load_file(file, push);
+  public onKeyDown(e: KeyboardEvent) {
+    const onLoadCode = (file: string) => this.props.load_file(file);
     if (e.keyCode === 13 && this.editing) {
       this.editing = false;
       const is_valid = this.verify_format(this.file_name);
@@ -53,16 +53,16 @@ class Pathbar extends Component<Props> {
     this.forceUpdate();
   }
 
-  verify_format(file_name: string): boolean {
+  public verify_format(file_name: string): boolean {
     const module_regex = /^[a-zA-Z_\.-@]+#\w+$/;
     return module_regex.test(file_name);
   }
 
-  render() {
+  public render() {
     const onClick = () => this.onClick();
     const onBlur = () => this.onBlur();
-    const onKeyDown = (e) => this.onKeyDown(e);
-    const onInput = (e) => this.onInput(e);
+    const onKeyDown = (e: KeyboardEvent) => this.onKeyDown(e);
+    const onInput = (e: KeyboardEvent) => this.onInput(e);
     if (this.editing) {
       return h("input", {
         type: "text",
@@ -85,7 +85,7 @@ const style = {
   "display": "flex",
   "justify-content": "flex-start",
   "align-items": "center",
-  //"margin-left": "30px",
+  // "margin-left": "30px",
   "margin-bottom": "6px",
   "font-size": "20px",
   "flex-grow": 1,
@@ -94,8 +94,8 @@ const style = {
 const input_style = {
   ...style,
   "border": "none",
-  //"margin-top": "23px",
-  //"margin-bottom": "5px",
+  // "margin-top": "23px",
+  // "margin-bottom": "5px",
   "padding": "5px",
   "outline": "none",
   "font-family": "monospace",

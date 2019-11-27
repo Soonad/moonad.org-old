@@ -2,7 +2,9 @@
   "compilerOptions": {
       /* Basic Options */
       "target":
-          "ES5" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */,
+          "ES2016" /* Specify ECMAScript target version: 'ES3' (default), 'ES5', 'ES2015', 'ES2016', 'ES2017', or 'ESNEXT'. */,
+    //   "lib": 
+    //      ["es6"],
       "module":
           "ESNext" /* Specify module code generation: 'none', commonjs', 'amd', 'system', 'umd', 'es2015', or 'ESNext'. */,
       // "lib": [],                             /* Specify library files to be included in the compilation:  */
@@ -57,5 +59,11 @@
       // "emitDecoratorMetadata": true,         /* Enables experimental support for emitting type metadata for decorators. */
       "esModuleInterop": true
   },
-  "include": ["src/**/*.tsx", "src/**/*.ts"]
+  "module": "commonjs",
+  "include": ["src/**/*.tsx", "src/**/*.ts"],
+  "exclude": [
+    "node_modules",
+    "tests",
+    "./src/components/CodePlayer"
+  ]
 }

@@ -20,6 +20,7 @@
       "no-invalid-this": true,
       "ban-comma-operator": true,
       "no-arg": true,
+      "no-bitwise": false,
       "no-duplicate-case": true,
       "no-empty-character-class": true,
       "no-ex-assign": true,
@@ -31,10 +32,11 @@
       "no-regex-spaces": true,
       "no-sparse-arrays": true,
       "no-unexpected-multiline": true,
+      "no-var-requires": false,
       "valid-jsdoc": true,
       "valid-typeof": true,
       "early-exit": { "severity": "warning" },
-      "no-shadowed-variable": { "severity": "warning" },
+      "no-shadowed-variable": false,
       "no-collapsible-if": { "severity": "warning" },
       "no-unnecessary-else": { "severity": "warning" },
       "no-accessor-recursion": { "severity": "warning" },
@@ -60,7 +62,8 @@
   },
   "linterOptions": {
     "exclude": [
-        "./src/components/Image"
+        "./src/components/Image",
+        "./node_modules"
     ]
 }
 }

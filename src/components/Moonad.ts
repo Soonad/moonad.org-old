@@ -12,29 +12,29 @@ import CodeEditor from "./CodeEditor"
 import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
 import Console from "./Console/Console"
-import TopMenu from "./TopMenu"
 import Pathbar from "./Pathbar"
+import TopMenu from "./TopMenu"
 
-import { Tokens, Defs, Bool, Mode, CitedByParent, ExecCommand } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, ExecCommand, Mode, Tokens } from "../assets/Constants";
 
 class Moonad extends Component {
 
   // Application state
-  version  : string        = "2";    // change to clear the user's caches
-  file     : string        = null;   // name of the current file being rendered
-  code     : string        = null;   // contents of the current file
-  tokens   : Tokens        = null;   // chunks of code with syntax highlight info
-  cited_by : CitedByParent = null;   // files that import the current file
-  history  : Array<string> = [];     // previous files
-  defs     : Defs          = null;   // loaded formality token
-  mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
+  public version  : string        = "2";    // change to clear the user's caches
+  public file     : string        = "";   // name of the current file being rendered
+  public code     : string        = "";   // contents of the current file
+  public tokens   : Tokens        = [];   // chunks of code with syntax highlight info
+  public cited_by : CitedByParent = [];   // files that import the current file
+  public history  : string[] = [];     // previous files
+  public defs     : Defs          = {};   // loaded formality token
+  public mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
 
-  constructor(props) {
+  constructor(props: any) {
     super(props);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
   }
 
-  componentDidMount() {
+  public componentDidMount() {
     const cached_fm_version = window.localStorage.getItem("cached_fm_version");
     const cached_moonad_version = window.localStorage.getItem("cached_moonad_version");
     if (cached_fm_version !== fm.lang.version || cached_moonad_version !== this.version) {
@@ -43,22 +43,23 @@ class Moonad extends Component {
       window.localStorage.setItem("cached_fm_version", fm.lang.version);
     }
 
-    window.onpopstate = (e) => {
+    window.onpopstate = (e: any) => {
+      console.log("Moonad, window.onpopstate, describing e: "+e);
       this.load_file(e.state, false);
     }
 
-    //window.onresize = () => {
-      //console.log("force-update");
-      //this.forceUpdate();
-    //}
+    // window.onresize = () => {
+      // console.log("force-update");
+      // this.forceUpdate();
+    // }
   }
 
-  loader(file) {
+  public loader(file: string) {
     return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
   }
 
   // Re-parses the code to build defs and tokens
-  async parse() {
+  public async parse() {
     const parsed = await fm.lang.parse(this.code, {file: this.file, tokenify: true, loader: this.loader});
     this.defs = parsed.defs;
     this.tokens = parsed.tokens;
@@ -66,7 +67,7 @@ class Moonad extends Component {
   }
 
   // Loads a file (ex: "Data.Bool#xxxx")
-  async load_file(file, push_history = true) {
+  public async load_file(file: string, push_history: boolean = true) {
     if (file.slice(-3) === ".fm") {
       file = file.slice(0, -3);
     }
@@ -94,8 +95,8 @@ class Moonad extends Component {
   //   return await fm.forall.load_file_parents(file);
   // }
 
-  async exec_command( cmd: string, code?: string ) {
-    let output_result: Array<string> = new Array<string>();
+  public async exec_command( cmd: string, code?: string ) {
+    const output_result: string[] = new Array<string>();
     output_result.push("Formality");
     output_result.push("");
     output_result.push("Usage: fm [options] [args]");
@@ -121,7 +122,7 @@ class Moonad extends Component {
   }
 
   // Loads a code without a file (local)
-  async save_code(code) {
+  public async save_code(code: string) {
     this.code = code;
     this.parse();
     this.file = await fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code);
@@ -129,102 +130,104 @@ class Moonad extends Component {
   }
 
   // Type-checks a definition 
-  typecheck(name) {
+  public typecheck(name: string) {
+    let type;
+    let good;
     try {
-      var type = fm.lang.run("TYPE", name, "TYPE", {defs: this.defs});
-      var good = true;
+      type = fm.lang.run("TYPE", name, "TYPE", {defs: this.defs});
+      good = true;
     } catch (e) {
-      var type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
-      var good = false;
+      type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
+      good = false;
     }
-    var text = ":: Type ::\n";
+    let text = ":: Type ::\n";
     if (good) {
       text += "✓ " + fm.lang.show(type);
     } else {
       text += "✗ " + type;
     }
     try {
-      var norm = fm.lang.run("REDUCE_DEBUG", name, {defs: this.defs, erased: true, unbox: true, logging: true});
+      const norm = fm.lang.run("REDUCE_DEBUG", name, {defs: this.defs, erased: true, unbox: true, logging: true});
       text += "\n\n:: Output ::\n";
       text += fm.lang.show(norm, [], {full_refs: false});
-    } catch (e) {};
+    } catch (e) {}
     alert(text);
   }
 
   // Normalizes a definition
-  normalize(name) {
-    var norm : any;
+  public normalize(name: any) {
+    let norm : any;
     try {
       norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
     } catch (e) {
       norm = "<unable_to_normalize>";
-    };
+    }
     alert(norm);
   }
 
   // Event when user clicks a definition 
-  on_click_def(path) {
-    return e => {
+  public on_click_def(path: string) {
+    return (e: any) => {
       if (!e.shiftKey) {
         return this.typecheck(path);
-      } else {
+      } 
         return this.normalize(path);
-      }
+      
     }
   }
 
   // Event when user clicks a reference
-  on_click_ref(path) {
-    return e => {
+  public on_click_ref(path: string) {
+    return (e: any) => {
       this.load_file(path.slice(0, path.indexOf("/")));
     }
   }
 
   // Event when user clicks an import
-  on_click_imp(file) {
-    return e => {
+  public on_click_imp(file: string) {
+    return (e: any) => {
       this.load_file(file);
     }
   }
   
-  on_click_view() {
+  public on_click_view() {
     this.mode = "VIEW";
     this.save_code(this.code);
     this.forceUpdate();
   }
 
-  on_click_edit() {
+  public on_click_edit() {
     this.mode = "EDIT";
     this.forceUpdate();
   }
 
-  on_click_play() {
+  public on_click_play() {
     this.mode = "PLAY";
     this.forceUpdate();
   }
 
-  on_input_code(code) {
+  public on_input_code(code: string) {
     this.code = code;
     this.forceUpdate();
   }
 
-  //async on_click_save() {
-    //var file = prompt("File name:");
-    //try {
-      //if (file) {
-        //var unam = await fm.forall.save_file(file, this.code);
-        //this.load_file(unam);
-      //} else {
-        //throw "";
-      //}
-    //} catch (e) {
-      //console.log(e);
-      //alert("Couldn't save file.");
-    //}
-  //}
+  // async on_click_save() {
+    // var file = prompt("File name:");
+    // try {
+      // if (file) {
+        // var unam = await fm.forall.save_file(file, this.code);
+        // this.load_file(unam);
+      // } else {
+        // throw "";
+      // }
+    // } catch (e) {
+      // console.log(e);
+      // alert("Couldn't save file.");
+    // }
+  // }
 
   // Renders the interface
-  render() {
+  public render() {
     // Creates bound variables for states and local methods
     const mode = this.mode;
     const file = this.file;
@@ -232,25 +235,25 @@ class Moonad extends Component {
     const code = this.code;
     const tokens = this.tokens;
     const cited_by = this.cited_by;
-    const load_file = (file, push) => this.load_file(file, push);
+    const load_file = (file: string, push_history?: boolean) => this.load_file(file, push_history);
     const on_click_view = () => this.on_click_view();
     const on_click_edit = () => this.on_click_edit();
     const on_click_play = () => this.on_click_play();
-    const on_click_def = (path) => this.on_click_def(path);
-    const on_click_imp = (path) => this.on_click_imp(path);
-    const on_click_ref = (path) => this.on_click_ref(path);
-    const on_input_code = (code) => this.on_input_code(code);
-    const exec_command = (cmd) => this.exec_command(cmd, null);
+    const on_click_def = (path: string) => this.on_click_def(path);
+    const on_click_imp = (path: string) => this.on_click_imp(path);
+    const on_click_ref = (path: string) => this.on_click_ref(path);
+    const on_input_code = (code: string) => this.on_input_code(code);
+    const exec_command = (cmd: string) => this.exec_command(cmd);
     // Renders the site
     return h("div", {
       style: {
-        //"min-width": "400px",
+        // "min-width": "400px",
         "font-family": "Gotham Book",
         "display": "flex",
         "flex-flow": "column nowrap",
-        //"align-items": "center",
+        // "align-items": "center",
         "height": "100%",
-        //"background": "rgb(253,253,254)"
+        // "background": "rgb(253,253,254)"
     }}, [
       // Top of the site
       TopMenu({mode, file, on_click_view, on_click_edit, on_click_play, load_file}),

@@ -1,13 +1,21 @@
 // Renders Formality code with syntax highlighting
 
 import {h} from "inferno-hyperscript"
+import { Tokens } from "../../docs/assets/Constants";
 import CountLines from "./CountLines";
 
-//document.addEventListener("touchmove", function (evt) {
-  //evt.preventDefault();
-//}, false);
+// document.addEventListener("touchmove", function (evt) {
+  // evt.preventDefault();
+// }, false);
+interface Props {
+  code: string;
+  tokens: any; 
+  on_click_def: any;
+  on_click_imp: any;
+  on_click_ref: any;
+}
 
-const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) => {
+const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Props) => {
   if (!tokens) {
     return h("div", {
       style: {
@@ -20,10 +28,11 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
   }
 
   // Makes spans for each code chunk
-  var code_chunks = [];
+  const code_chunks = [];
+  // tslint:disable-next-line
   for (let i = 0; i < tokens.length; ++i) {
-    let child = tokens[i][1];
-    let elem = (() => {
+    const child = tokens[i][1];
+    const elem = (() => {
       switch (tokens[i][0]) {
         case "txt":
           return h("span", {style: {"color": "black"}}, child);
@@ -36,7 +45,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
         case "var":
           return h("span", {style: {"color": "black"}}, child);
         case "imp":
-          var [file, hash] = child.split("#");
+          const [file, hash] = child.split("#");
           return h("a", {
             href: window.location.origin + "/" + tokens[i][1],
             style: {
@@ -44,7 +53,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
               "text-decoration": "underline",
               "cursor": "pointer"
             },
-            on_click: e => {
+            on_click: (e: any) => {
               on_click_imp(tokens[i][1])(e);
               e.preventDefault();
             }}, [
@@ -61,7 +70,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
               "font-weight": "bold",
               "cursor": "pointer"
             },
-            on_click: e => {
+            on_click: (e: any) => {
               on_click_ref(tokens[i][2])(e);
               e.preventDefault();
             }}, child);
@@ -73,7 +82,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
               "font-weight": "bold",
               "cursor": "pointer"
             },
-            on_click: e => {
+            on_click: (e: any) => {
               on_click_def(tokens[i][2])(e);
             }
           }, child);
@@ -85,16 +94,16 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}) =>
   }
 
   // TODO: comment and explain
-  var max_cols = 80;
-  var max_font_size = 14;
-  var padding = 4;
-  var width = Math.min(max_font_size * (3/5) * max_cols, window.innerWidth);
-  var font_size = Math.floor(((width - padding * 2) / max_cols) * (5/3));
+  const max_cols = 80;
+  const max_font_size = 14;
+  const padding = 4;
+  const width = Math.min(max_font_size * (3/5) * max_cols, window.innerWidth);
+  const font_size = Math.floor(((width - padding * 2) / max_cols) * (5/3));
 
   return h("code", {
     role: "CodeRender div",
     style: {
-      //"width": width + "px",
+      // "width": width + "px",
       "width": "100%",
       "font-size": font_size + "px",
       "padding": padding + "px",

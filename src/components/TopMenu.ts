@@ -19,7 +19,7 @@ export interface Props {
 }
 
 const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_play}: Props) => {
-  var menu_height = 48;
+  const menu_height = 48;
 
   return h("div", {
     style: {
@@ -66,7 +66,7 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
     ]),
     h("div", {className: "Buttons div", 
       style: {
-        //"width": "230px",
+        // "width": "230px",
         "height": menu_height + "px", 
         "display": "flex",
         "flex-direction": "row",
