@@ -7,9 +7,9 @@ node_modules_cache: &node_modules_cache
     fingerprint_script: cat package-lock.json
     populate_script: npm install
 
-typecheck_task:
-  <<: *node_modules_cache
-  typecheck_script: npm run typecheck
+# typecheck_task:
+#   <<: *node_modules_cache
+#   typecheck_script: npm run typecheck
 
 lint_task:
   <<: *node_modules_cache
