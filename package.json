@@ -9,7 +9,7 @@
     "build": "rm -rf docs; cp -r src docs; webpack",
     "lint": "tslint --project .",
     "lint-fix": "tslint --fix --project .",
-    "format": "prettier-eslint \"src/**/*.ts\" --write"
+    "precommit": "lint-staged"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,8 @@
     "formality-lang": "^0.1.195",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
+    "prettier": "^1.15.3",
+    "lint-staged": "^9.5.0",
     "raw-loader": "^3.1.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.17.0",
@@ -39,5 +41,19 @@
   },
   "dependencies": {
     "express": "^4.17.1"
+  },
+  "peerDependencies": {
+    "prettier": ">1.0.0",
+    "tslint": ">5.0.0"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,md,scss}": [
+      "prettier --write",
+      "git add"
+    ],
+    "*.{ts,tsx}": [
+      "tslint --fix",
+      "git add"
+    ]
   }
 }
