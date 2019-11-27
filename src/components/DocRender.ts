@@ -1,4 +1,5 @@
 // Converts a `Doc` value from Formality to an Inferno element
+/* tslint:disable */
 import {h} from "inferno-hyperscript"
 import Image from "./Image"
 
