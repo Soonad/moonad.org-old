@@ -1,24 +1,26 @@
 {
-  "name": "fm-lab",
-  "version": "0.1.0",
+  "name": "moonad",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "typecheck": "tsc --noEmit --project './tsconfig.json'",
     "build": "rm -rf docs; cp -r src docs; webpack",
-    "lint": "eslint \"src/**/*.js\" && npx prettier-eslint \"src/**/*.js\" --list-different",
-    "format": "prettier-eslint \"src/**/*.js\" --write"
+    "lint": "tslint --project .",
+    "lint-fix": "tslint --fix --project .",
+    "format": "prettier-eslint \"src/**/*.ts\" --write"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://gitlab.com/moonad/fm-lab.git"
+    "url": "git+https://github.com/moonad/moonad.git"
   },
   "author": "Victor Maia",
   "license": "MIT",
   "bugs": {
-    "url": "https://gitlab.com/moonad/fm-lab/issues"
+    "url": "https://github.com/moonad/moonadissues"
   },
-  "homepage": "https://gitlab.com/moonad/fm-lab#readme",
+  "homepage": "https://github.com/moonad/moonad",
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
     "file-loader": "^4.2.0",
@@ -26,6 +28,11 @@
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
     "raw-loader": "^3.1.0",
+    "tslint": "^5.20.1",
+    "tslint-config-prettier": "^1.17.0",
+    "tslint-consistent-codestyle": "^1.14.1",
+    "tslint-eslint-rules": "^5.4.0",
+    "tslint-react": "^3.6.0",
     "typescript": "^3.7.2",
     "webpack": "^4.41.2",
     "webpack-cli": "^3.3.10"
