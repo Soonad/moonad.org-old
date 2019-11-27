@@ -1,37 +1,37 @@
-import { h } from "inferno-hyperscript"
-import { LayoutConstants, ElementsId, ExecCommand } from "../../assets/Constants";
 import { Component } from "inferno";
+import { h } from "inferno-hyperscript"
+import { ElementsId, ExecCommand, LayoutConstants } from "../../assets/Constants";
 
 export interface Props {
-  result_cmd : Array<string>;
+  result_cmd : string[];
   file: string;
   exec_command : ExecCommand;
 }
 
-type HistoryRow = {is_command: boolean, info: string};
-type History = Array<HistoryRow>;
+interface HistoryRow {is_command: boolean, info: string}
+type History = HistoryRow[];
 
 // TODO: 
 // - add scroll after receiving a response from Formality
 // - after pressing enter, continues to focus on input field
 class Terminal extends Component<Props> {
 
-  is_editing = false;
-  command = "";
-  result_cmd: Array<string> = new Array<string>();
-  history: History = new Array<HistoryRow>();
-  scrollTo;
+  public is_editing = false;
+  public command = "";
+  public result_cmd: string[] = new Array<string>();
+  public history: History = new Array<HistoryRow>();
+  public scrollTo: any;
 
   constructor(props: Props) {
     super(props);
   }
 
-  onClick() {
+  public onClick() {
     this.is_editing = true;
     this.forceUpdate();
   }
 
-  onInput(e) {
+  public onInput(e: InputEvent) {
     const evt = e as InputEvent;
     if (this.is_editing && evt.target) {
       const ele = evt.target as HTMLInputElement;
@@ -42,22 +42,19 @@ class Terminal extends Component<Props> {
   }
 
   // TODO: after pressing enter, the focus must continue on the input field
-  onKeyDown(e) {
+  public onKeyDown(e: KeyboardEvent) {
+    // tslint:disable-next-line
     if (e.keyCode === 13 && this.is_editing) {
       this.is_editing = false;
       this.history.push( {is_command: true, info: this.command} )
       
-      var input_field = document.getElementById(ElementsId.console_input_id);
-      // window.setTimeout(function () { 
-        // this.is_editing = true;
-        input_field.focus();
-      // }, 0);
+      const input_field = document.getElementById(ElementsId.console_input_id);
       this.exec_command_result();
       this.forceUpdate();
     }
   }
 
-  async exec_command_result() {
+  public async exec_command_result() {
     this.result_cmd = await this.props.exec_command(this.command);
     if (this.result_cmd !== undefined) {
       this.result_cmd.map( (result: string) => {
@@ -69,7 +66,7 @@ class Terminal extends Component<Props> {
     
   }
 
-  onHistoryUpdate() {
+  public onHistoryUpdate() {
     console.log("Trying to scroll. History lenght: "+this.history.length);
     if(document.getElementById("div_view_n_input")){
     //   console.log("element exists");
@@ -81,12 +78,12 @@ class Terminal extends Component<Props> {
     }
   }
 
-  render() {
-    const onClick = () => this.onClick();
-    const onKeydown = (e) => this.onKeyDown(e);
-    const onInput = (e) => this.onInput(e);
+  public render() {
+    const onClick: () => void = () => this.onClick();
+    const onKeydown = (e: KeyboardEvent) => this.onKeyDown(e);
+    const onInput = (e: InputEvent) => this.onInput(e);
 
-    const div_input = (is_editing: boolean, onClick) => {
+    const div_input = (is_editing: boolean, onClick: () => void) => {
       if (is_editing) {
         return h("input", {
           id: ElementsId.console_input_id,
@@ -107,7 +104,7 @@ class Terminal extends Component<Props> {
           onInput,
           autofocus: true,
         }, this.command); 
-      } else {
+      } 
         return h("div", {
           style: {
             "color": LayoutConstants.dark_gray_color, 
@@ -125,7 +122,7 @@ class Terminal extends Component<Props> {
             "background": LayoutConstants.dark_gray_color 
           }} )
         );
-      }
+      
     };
 
     const div_view = (history: History) => {

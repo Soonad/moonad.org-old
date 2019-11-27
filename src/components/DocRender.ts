@@ -1,13 +1,13 @@
 // Converts a `Doc` value from Formality to an Inferno element
-
+/* tslint:disable */
 import {h} from "inferno-hyperscript"
 import Image from "./Image"
 
-const read_string = value => {
+const read_string = (value: any) => {
   var str = "";
   (function go(value) {
     const case_nil = "";
-    const case_cons = (head) => (tail) => {
+    const case_cons = (head: any) => (tail: any) => {
       str += String.fromCharCode(head);
       go(tail);
     };
@@ -16,20 +16,20 @@ const read_string = value => {
   return str;
 };
 
-const DocRender = (doc) => {
-  const case_txt = (value) => {
+const DocRender = (doc: any) => {
+  const case_txt = (value: any) => {
     return h("span", {}, read_string(value));
   };
 
-  const case_num = (value) => {
+  const case_num = (value: any) => {
     return h("span", {}, String(value));
   };
 
-  const case_img = (size) => (data) => {
+  const case_img = (size: any) => (data: any) => {
     return h(Image, {size, data}, []);
   };
 
-  const case_box = (tag) => (props) => (child) => {
+  const case_box = (tag: any) => (props: any) => (child: any) => {
     var props_obj : any = {};
     var child_arr : any = [];
 
@@ -39,7 +39,7 @@ const DocRender = (doc) => {
     // Builds props
     (function go(props) {
       const case_nil = null;
-      const case_cons = (head) => (tail) => {
+      const case_cons = (head: any) => (tail: any) => {
         var key = read_string(head[0]);
         var val = read_string(head[1]);
         props_obj[key] = val;
@@ -51,7 +51,7 @@ const DocRender = (doc) => {
     // Builds child
     (function go(child) {
       const case_nil = null;
-      const case_cons = (head) => (tail) => {
+      const case_cons = (head: any) => (tail: any) => {
         child_arr.push(DocRender(head));
         go(tail);
       };

@@ -1,7 +1,7 @@
 
-import { h } from "inferno-hyperscript";
 import { Component } from "inferno";
-import { LayoutConstants, Mode, LoadFile, CitedByParent, ExecCommand } from "../../assets/Constants";
+import { h } from "inferno-hyperscript";
+import { CitedByParent, ExecCommand, LayoutConstants, LoadFile, Mode } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
 import Terminal from "./Terminal";
 
@@ -11,7 +11,7 @@ interface Props {
   view_on_focus: TabViewType;
   mode: Mode;
   load_file: LoadFile;
-  parents: Array<string>;
+  parents: string[];
   // res_cmd: Array<string>;
   exec_command: ExecCommand;
   // exec_command: (cmd: string) => any;
@@ -59,7 +59,7 @@ const format_console_msg = (msg: string) => {
 // -----
 // Views
 // -----
-const cited_by_view = (parents: Array<string>, load_file) => {
+const cited_by_view = (parents: string[], load_file: LoadFile) => {
   const qtd = parents.length || 0;
   const cited_by_msg = format_console_msg(qtd > 1? qtd + " results" : qtd + " result");
   const cited_by = h(CitedBy, {parents, load_file});

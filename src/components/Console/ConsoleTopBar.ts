@@ -1,6 +1,6 @@
 
-import { h } from "inferno-hyperscript";
 import { Component } from "inferno";
+import { h } from "inferno-hyperscript";
 import { LayoutConstants } from "../../assets/Constants";
 
 interface Props {
@@ -56,13 +56,13 @@ export interface ConsoleTabs {
 
 class ConsoleTab extends Component<ConsoleTabs> {
 
-  hover = false 
+  public hover = false 
 
   constructor(props: ConsoleTabs){
     super(props);
   }
 
-  render() {
+  public render() {
     const style_btn = this.hover ? console_tab_style_hover : console_tab_style;
     return h("div", {
       onClick: this.props.onClick,

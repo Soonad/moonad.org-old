@@ -2,7 +2,7 @@
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
 
-import { LayoutConstants, ConsoleTabs, LoadFile, CitedByParent, Mode, ExecCommand } from "../../assets/Constants";
+import { CitedByParent, ConsoleTabs, ExecCommand, LayoutConstants, LoadFile, Mode } from "../../assets/Constants";
 
 // Components
 import CitedBy from "./CitedBy";
@@ -23,14 +23,14 @@ export interface Props {
 // The div which displays the Bottom elmeent of the screen
 class Console extends Component<Props> {
   
-  view_on_focus: TabViewType = "cited_by";
+  public view_on_focus: TabViewType = "cited_by";
 
   constructor(props: Props) {
     super(props);
   } 
 
-  render() {
-    const tabs: Array<ConsoleTabs> = [
+  public render() {
+    const tabs: ConsoleTabs[] = [
       {
         is_on_focus: this.view_on_focus === "cited_by",
         title: "Cited By",
@@ -58,8 +58,8 @@ class Console extends Component<Props> {
         load_file: this.props.load_file,
         parents: this.props.cited_by,
         exec_command: this.props.exec_command}),
-    ]);
+    ])
   }
-};
+}
 
 export default Console

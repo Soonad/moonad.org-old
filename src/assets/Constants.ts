@@ -16,12 +16,13 @@ const ElementsId = {
 
 // Common Types
 type Tokens = Array<[string, [string, string]]>;
-type Defs = {[key : string] : any}; // `any` is a Formality Term
 type Bool = true | false;
 type Mode = "EDIT" | "PLAY" | "VIEW";
-type LoadFile = (module_or_term: string, push_history?: boolean) => any;
-type CitedByParent = Array<string>;
+type LoadFile = (file: string, push_history?: boolean) => Promise<void>;
+type CitedByParent = string[];
 type ExecCommand = (cmd: string, code?: string) => any;
+
+interface Defs {[key : string] : any} // `any` is a Formality Term
 
 export interface Module {
   path: string;

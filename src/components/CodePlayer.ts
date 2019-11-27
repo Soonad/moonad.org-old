@@ -1,31 +1,40 @@
 import {Component} from "inferno"
 import {h} from "inferno-hyperscript"
 
+import { Defs } from "../../docs/assets/Constants";
 import DocRender from "./DocRender"
+
 
 declare var require: any
 const fm = require("formality-lang");
 
-// Plays an application
-class CodePlayer extends Component {
-  app_error = null;
-  app_state = null;
-  app_funcs = null;
-  defs      = null;
-  file      = null;
+interface Props {
+  defs: Defs;
+  file: string;
+}
 
-  constructor(props) {
+/* tslint:disable */
+
+// Plays an application
+class CodePlayer extends Component<Props> {
+  public app_error: string = "";
+  public app_state: any    = null; // TODO: add the correct type
+  public app_funcs: any    = null; // TODO: add the correct type
+  public defs: Defs        = {};
+  public file: string      = "";
+
+  constructor(props: Props) {
     super(props);
     this.defs = props.defs;
     this.file = props.file;
   }
 
-  async componentDidMount() {
+  public async componentDidMount() {
     this.compile();
   }
 
-  find_app_prefix() {
-    for (var key in this.defs) {
+  public find_app_prefix() {
+    for (const key in this.defs) {
       if (key.slice(0,4) === "App#") {
         return key.slice(0, key.indexOf("/"));
       }
@@ -33,7 +42,7 @@ class CodePlayer extends Component {
     return null;
   }
 
-  compile() {
+  public compile() {
     const defs = this.defs;
     const file = this.file;
 
@@ -41,17 +50,17 @@ class CodePlayer extends Component {
     const app_lib = this.find_app_prefix();
 
     if (defs && main && app_lib) {
-      var get_state = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_state`]), {defs});
-      var get_render = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_render`]), {defs});
-      var get_update = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_update`]), {defs});
-      var mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mouseclick`]), {defs});
-      var mousemove = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mousemove`]), {defs});
-      var keypress = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/keypress`]), {defs});
+      const get_state = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_state`]), {defs});
+      const get_render = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_render`]), {defs});
+      const get_update = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_update`]), {defs});
+      const mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mouseclick`]), {defs});
+      const mousemove = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mousemove`]), {defs});
+      const keypress = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/keypress`]), {defs});
 
-      var app = fm.to_js.compile(fm.lang.erase(main), {defs});
-      var app_state = get_state(app);
-      var app_render = get_render(app);
-      var app_update = get_update(app);
+      const app = fm.to_js.compile(fm.lang.erase(main), {defs});
+      const app_state = get_state(app);
+      const app_render = get_render(app);
+      const app_update = get_update(app);
 
       this.app_funcs = {
         mouseclick,
@@ -69,55 +78,65 @@ class CodePlayer extends Component {
     this.forceUpdate();
   }
 
-  render() {
+  public render() {
     const app_state = this.app_state;
     const app_funcs = this.app_funcs;
     const defs = this.defs;
     const file = this.file;
 
-    const style = {"flex-grow": 1};
+    const style = {
+      "flex-grow": 1, 
+      "font-family": "monospace",
+      "font-size": "14px",
+      "padding": "8px"
+    };
 
-    const onMouseMove = (e) => {
-      this.app_state = app_funcs.update(app_funcs.mousemove(e.pageX)(e.pageY))(app_state);
+    const onMouseMove = (e: any) => {
+      if (typeof app_funcs !== null || app_funcs !== undefined) {
+        this.app_state = app_funcs.update(app_funcs.mousemove(e.pageX)(e.pageY))(app_state);
+        this.forceUpdate();
+      }
+    };
+
+    const onClick = (e: any) => {
+      this.app_state = app_funcs!.update(app_funcs!.mouseclick(e.pageX)(e.pageY))(app_state);
       this.forceUpdate();
     };
 
-    const onClick = (e) => {
-      this.app_state = app_funcs.update(app_funcs.mouseclick(e.pageX)(e.pageY))(app_state);
-      this.forceUpdate();
-    };
-
-    const onKeyPress = (e) => {
+    const onKeyPress = (e: any) => {
       this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
       this.forceUpdate();
     };
 
-    const onKeyDown = (e) => {
+    const onKeyDown = (e: any) => {
       this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
       this.forceUpdate();
     };
 
-    const onKeyUp = (e) => {
+    const onKeyUp = (e: any) => {
       this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
       this.forceUpdate();
     };
 
     if (this.app_error) {
       return h("div", {style}, this.app_error);
-    } else if (app_state === null || app_funcs === null) {
+    }  if (app_state === null || app_funcs === null) {
       return h("div", {style}, "Compiling application...");
-    } else {
+    } 
       return h("div", {
+        style: {
+          "flex-grow": 1,
+          "padding": "0px"
+        },
         tabindex: 0,
-        style,
         onMouseMove,
         onClick,
         onKeyPress,
         onKeyDown,
-        onKeyUp
+        onKeyUp,
       }, DocRender(app_funcs.render(app_state)));
-    }
+    
   }
-};
+}
 
 export default CodePlayer;

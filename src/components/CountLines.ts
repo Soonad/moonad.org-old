@@ -2,9 +2,9 @@ import { h } from "inferno-hyperscript";
 import { LayoutConstants } from "../assets/Constants";
 
 
-const CountLines = (qtd_lines) => {
+const CountLines = (qtd_lines: number) => {
   
-  var lines = []; 
+  const lines = []; 
 
   for (let i = 1; i <= qtd_lines; i++){
     lines.push(h("p", {style: {"height": "14px"}}, i ));
