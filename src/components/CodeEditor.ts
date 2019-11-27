@@ -1,7 +1,8 @@
 // Edits Formality Code
 
-import {h} from "inferno-hyperscript"
 import { EventHandler } from "inferno";
+import { h } from "inferno-hyperscript"
+
 
 interface Props {
   code: string,
