@@ -14,13 +14,13 @@ function hash(nums: any) {
 const cache = {};
 
 export default class Image extends Component {
-  public size       = [0, 0];
-  public data: any      = null;
-  public hash: number      = 0;
+  public size          = [0, 0];
+  public data: any     = null;
+  public hash: number  = 0;
+  public image_u8: any = null;
   public canvas: HTMLCanvasElement;
   public context2d: CanvasRenderingContext2D | null  = null;
-  public image_data: ImageData | null = null;
-  public image_u8: any   = null;
+  public image_data: ImageData  | null  = null;
   public image_u32: Uint32Array | null  = null;
 
   constructor(props: any) {

@@ -21,12 +21,12 @@ class Moonad extends Component {
 
   // Application state
   public version  : string        = "2";    // change to clear the user's caches
-  public file     : string        = "";   // name of the current file being rendered
-  public code     : string        = "";   // contents of the current file
-  public tokens   : Tokens        = [];   // chunks of code with syntax highlight info
-  public cited_by : CitedByParent = [];   // files that import the current file
-  public history  : string[] = [];     // previous files
-  public defs     : Defs          = {};   // loaded formality token
+  public file     : string        = "";     // name of the current file being rendered
+  public code     : string        = "";     // contents of the current file
+  public tokens   : Tokens        = [];     // chunks of code with syntax highlight info
+  public cited_by : CitedByParent = [];     // files that import the current file
+  public history  : string[]      = [];     // previous files
+  public defs     : Defs          = {};     // loaded formality token
   public mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
 
   constructor(props: any) {

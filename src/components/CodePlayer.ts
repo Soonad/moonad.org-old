@@ -18,7 +18,7 @@ interface Props {
 // Plays an application
 class CodePlayer extends Component<Props> {
   public app_error: string = "";
-  public app_state: any      = null; // TODO: add the correct type
+  public app_state: any    = null; // TODO: add the correct type
   public app_funcs: any    = null; // TODO: add the correct type
   public defs: Defs        = {};
   public file: string      = "";
@@ -84,31 +84,36 @@ class CodePlayer extends Component<Props> {
     const defs = this.defs;
     const file = this.file;
 
-    const style = {"flex-grow": 1};
+    const style = {
+      "flex-grow": 1, 
+      "font-family": "monospace",
+      "font-size": "14px",
+      "padding": "8px"
+    };
 
-    const onMouseMove = (e: MouseEvent) => {
+    const onMouseMove = (e: any) => {
       if (typeof app_funcs !== null || app_funcs !== undefined) {
         this.app_state = app_funcs.update(app_funcs.mousemove(e.pageX)(e.pageY))(app_state);
         this.forceUpdate();
       }
     };
 
-    const onClick = (e: MouseEvent) => {
+    const onClick = (e: any) => {
       this.app_state = app_funcs!.update(app_funcs!.mouseclick(e.pageX)(e.pageY))(app_state);
       this.forceUpdate();
     };
 
-    const onKeyPress = (e: KeyboardEvent) => {
+    const onKeyPress = (e: any) => {
       this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
       this.forceUpdate();
     };
 
-    const onKeyDown = (e: KeyboardEvent) => {
+    const onKeyDown = (e: any) => {
       this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
       this.forceUpdate();
     };
 
-    const onKeyUp = (e: KeyboardEvent) => {
+    const onKeyUp = (e: any) => {
       this.app_state = app_funcs.update(app_funcs.keypress(e.keyCode))(app_state);
       this.forceUpdate();
     };
@@ -119,13 +124,16 @@ class CodePlayer extends Component<Props> {
       return h("div", {style}, "Compiling application...");
     } 
       return h("div", {
+        style: {
+          "flex-grow": 1,
+          "padding": "0px"
+        },
         tabindex: 0,
-        style,
         onMouseMove,
         onClick,
         onKeyPress,
         onKeyDown,
-        onKeyUp
+        onKeyUp,
       }, DocRender(app_funcs.render(app_state)));
     
   }
