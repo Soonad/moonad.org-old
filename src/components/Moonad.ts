@@ -201,9 +201,14 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  public on_click_play() {
-    this.mode = "PLAY";
-    this.forceUpdate();
+  public async on_click_play() {
+    const app_files = await fm.forall.load_file_parents("App#et8L");
+    if (app_files.includes(this.file)) {
+      this.mode = "PLAY";
+      this.forceUpdate();
+    } else {
+      window.alert("This file is not an app, so it can't be played");
+    } 
   }
 
   public on_input_code(code: string) {
