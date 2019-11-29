@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest ./tests",
     "build": "rm -rf docs; cp -r src docs; webpack",
     "lint": "tslint --project .",
     "lint-fix": "tslint --fix --project .",
@@ -26,9 +26,11 @@
     "formality-lang": "^0.1.195",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
-    "prettier": "^1.15.3",
+    "jest": "^24.9.0",
     "lint-staged": "^9.5.0",
+    "prettier": "^1.15.3",
     "raw-loader": "^3.1.0",
+    "ts-jest": "^24.2.0",
     "tslint": "^5.20.1",
     "tslint-config-prettier": "^1.17.0",
     "tslint-consistent-codestyle": "^1.14.1",
@@ -39,6 +41,7 @@
     "webpack-cli": "^3.3.10"
   },
   "dependencies": {
+    "@types/jest": "^24.0.23",
     "express": "^4.17.1"
   },
   "peerDependencies": {
@@ -54,5 +57,30 @@
       "tslint --fix",
       "git add"
     ]
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "verbose": true,
+    "testURL": "http://localhost:8080",
+    "moduleFileExtensions": [
+      "js",
+      "jsx",
+      "ts",
+      "tsx"
+    ],
+    "moduleDirectories": [
+      "node_modules"
+    ],
+    "testMatch": [
+      "**/__tests__/**/*.[jt]s?(x)",
+      "**/?(*.)(spec|test).[jt]s?(x)"
+    ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/src/tests/__mocks__/fileMock.js",
+      "\\.(css|less|scss)$": "identity-obj-proxy",
+      "^./style$": "identity-obj-proxy"
+    }
   }
 }
