@@ -5,7 +5,7 @@ import {h} from "inferno-hyperscript"
 
 // TODO: how to improve this?
 declare var require: any
-const fm = require("formality-lang");
+import fm from "formality-lang";
 
 // Components
 import CodeEditor from "./CodeEditor"
@@ -23,7 +23,7 @@ class Moonad extends Component {
   public version  : string        = "2";    // change to clear the user's caches
   public file     : string        = "";     // name of the current file being rendered
   public code     : string        = "";     // contents of the current file
-  public tokens   : Tokens        = [];     // chunks of code with syntax highlight info
+  public tokens?  : Tokens        = [];     // chunks of code with syntax highlight info
   public cited_by : CitedByParent = [];     // files that import the current file
   public history  : string[]      = [];     // previous files
   public defs     : Defs          = {};     // loaded formality token
@@ -44,7 +44,6 @@ class Moonad extends Component {
     }
 
     window.onpopstate = (e: any) => {
-      console.log("Moonad, window.onpopstate, describing e: "+e);
       this.load_file(e.state, false);
     }
 
@@ -60,7 +59,8 @@ class Moonad extends Component {
 
   // Re-parses the code to build defs and tokens
   public async parse() {
-    const parsed = await fm.lang.parse(this.code, {file: this.file, tokenify: true, loader: this.loader});
+    // old: const parsed = await fm.lang.parse(this.file, this.code, true, this.loader);
+    const parsed = await fm.lang.parse(this.code, {file: this.file, loader: this.loader, tokenify: true});
     this.defs = parsed.defs;
     this.tokens = parsed.tokens;
     this.forceUpdate();
@@ -134,7 +134,8 @@ class Moonad extends Component {
     let type;
     let good;
     try {
-      type = fm.lang.run("TYPE", name, "TYPE", {defs: this.defs});
+      // before type: type = fm.run(name, this.defs, "TYPE", "TYPE");
+      type = fm.lang.run(name, this.defs, "TYPE", "TYPE");
       good = true;
     } catch (e) {
       type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
@@ -147,7 +148,8 @@ class Moonad extends Component {
       text += "✗ " + type;
     }
     try {
-      const norm = fm.lang.run("REDUCE_DEBUG", name, {defs: this.defs, erased: true, unbox: true, logging: true});
+      // old: const norm = fm.lang.run("REDUCE_DEBUG", name, {defs: this.defs, erased: true, unbox: true, logging: true});
+      const norm = fm.lang.run(name, this.defs, "REDUCE_DEBUG", {erased: true, unbox: true, logging: true});
       text += "\n\n:: Output ::\n";
       text += fm.lang.show(norm, [], {full_refs: false});
     } catch (e) {}
@@ -158,7 +160,9 @@ class Moonad extends Component {
   public normalize(name: any) {
     let norm : any;
     try {
-      norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
+      // TODO: check if we really need "DEBUG". If so, add it to ".d.ts"
+      // old: norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
+      norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, {}));
     } catch (e) {
       norm = "<unable_to_normalize>";
     }
