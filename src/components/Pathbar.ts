@@ -66,9 +66,9 @@ class Pathbar extends Component<Props> {
     if (this.editing) {
       return h("input", {
         type: "text",
-        style: input_style,
+        style: check_for_screen_size(),
         value: this.file_name,
-        placeholder: "Enter file name...",
+        placeholder: "File name",
         onKeyDown,
         onInput,
         onBlur,
@@ -79,24 +79,32 @@ class Pathbar extends Component<Props> {
   }
 }
 
+const check_for_screen_size = () => {
+  // iPhone 6s
+  if(window.screen.width <= 380){
+    return { ...style, ...input_style, "max-width": "135px" };
+  } else {
+    return input_style
+  }
+}
+
 const style = {
-  "max-width": "160px",
+  "padding-left": "8px",
   "color": "#FFFFFF",
   "display": "flex",
   "justify-content": "flex-start",
   "align-items": "center",
-  // "margin-left": "30px",
   "margin-bottom": "6px",
-  "font-size": "20px",
+  "font-size": "18px",
   "flex-grow": 1,
 };
 
 const input_style = {
   ...style,
+  "max-width": "400px",
   "border": "none",
-  // "margin-top": "23px",
-  // "margin-bottom": "5px",
   "padding": "5px",
+  "padding-bottom": "0px",
   "outline": "none",
   "font-family": "monospace",
   "font-color": LayoutConstants.light_gray_color,
