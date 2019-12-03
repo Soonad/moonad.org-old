@@ -1,7 +1,7 @@
 // Renders Formality code with syntax highlighting
 
 import {h} from "inferno-hyperscript"
-import { Tokens } from "../../docs/assets/Constants";
+import { Tokens } from "../assets/Constants";
 import CountLines from "./CountLines";
 
 // document.addEventListener("touchmove", function (evt) {
