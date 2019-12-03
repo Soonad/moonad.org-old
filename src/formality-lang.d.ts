@@ -340,6 +340,7 @@ declare module "formality-lang/fm-lang" {
 
   type RenamerFn = (name: String, depth: number) => any;
   type Mode = "TYPE" | "DEBUG"| "REDUCE_DEBUG";
+  type TypecheckMode = "REDUCE_DEBUG" | "REDUCE_NATIVE" | "REDUCE_OPTIMAL" | "TYPECHECK";
   function replace_refs(term: Term, renamer: RenamerFn): Term;
 
   function show(ast: Term, nams?: [], opts?: {}): string;
@@ -348,10 +349,11 @@ declare module "formality-lang/fm-lang" {
   function derive_adt_type(file: string, adt: Adt): Term;
   function derive_adt_ctor(file: string, adt: Adt, c: number): Term;
 
+  // (mode, term, opts = {}
   function run(
+    mode: TypecheckMode,
     term_name: string,
-    defs: Defs,
-    mode: Mode,
+    // defs: Defs,
     opts: any
   ): Term;
 
@@ -406,7 +408,8 @@ declare module "formality-lang/fm-lang" {
     derive_adt_type,
     derive_adt_ctor,
     version,
-    run
+    run,
+    TypecheckMode
   };
 }
 

@@ -23,9 +23,8 @@ const loader = async (file: string) => {
 
 interface LoadedFileResponse {code: string}
 interface CheckTerm {
+  mode: fm.lang.TypecheckMode,
   term_name: string, 
-  defs: fm.Defs, 
-  mode: fm.lang.Mode, 
   opts: any
 }
 type Check_norm = (term: CheckTerm) => fm.core.Term
@@ -34,11 +33,11 @@ const load_file = async (file: string) => {
   return await loader(file);
 }
 
-const type_check_term = async ({term_name, defs, mode, opts}: CheckTerm) => {
+const type_check_term = async ({mode, term_name, opts}: CheckTerm) => {
   let type;
   let is_success;
   try {
-    type = fm.lang.run(term_name, defs, mode, opts);
+    type = fm.lang.run(mode, term_name, opts);
     is_success = true;
   } catch (e) {
     type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
@@ -163,7 +162,7 @@ class Moonad extends Component {
 
   // Type-checks a definition 
   public async typecheck(name: string) {
-    const res = await type_check_term({term_name: name, defs: this.defs, mode: "TYPE", opts: "TYPE"});
+    const res = await type_check_term({mode: "TYPECHECK", term_name: name, opts: {defs: this.defs} });
     let text = ":: Type ::\n";
     if (res.is_success) {
       text += "✓ " + fm.lang.show(res.type);
@@ -171,11 +170,11 @@ class Moonad extends Component {
       text += "✗ " + res.type;
     }
     try {
-      const norm = await type_check_term({term_name: name, defs: this.defs, mode: "REDUCE_DEBUG", opts: {erased: true, unbox: true, logging: true}});
+      const norm = await type_check_term({mode: "REDUCE_DEBUG", term_name: name, opts: {defs: this.defs, erased: true, unbox: true, logging: true}});
       text += "\n\n:: Output ::\n";
       text += fm.lang.show(norm.type, [], {full_refs: false});
     } catch (e) {
-      console.log("Problems with normalizing a term.");
+      alert("Problems while normalizing the term.");
     }
     alert(text);
   }

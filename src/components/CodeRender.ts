@@ -72,7 +72,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Pr
               "font-weight": "bold",
               "cursor": "pointer"
             },
-            on_click: (e: any) => {
+            onClick: (e: any) => {
               on_click_ref(tokens[i][2])(e);
               e.preventDefault();
             }}, child);
@@ -85,7 +85,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Pr
               "font-weight": "bold",
               "cursor": "pointer"
             },
-            on_click: (e: any) => {
+            onClick: (e: any) => {
               on_click_def(tokens[i][2])(e);
             }
           }, child);
