@@ -87,7 +87,7 @@ class Moonad extends Component {
       this.code = "";
     }
     this.parse();
-    // this.cited_by = await fm.forall.load_file_parents(file);
+    this.cited_by = await fm.forall.load_file_parents(file);
     this.forceUpdate();
   }
 
@@ -148,7 +148,7 @@ class Moonad extends Component {
       text += "✗ " + type;
     }
     try {
-      // const norm = fm.lang.run("REDUCE_DEBUG", name, {defs: this.defs, erased: true, unbox: true, logging: true});
+      // old: const norm = fm.lang.run("REDUCE_DEBUG", name, {defs: this.defs, erased: true, unbox: true, logging: true});
       const norm = fm.lang.run(name, this.defs, "REDUCE_DEBUG", {erased: true, unbox: true, logging: true});
       text += "\n\n:: Output ::\n";
       text += fm.lang.show(norm, [], {full_refs: false});
@@ -161,7 +161,7 @@ class Moonad extends Component {
     let norm : any;
     try {
       // TODO: check if we really need "DEBUG". If so, add it to ".d.ts"
-      // norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
+      // old: norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
       norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, {}));
     } catch (e) {
       norm = "<unable_to_normalize>";
