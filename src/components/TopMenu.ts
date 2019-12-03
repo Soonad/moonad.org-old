@@ -1,5 +1,5 @@
 import { h } from "inferno-hyperscript"
-import { LayoutConstants, LoadFile, DisplayMode } from "../assets/Constants";
+import { DisplayMode, LayoutConstants, LoadFile } from "../assets/Constants";
 import Pathbar from "./Pathbar";
 import TopMenuButton from "./TopMenuButton";
 

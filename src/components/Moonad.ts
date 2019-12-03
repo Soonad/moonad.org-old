@@ -15,7 +15,7 @@ import Console from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
-import { Bool, CitedByParent, Defs, ExecCommand, DisplayMode, Tokens } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens } from "../assets/Constants";
 
 const loader = async (file: string) => {
   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);

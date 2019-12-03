@@ -1,7 +1,7 @@
 
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
-import { CitedByParent, ExecCommand, LayoutConstants, LoadFile, DisplayMode } from "../../assets/Constants";
+import { CitedByParent, DisplayMode, ExecCommand, LayoutConstants, LoadFile } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
 import Terminal from "./Terminal";
 
