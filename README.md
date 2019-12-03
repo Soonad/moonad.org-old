@@ -18,12 +18,10 @@ Access `localhost` on your browser.
 
 - `npm install`: Installs dependencies
 
-- `npm run start`: Runs serve or dev, depending on NODE_ENV value. Defaults to dev server
-
-- `npm run typecheck`: Check TypeScript files for type errors.
-
 - `npm run build`: Production-ready build
 
 - `npm run lint`: Pass TypeScript files using TSLint
 
 - `npm run lint-fix`: Automaticaly fix some lint errors
+
+- `npm run test`: Run tests

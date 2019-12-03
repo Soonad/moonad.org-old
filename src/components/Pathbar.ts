@@ -83,9 +83,9 @@ const check_for_screen_size = () => {
   // iPhone 6s
   if(window.screen.width <= 380){
     return { ...style, ...input_style, "max-width": "135px" };
-  } else {
+  } 
     return input_style
-  }
+  
 }
 
 const style = {

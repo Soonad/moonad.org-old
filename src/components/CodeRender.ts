@@ -1,7 +1,7 @@
 // Renders Formality code with syntax highlighting
 
 import {h} from "inferno-hyperscript"
-import { Tokens } from "../../docs/assets/Constants";
+import { Tokens } from "../assets/Constants";
 import CountLines from "./CountLines";
 
 // document.addEventListener("touchmove", function (evt) {
@@ -35,18 +35,19 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Pr
     const elem = (() => {
       switch (tokens[i][0]) {
         case "txt":
-          return h("span", {style: {"color": "black"}}, child);
+          return h("span", {desc: "txt", style: {"color": "black"}}, child);
         case "sym":
-          return h("span", {style: {"color": "#15568f"}}, child);
+          return h("span", {desc: "sym", style: {"color": "#15568f"}}, child);
         case "cmm":
-          return h("span", {style: {"color": "#A2A8D3"}}, child);
+          return h("span", {desc: "cmm", style: {"color": "#A2A8D3"}}, child);
         case "num":
-          return h("span", {style: {"color": "green"}}, child);
+          return h("span", {desc: "num", style: {"color": "green"}}, child);
         case "var":
-          return h("span", {style: {"color": "black"}}, child);
+          return h("span", {desc: "var", style: {"color": "black"}}, child);
         case "imp":
           const [file, hash] = child.split("#");
           return h("a", {
+            desc: "imp",
             href: window.location.origin + "/" + tokens[i][1],
             style: {
               "color": "black",
@@ -57,11 +58,12 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Pr
               on_click_imp(tokens[i][1])(e);
               e.preventDefault();
             }}, [
-              h("span", {style: {"font-weight": "bold"}}, file),
-              h("span", {style: {"color": "#B0B0B0"}}, "#" + hash)
+              h("span", {desc: "a-file", style: {"font-weight": "bold"}}, file),
+              h("span", {desc: "a-hash", style: {"color": "#B0B0B0"}}, "#" + hash)
             ]);
         case "ref":
           return h("a", {
+            desc: "ref",
             href: window.location.origin
               + "/" + tokens[i][2].replace(new RegExp("/.*$"), ""),
             style: {
@@ -76,6 +78,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Pr
             }}, child);
         case "def":
           return h("span", {
+            desc: "def",
             style: {
               "color": "#4384e6",
               "text-decoration": "underline",
@@ -87,7 +90,7 @@ const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Pr
             }
           }, child);
         default:
-          return h("span", {}, child);
+          return h("span", {desc: "default"}, child);
       }
     })();
     code_chunks.push(elem);
