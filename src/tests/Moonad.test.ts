@@ -1,6 +1,6 @@
 import fm from "formality-lang";
 import { Defs } from "../assets/Constants";
-import {load_file, loader, reduce, type_check_term} from "../components/Moonad"
+import {BaseAppPath, load_file, loader, reduce, type_check_term} from "../components/Moonad"
 
 // Obs: in package.json, change "jest" -> "verbose": false to be able to
 // console.log on the tests.
@@ -13,6 +13,10 @@ describe("Moonad", () => {
     file = "Base#"
     code = await load_file(file);
   });
+
+  test("App name didn't change", () => {
+    expect(BaseAppPath).toEqual("App#A_HX");
+  })
 
   test("Can load Base file v0.1.200", async () => {
     // This test does not accept white spaces
@@ -43,20 +47,6 @@ import Unit#ZcZV
     const parsed = await fm.lang.parse(code, {file, loader, tokenify: true});
     expect(parsed).not.toBeNull();
   }, 8000);
-
-  // Not working!
-  // test("Can normalize a term", async () => {
-  //   jest.setTimeout(8000);
-  //   const parsed = await fm.lang.parse(code, {file, loader, tokenify: true});
-  //   const defs = parsed.defs;
-  //   const tokens = parsed.tokens;
-  //   // const norm = await normalize("Map#51R5/lookup", defs, {});
-  //   const norm = await normalize("Base#", defs, {});
-
-  //   console.log(parsed);
-  //   console.log(">>>>>>> Norm");
-  //   console.log(norm);
-  // })
 
   test("Can load parents of a file", async () => {
     const file = "And#hYci"

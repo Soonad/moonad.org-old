@@ -60,6 +60,8 @@ const reduce = (term_name: string, defs: Defs, opts: any) => {
   return reduced;
 }
 
+const BaseAppPath = "App#A_HX";
+
 class Moonad extends Component {
 
   // Application state
@@ -215,7 +217,7 @@ class Moonad extends Component {
   }
 
   public async on_click_play() {
-    const app_files = await fm.forall.load_file_parents("App#et8L");
+    const app_files = await fm.forall.load_file_parents(BaseAppPath);
     if (app_files.includes(this.file)) {
       this.mode = "PLAY";
       this.forceUpdate();
@@ -288,4 +290,4 @@ class Moonad extends Component {
   }
 }
 
-export {Moonad, loader, load_file, type_check_term, reduce }
+export {Moonad, loader, load_file, type_check_term, reduce, BaseAppPath }
