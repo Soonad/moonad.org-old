@@ -1,5 +1,5 @@
 import { h } from "inferno-hyperscript"
-import { LayoutConstants, LoadFile, Mode } from "../assets/Constants";
+import { LayoutConstants, LoadFile, DisplayMode } from "../assets/Constants";
 import Pathbar from "./Pathbar";
 import TopMenuButton from "./TopMenuButton";
 
@@ -10,7 +10,7 @@ const icon_console = "../assets/icons/icon_console.png";
 const icon_play = "../assets/icons/icon_play.png";
 
 export interface Props {
-  mode: Mode;
+  mode: DisplayMode;
   file: string;
   load_file: LoadFile;
   on_click_view: () => any;

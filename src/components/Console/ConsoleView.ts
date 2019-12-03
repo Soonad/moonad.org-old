@@ -1,7 +1,7 @@
 
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
-import { CitedByParent, ExecCommand, LayoutConstants, LoadFile, Mode } from "../../assets/Constants";
+import { CitedByParent, ExecCommand, LayoutConstants, LoadFile, DisplayMode } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
 import Terminal from "./Terminal";
 
@@ -9,7 +9,7 @@ type TabViewType = "cited_by" | "terminal";
 
 interface Props {
   view_on_focus: TabViewType;
-  mode: Mode;
+  mode: DisplayMode;
   load_file: LoadFile;
   parents: string[];
   // res_cmd: Array<string>;
