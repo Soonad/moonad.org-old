@@ -17,6 +17,46 @@ import TopMenu from "./TopMenu"
 
 import { Bool, CitedByParent, Defs, ExecCommand, Mode, Tokens } from "../assets/Constants";
 
+const loader = async (file: string) => {
+  return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
+}
+
+type LoadedFileResponse = {code: string}
+interface Check_term {
+  term_name: string, 
+  defs: fm.Defs, 
+  mode: fm.lang.Mode, 
+  opts: any
+}
+type Check_norm = (term: Check_term) => fm.core.Term
+
+const load_file = async (file: string) => {
+  return await loader(file);
+}
+
+const type_check_term = async ({term_name, defs, mode, opts}: Check_term) => {
+  let type;
+  let is_success;
+  try {
+    type = fm.lang.run(term_name, defs, mode, opts);
+    is_success = true;
+  } catch (e) {
+    type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
+    is_success = false;
+  }
+  return {type, is_success};
+}
+
+const normalize = (term: fm.core.Term, defs: fm.Defs, opts: fm.core.NormOpts) => {
+  let norm : any;
+  try {
+    norm = fm.lang.show(fm.lang.norm(term, defs, defs));
+  } catch (e) {
+    norm = "<unable_to_normalize>";
+  }
+  return norm;
+}
+
 class Moonad extends Component {
 
   // Application state
@@ -53,14 +93,14 @@ class Moonad extends Component {
     // }
   }
 
-  public loader(file: string) {
-    return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
-  }
+  // public loader(file: string) {
+  //   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
+  // }
 
   // Re-parses the code to build defs and tokens
   public async parse() {
     // old: const parsed = await fm.lang.parse(this.file, this.code, true, this.loader);
-    const parsed = await fm.lang.parse(this.code, {file: this.file, loader: this.loader, tokenify: true});
+    const parsed = await fm.lang.parse(this.code, {file: this.file, loader: loader, tokenify: true});
     this.defs = parsed.defs;
     this.tokens = parsed.tokens;
     this.forceUpdate();
@@ -68,27 +108,44 @@ class Moonad extends Component {
 
   // Loads a file (ex: "Data.Bool#xxxx")
   public async load_file(file: string, push_history: boolean = true) {
-    if (file.slice(-3) === ".fm") {
-      file = file.slice(0, -3);
-    }
-    if (file.indexOf("#") === -1) {
-      file = file + "#";
-    }
-    if (push_history) {
+    if(push_history) {
+      console.log("Pushing history: "+file);
       this.history.push(file);
       window.history.pushState(file, file, file);
     }
+    const res = await load_file(file);
     this.mode = "VIEW";
     this.file = file;
     this.cited_by = [];
+
     try {
-      this.code = await this.loader(this.file);
+      this.code = await load_file(file);
     } catch (e) {
       this.code = "";
     }
     this.parse();
-    this.cited_by = await fm.forall.load_file_parents(file);
     this.forceUpdate();
+    // if (file.slice(-3) === ".fm") {
+    //   file = file.slice(0, -3);
+    // }
+    // if (file.indexOf("#") === -1) {
+    //   file = file + "#";
+    // }
+    // if (push_history) {
+    //   this.history.push(file);
+    //   window.history.pushState(file, file, file);
+    // }
+    // this.mode = "VIEW";
+    // this.file = file;
+    // this.cited_by = [];
+    // try {
+    //   this.code = await this.loader(this.file);
+    // } catch (e) {
+    //   this.code = "";
+    // }
+    // this.parse();
+    // // this.cited_by = await fm.forall.load_file_parents(file);
+    // this.forceUpdate();
   }
 
   // async load_parents(file) {
@@ -130,42 +187,27 @@ class Moonad extends Component {
   }
 
   // Type-checks a definition 
-  public typecheck(name: string) {
-    let type;
-    let good;
-    try {
-      // before type: type = fm.run(name, this.defs, "TYPE", "TYPE");
-      type = fm.lang.run(name, this.defs, "TYPE", "TYPE");
-      good = true;
-    } catch (e) {
-      type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
-      good = false;
-    }
+  public async typecheck(name: string) {
+    const res = await type_check_term({term_name: name, defs: this.defs, mode: "TYPE", opts: "TYPE"});
     let text = ":: Type ::\n";
-    if (good) {
-      text += "✓ " + fm.lang.show(type);
+    if (res.is_success) {
+      text += "✓ " + fm.lang.show(res.type);
     } else {
-      text += "✗ " + type;
+      text += "✗ " + res.type;
     }
     try {
-      // old: const norm = fm.lang.run("REDUCE_DEBUG", name, {defs: this.defs, erased: true, unbox: true, logging: true});
-      const norm = fm.lang.run(name, this.defs, "REDUCE_DEBUG", {erased: true, unbox: true, logging: true});
+      const norm = await type_check_term({term_name: name, defs: this.defs, mode: "REDUCE_DEBUG", opts: {erased: true, unbox: true, logging: true}});
       text += "\n\n:: Output ::\n";
-      text += fm.lang.show(norm, [], {full_refs: false});
-    } catch (e) {}
+      text += fm.lang.show(norm.type, [], {full_refs: false});
+    } catch (e) {
+      console.log("Problems with normalizing a term.");
+    }
     alert(text);
   }
 
   // Normalizes a definition
   public normalize(name: any) {
-    let norm : any;
-    try {
-      // TODO: check if we really need "DEBUG". If so, add it to ".d.ts"
-      // old: norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, "DEBUG", {}));
-      norm = fm.lang.show(fm.lang.norm(this.defs[name], this.defs, {}));
-    } catch (e) {
-      norm = "<unable_to_normalize>";
-    }
+    const norm = normalize(this.defs[name], this.defs, {});
     alert(norm);
   }
 
@@ -176,7 +218,6 @@ class Moonad extends Component {
         return this.typecheck(path);
       } 
         return this.normalize(path);
-      
     }
   }
 

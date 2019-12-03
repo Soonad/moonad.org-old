@@ -339,6 +339,7 @@ declare module "formality-lang/fm-lang" {
   const version: string;
 
   type RenamerFn = (name: String, depth: number) => any;
+  type Mode = "TYPE" | "DEBUG"| "REDUCE_DEBUG";
   function replace_refs(term: Term, renamer: RenamerFn): Term;
 
   function show(ast: Term, nams?: [], opts?: {}): string;
@@ -350,7 +351,7 @@ declare module "formality-lang/fm-lang" {
   function run(
     term_name: string,
     defs: Defs,
-    mode: "TYPE" | "DEBUG"| "REDUCE_DEBUG",
+    mode: Mode,
     opts: any
   ): Term;
 
@@ -389,6 +390,7 @@ declare module "formality-lang/fm-lang" {
     Log,
     Hol,
     Ref,
+    Mode,
     shift,
     subst,
     subst_many,

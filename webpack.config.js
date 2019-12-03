@@ -27,5 +27,5 @@ module.exports = {
   plugins: [
       new CheckerPlugin()
   ],
-  watch: false
+  watch: true
 };
