@@ -1,6 +1,8 @@
 # Moonad website
 <!-- [![Cirrus CI](https://api.cirrus-ci.com/github/moonad/Moonad.svg)](https://cirrus-ci.com/github/moonad/Moonad) -->
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Formality-version](https://img.shields.io/npm/v/formality-lang?label=formality-lang)
+![build](https://img.shields.io/cirrus/github/moonad/Moonad)
 
 ### Build Instructions
 
