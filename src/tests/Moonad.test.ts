@@ -1,6 +1,6 @@
-import {loader, load_file, type_check_term, normalize} from "../components/Moonad"
-import { Defs } from "../assets/Constants";
 import fm from "formality-lang";
+import { Defs } from "../assets/Constants";
+import {load_file, loader, normalize, type_check_term} from "../components/Moonad"
 
 // Obs: in package.json, change "jest" -> "verbose": false to be able to
 // console.log on the tests.
@@ -42,7 +42,7 @@ import Unit#ZcZV
   test("Can parse a file ", async () => {
     jest.setTimeout(8000);
     const parsed = await fm.lang.parse(code, {file, loader, tokenify: true});
-    expect(parsed).not.toBeNull;
+    expect(parsed).not.toBeNull();
   })
 
   // Not working!

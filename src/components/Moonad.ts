@@ -21,20 +21,20 @@ const loader = async (file: string) => {
   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
 }
 
-type LoadedFileResponse = {code: string}
-interface Check_term {
+interface LoadedFileResponse {code: string}
+interface CheckTerm {
   term_name: string, 
   defs: fm.Defs, 
   mode: fm.lang.Mode, 
   opts: any
 }
-type Check_norm = (term: Check_term) => fm.core.Term
+type Check_norm = (term: CheckTerm) => fm.core.Term
 
 const load_file = async (file: string) => {
   return await loader(file);
 }
 
-const type_check_term = async ({term_name, defs, mode, opts}: Check_term) => {
+const type_check_term = async ({term_name, defs, mode, opts}: CheckTerm) => {
   let type;
   let is_success;
   try {
@@ -101,7 +101,7 @@ class Moonad extends Component {
   // Re-parses the code to build defs and tokens
   public async parse() {
     // old: const parsed = await fm.lang.parse(this.file, this.code, true, this.loader);
-    const parsed = await fm.lang.parse(this.code, {file: this.file, loader: loader, tokenify: true});
+    const parsed = await fm.lang.parse(this.code, {file: this.file, loader, tokenify: true});
     this.defs = parsed.defs;
     this.tokens = parsed.tokens;
     this.forceUpdate();
