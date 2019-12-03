@@ -2,7 +2,7 @@
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
 
-import { CitedByParent, ConsoleTabs, ExecCommand, LayoutConstants, LoadFile, Mode } from "../../assets/Constants";
+import { CitedByParent, ConsoleTabs, DisplayMode, ExecCommand, LayoutConstants, LoadFile } from "../../assets/Constants";
 
 // Components
 import CitedBy from "./CitedBy";
@@ -15,7 +15,7 @@ type TabViewType = "cited_by" | "terminal";
 export interface Props {
   load_file: LoadFile;
   cited_by: CitedByParent;
-  mode: Mode;
+  mode: DisplayMode;
   exec_command: ExecCommand;
   // exec_command: (cmd: string) => any;
 }
