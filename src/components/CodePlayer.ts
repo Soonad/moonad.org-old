@@ -1,9 +1,8 @@
 import {Component} from "inferno"
 import {h} from "inferno-hyperscript"
 
-import { Defs } from "../../docs/assets/Constants";
+import { Defs } from "../assets/Constants";
 import DocRender from "./DocRender"
-
 
 declare var require: any
 const fm = require("formality-lang");
