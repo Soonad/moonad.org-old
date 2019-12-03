@@ -62,7 +62,7 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
-    "verbose": false,
+    "verbose": true,
     "testURL": "http://localhost:8080",
     "moduleFileExtensions": [
       "js",

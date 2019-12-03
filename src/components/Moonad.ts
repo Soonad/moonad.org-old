@@ -47,10 +47,11 @@ const type_check_term = async ({term_name, defs, mode, opts}: Check_term) => {
   return {type, is_success};
 }
 
-const normalize = (term: fm.core.Term, defs: fm.Defs, opts: fm.core.NormOpts) => {
+// Normalizes a definition
+const normalize = (file: string, defs: fm.Defs, opts: fm.core.NormOpts) => {
   let norm : any;
   try {
-    norm = fm.lang.show(fm.lang.norm(term, defs, defs));
+    norm = fm.lang.show(fm.lang.norm(defs[file], defs, {}));
   } catch (e) {
     norm = "<unable_to_normalize>";
   }
@@ -109,11 +110,9 @@ class Moonad extends Component {
   // Loads a file (ex: "Data.Bool#xxxx")
   public async load_file(file: string, push_history: boolean = true) {
     if(push_history) {
-      console.log("Pushing history: "+file);
       this.history.push(file);
       window.history.pushState(file, file, file);
     }
-    const res = await load_file(file);
     this.mode = "VIEW";
     this.file = file;
     this.cited_by = [];
@@ -124,33 +123,9 @@ class Moonad extends Component {
       this.code = "";
     }
     this.parse();
+    this.cited_by = await fm.forall.load_file_parents(file);
     this.forceUpdate();
-    // if (file.slice(-3) === ".fm") {
-    //   file = file.slice(0, -3);
-    // }
-    // if (file.indexOf("#") === -1) {
-    //   file = file + "#";
-    // }
-    // if (push_history) {
-    //   this.history.push(file);
-    //   window.history.pushState(file, file, file);
-    // }
-    // this.mode = "VIEW";
-    // this.file = file;
-    // this.cited_by = [];
-    // try {
-    //   this.code = await this.loader(this.file);
-    // } catch (e) {
-    //   this.code = "";
-    // }
-    // this.parse();
-    // // this.cited_by = await fm.forall.load_file_parents(file);
-    // this.forceUpdate();
   }
-
-  // async load_parents(file) {
-  //   return await fm.forall.load_file_parents(file);
-  // }
 
   public async exec_command( cmd: string, code?: string ) {
     const output_result: string[] = new Array<string>();
@@ -320,4 +295,4 @@ class Moonad extends Component {
   }
 }
 
-export default Moonad
+export {Moonad, loader, load_file, type_check_term, normalize }
