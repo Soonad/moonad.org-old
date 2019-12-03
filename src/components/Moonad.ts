@@ -47,14 +47,17 @@ const type_check_term = async ({mode, term_name, opts}: CheckTerm) => {
 }
 
 // Normalizes a definition
-const normalize = (file: string, defs: fm.Defs, opts: fm.core.NormOpts) => {
-  let norm : any;
+// TODO: not working. Check what Victor wants to do here
+const reduce = (term_name: string, defs: Defs, opts: any) => {
+  let reduced : any;
   try {
-    norm = fm.lang.show(fm.lang.norm(defs[file], defs, {}));
+    // norm = fm.lang.show(fm.lang.norm(defs[term_name], defs, {}));
+    // reduced = fm.lang.show(fm.lang.reduce(term, opts))
+    reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
   } catch (e) {
-    norm = "<unable_to_normalize>";
+    reduced = "<unable_to_normalize>";
   }
-  return norm;
+  return reduced;
 }
 
 class Moonad extends Component {
@@ -86,16 +89,7 @@ class Moonad extends Component {
     window.onpopstate = (e: any) => {
       this.load_file(e.state, false);
     }
-
-    // window.onresize = () => {
-      // console.log("force-update");
-      // this.forceUpdate();
-    // }
   }
-
-  // public loader(file: string) {
-  //   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
-  // }
 
   // Re-parses the code to build defs and tokens
   public async parse() {
@@ -137,7 +131,7 @@ class Moonad extends Component {
     output_result.push("  -X don't erase types");
     output_result.push("  -B don't erase boxes");
     output_result.push("  -W stop on weak head normal form");
-    output_result.push("  -0 don't normalize anything");
+    output_result.push("  -0 don't reduce anything");
     output_result.push("-o <file>/<term> optimal (using interaction nets, lazy)");
     output_result.push("-O <file>/<term> optimal (using interaction nets, strict)");
     output_result.push("-j <file>/<term> JavaScript (using native functions)");
@@ -180,8 +174,8 @@ class Moonad extends Component {
   }
 
   // Normalizes a definition
-  public normalize(name: any) {
-    const norm = normalize(this.defs[name], this.defs, {});
+  public reduce(term_name: string) {
+    const norm = reduce(this.defs[term_name], this.defs, {});
     alert(norm);
   }
 
@@ -191,7 +185,7 @@ class Moonad extends Component {
       if (!e.shiftKey) {
         return this.typecheck(path);
       } 
-        return this.normalize(path);
+        return this.reduce(path);
     }
   }
 
@@ -294,4 +288,4 @@ class Moonad extends Component {
   }
 }
 
-export {Moonad, loader, load_file, type_check_term, normalize }
+export {Moonad, loader, load_file, type_check_term, reduce }

@@ -1,6 +1,6 @@
 import fm from "formality-lang";
 import { Defs } from "../assets/Constants";
-import {load_file, loader, normalize, type_check_term} from "../components/Moonad"
+import {load_file, loader, reduce, type_check_term} from "../components/Moonad"
 
 // Obs: in package.json, change "jest" -> "verbose": false to be able to
 // console.log on the tests.

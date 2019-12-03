@@ -223,6 +223,7 @@ declare module "formality-lang/fm-core" {
   // TODO: type ctx_new, ctx_ext, ctx_get, ctx_str, ctx_names
 
   type Memo = boolean | string;
+  type Opts = {weak: boolean, unbox: boolean, logging: boolean, eta: boolean}
 }
 
 declare module "formality-lang/fm-lang" {
@@ -267,6 +268,7 @@ declare module "formality-lang/fm-lang" {
     NormFn,
     BoxCheckFn,
     TypeCheckFn,
+    Opts as OptsCore,
     equal,
     shift,
     subst,
@@ -315,6 +317,11 @@ declare module "formality-lang/fm-lang" {
     open_imports: OpenImports;
   }
 
+  interface Reduce {
+    term: Term,
+    opts: OptsCore
+  }
+
   interface Opts {
     file: string,
     loader?: Loader,
@@ -349,13 +356,16 @@ declare module "formality-lang/fm-lang" {
   function derive_adt_type(file: string, adt: Adt): Term;
   function derive_adt_ctor(file: string, adt: Adt, c: number): Term;
 
-  // (mode, term, opts = {}
   function run(
     mode: TypecheckMode,
-    term_name: string,
-    // defs: Defs,
+    term_name: string | Term,
     opts: any
   ): Term;
+
+  function reduce(
+    term: Term, 
+    opts: OptsCore
+  ): any;
 
   export {
     Var,
@@ -393,6 +403,9 @@ declare module "formality-lang/fm-lang" {
     Hol,
     Ref,
     Mode,
+    TypecheckMode,
+    Parsed,
+    Reduce,
     shift,
     subst,
     subst_many,
@@ -409,8 +422,7 @@ declare module "formality-lang/fm-lang" {
     derive_adt_ctor,
     version,
     run,
-    TypecheckMode,
-    Parsed
+    reduce
   };
 }
 
