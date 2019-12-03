@@ -409,7 +409,8 @@ declare module "formality-lang/fm-lang" {
     derive_adt_ctor,
     version,
     run,
-    TypecheckMode
+    TypecheckMode,
+    Parsed
   };
 }
 

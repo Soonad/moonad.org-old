@@ -17,7 +17,7 @@ const ElementsId = {
 // Common Types
 type Tokens = Array<[string, [string, string]]>;
 type Bool = true | false;
-type Mode = "EDIT" | "PLAY" | "VIEW";
+type DisplayMode = "EDIT" | "PLAY" | "VIEW";
 type LoadFile = (file: string, push_history?: boolean) => Promise<void>;
 type CitedByParent = string[];
 type ExecCommand = (cmd: string, code?: string) => any;
@@ -41,5 +41,5 @@ export interface ConsoleTabs {
 export { 
   LayoutConstants, 
   ElementsId, 
-  Tokens, Defs, Bool, Mode, CitedByParent, 
+  Tokens, Defs, Bool, DisplayMode, CitedByParent, 
   LoadFile, ExecCommand}

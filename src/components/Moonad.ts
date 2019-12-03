@@ -15,7 +15,7 @@ import Console from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
-import { Bool, CitedByParent, Defs, ExecCommand, Mode, Tokens } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, ExecCommand, DisplayMode, Tokens } from "../assets/Constants";
 
 const loader = async (file: string) => {
   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
@@ -67,7 +67,7 @@ class Moonad extends Component {
   public cited_by : CitedByParent = [];     // files that import the current file
   public history  : string[]      = [];     // previous files
   public defs     : Defs          = {};     // loaded formality token
-  public mode     : Mode          = "VIEW"; // are we editing, playing or viewing this file?
+  public mode     : DisplayMode   = "VIEW"; // are we editing, playing or viewing this file?
 
   constructor(props: any) {
     super(props);
