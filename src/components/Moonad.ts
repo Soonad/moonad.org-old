@@ -11,7 +11,7 @@ import fm from "formality-lang";
 import CodeEditor from "./CodeEditor"
 import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
-import Console from "./Console/Console"
+import {Console} from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
@@ -285,7 +285,7 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      h(Console, {load_file, cited_by, mode, exec_command})
+      h(Console, {load_file, cited_by, mode, exec_command, code})
     ]);
   }
 }

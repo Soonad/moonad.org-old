@@ -1,11 +1,12 @@
 
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
-import { CitedByParent, DisplayMode, ExecCommand, LayoutConstants, LoadFile } from "../../assets/Constants";
+import { CitedByParent, DisplayMode, ExecCommand, LayoutConstants, LoadFile, LocalFile } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
 import Terminal from "./Terminal";
+import { Tools} from "./Tools";
 
-type TabViewType = "cited_by" | "terminal";
+type TabViewType = "cited_by" | "terminal" | "tools";
 
 interface Props {
   view_on_focus: TabViewType;
@@ -14,12 +15,13 @@ interface Props {
   parents: string[];
   // res_cmd: Array<string>;
   exec_command: ExecCommand;
-  // exec_command: (cmd: string) => any;
+  code: string;
+  saveLocalFile: (file: LocalFile) => void;
 }
 
-const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command}: Props) => {
+const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, code, saveLocalFile}: Props) => {
   switch(mode) {
-    case "EDIT": 
+    case "EDIT": // can save file 
       return h("div", {style});
     case "VIEW":
 
@@ -28,6 +30,8 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command}: Pr
           return h("div", {style}, cited_by_view(parents, load_file) );
         case "terminal":
           return h(Terminal, {res_cmd: [], exec_command});
+        case "tools":
+          return h(Tools, {code, saveLocalFile});
       }
 
     case "PLAY": 

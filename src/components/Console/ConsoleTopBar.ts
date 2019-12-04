@@ -7,7 +7,7 @@ interface Props {
   tabs: [ConsoleTabs];
 }
 
-type TabViewType = "cited_by" | "console";
+type TabViewType = "cited_by" | "console" | "tools";
 
 const ConsoleTopBar = ({tabs}: Props) => {
   return h("div", {

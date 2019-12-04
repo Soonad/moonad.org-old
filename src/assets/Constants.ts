@@ -24,6 +24,11 @@ type ExecCommand = (cmd: string, code?: string) => any;
 
 interface Defs {[key : string] : any} // `any` is a Formality Term
 
+export interface LocalFile {
+  code: string;
+  file_name: string;
+}
+
 export interface Module {
   path: string;
   cited_by: CitedByParent;
