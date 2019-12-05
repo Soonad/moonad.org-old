@@ -22,18 +22,24 @@ export interface Props {
 }
 
 const saveLocalFile = (file: LocalFile) => {
-  window.localStorage.clear();
-  let local_files = window.localStorage.getItem("saved_local");
+  // window.localStorage.clear();
+  let local_files: string | null = window.localStorage.getItem("saved_local");
   if (!local_files) {
-    window.localStorage.setItem("saved_local", JSON.stringify(file));
-    console.log("Console, stringify: "+JSON.stringify(file));
+    window.localStorage.setItem("saved_local", JSON.stringify([file]));
+    // console.log("After saving file: ");
+    // console.log(window.localStorage.getItem("saved_local"));
   } else {
-    console.log("Console, update local storage");
+    // console.log("Console, update local storage. Local files: ");
+    // console.log(local_files);
+    const new_files: LocalFile[] = JSON.parse(local_files);
     window.localStorage.removeItem("saved_local");
-    const new_files = JSON.parse(local_files);
+    // console.log("Type of files: ", typeof new_files);
+    // console.log(new_files);
     new_files.push(file);
-    window.localStorage.setItem("saved_local", new_files);
-    console.log("Save local file, new_files: ", new_files);
+    // console.log("New files after push: ", new_files);
+    window.localStorage.setItem("saved_local", JSON.stringify(new_files));
+    // console.log("After saving SECOND file: ");
+    // console.log(window.localStorage.getItem("saved_local"));
   }
 }
 
@@ -57,10 +63,12 @@ class Console extends Component<Props> {
 
   constructor(props: Props) {
     super(props);
-
-    const file: LocalFile = {code: code_example, file_name: props.file_name}
+    // localStorage.clear();
+    const file: LocalFile = {code: code_example, file_name: "File from Console"};
     saveLocalFile(file);
-  } 
+    const file2: LocalFile = {code: "this is my second code", file_name: "Second file"};
+    saveLocalFile(file2);
+  }
 
   public render() {
     const tabs: ConsoleTabs[] = [
@@ -81,6 +89,9 @@ class Console extends Component<Props> {
       }
     ];
 
+    // console.log("[console] file_name: "+this.props.file_name);
+    const current_file: LocalFile = {code: this.props.code, file_name: this.props.file_name};
+
     return h("div", {
       style: {
         "height": "180px",
@@ -97,7 +108,7 @@ class Console extends Component<Props> {
         parents: this.props.cited_by,
         exec_command: this.props.exec_command,
         saveLocalFile,
-        code: code_example
+        file: current_file
       })
     ])
   }

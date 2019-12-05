@@ -77,6 +77,8 @@ class Moonad extends Component {
   constructor(props: any) {
     super(props);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
+    let local_files: string | null = window.localStorage.getItem("saved_local");
+    console.log("[moonad] local files: ", local_files);
   }
 
   public componentDidMount() {
@@ -285,7 +287,7 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      h(Console, {load_file, cited_by, mode, exec_command, code})
+      h(Console, {load_file, cited_by, mode, exec_command, code, file_name: file})
     ]);
   }
 }

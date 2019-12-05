@@ -15,11 +15,12 @@ interface Props {
   parents: string[];
   // res_cmd: Array<string>;
   exec_command: ExecCommand;
-  code: string;
+  file: LocalFile,
   saveLocalFile: (file: LocalFile) => void;
 }
 
-const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, code, saveLocalFile}: Props) => {
+const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, file, saveLocalFile}: Props) => {
+  // console.log("[consoleView] file_name: "+file.file_name);
   switch(mode) {
     case "EDIT": // can save file 
       return h("div", {style});
@@ -31,7 +32,7 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, cod
         case "terminal":
           return h(Terminal, {res_cmd: [], exec_command});
         case "tools":
-          return h(Tools, {code, saveLocalFile});
+          return h(Tools, {file, saveLocalFile});
       }
 
     case "PLAY": 
