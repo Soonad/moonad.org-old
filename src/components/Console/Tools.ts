@@ -1,10 +1,10 @@
 import { Component } from "inferno";
-import { LocalFile } from "../../assets/Constants"; 
+import { LocalFile, LoadFile, LocalFileManager } from "../../assets/Constants"; 
 import { h } from "inferno-hyperscript";
+import ClickableList from "../ClickableList";
 
 interface Props{
-  file: LocalFile;
-  saveLocalFile: (file: LocalFile) => void;
+  manager: LocalFileManager
 }
 
 class Tools extends Component<Props> {
@@ -14,34 +14,46 @@ class Tools extends Component<Props> {
 
   constructor(props: Props){
     super(props);
-    this.code = this.props.file.code;
-    this.file_name = this.props.file.file_name;
+    // this.code = this.props.file.code;
+    // this.file_name = this.props.file.file_name;
     let local_files: string | null = window.localStorage.getItem("saved_local");
-    console.log("[tools] local files: ", local_files);
-    console.log("[tools] will mount code: "+ this.file_name);
-    console.log("[tools] will mount props code: "+ this.props.file.code);
+    // console.log("[tools] local files: ", local_files);
+    // console.log("[tools] will mount code: "+ this.file_name);
+    console.log("[tools] mng: ");
+    console.log(this.props.manager);
+  }
+
+  componentDidMount() {
+    console.log("[tools] did mount: ");
+    console.log(this.props.manager);
   }
 
   saveLocalFile(file?: LocalFile) {
     // this.props.saveLocalFile(file);
-    const file3: LocalFile = {code: "this is my second code", file_name: "Third file"};
-    this.saveLocalFile(file3);
-    console.log("add new file ");
+    // const file3: LocalFile = {code: "this is my second code", file_name: "Third file"};
+    // this.saveLocalFile(file3);
+    // console.log("add new file ");
     this.forceUpdate();
+
   }
 
   showLocalFiles(){
     const files = window.localStorage.getItem("saved_local");
-    console.log("[tools] files: ");
-    console.log(files);
+    // console.log("[tools] files: ");
+    // console.log(files);
+    const style = {
+      "font-size": "12px"
+    }
+    
     if(files !== null) {
+      const obj_files = JSON.parse(files);
+      const file_names = obj_files.map( ({code, file_name}: LocalFile) => {return file_name;} );
       // console.log(JSON.stringify(files));
-      var obj_files = JSON.parse(files);
-      console.log("parsed JSON: ", obj_files);
+      // const list = ClickableList(file_names, this.props.manager.loadLocalFile, style, "Cited by component");
       if (obj_files.length > 1){
         return h("div", {descr: "code name", style: {
           "margin-top": "30px"
-        }}, obj_files[0].file_name);
+        }}, "go project, run!");
       } else {
         return h("div", {descr: "code name", style: {
           "margin-top": "30px"
@@ -54,8 +66,10 @@ class Tools extends Component<Props> {
   }
 
   public render(){
-    // console.log("[tools-render] file_name: "+ this.props.file.file_name);
-    console.log("[tools - render] Is there any code? ", this.props.file.code? true : false);
+    // const code = this.props.manager.file.code;
+    // const file_name = this.props.manager.file.file_name;
+    console.log("[tools-render] manager: "+ this.props.manager);
+    // console.log("[tools - render] Is there any code? ", code? true : false);
     return this.showLocalFiles();
   };
 

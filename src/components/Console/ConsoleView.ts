@@ -1,7 +1,7 @@
 
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
-import { CitedByParent, DisplayMode, ExecCommand, LayoutConstants, LoadFile, LocalFile } from "../../assets/Constants";
+import { CitedByParent, DisplayMode, ExecCommand, LayoutConstants, LoadFile, LocalFile, LocalFileManager } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
 import Terminal from "./Terminal";
 import { Tools} from "./Tools";
@@ -15,12 +15,11 @@ interface Props {
   parents: string[];
   // res_cmd: Array<string>;
   exec_command: ExecCommand;
-  file: LocalFile,
-  saveLocalFile: (file: LocalFile) => void;
+  local_file_manager: LocalFileManager;
 }
 
-const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, file, saveLocalFile}: Props) => {
-  // console.log("[consoleView] file_name: "+file.file_name);
+const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, local_file_manager}: Props) => {
+  // console.log("[consoleView] local mng: ", local_file_manager);
   switch(mode) {
     case "EDIT": // can save file 
       return h("div", {style});
@@ -32,7 +31,7 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, fil
         case "terminal":
           return h(Terminal, {res_cmd: [], exec_command});
         case "tools":
-          return h(Tools, {file, saveLocalFile});
+          return h(Tools, {local_file_manager});
       }
 
     case "PLAY": 

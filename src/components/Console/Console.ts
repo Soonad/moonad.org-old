@@ -2,7 +2,7 @@
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
 
-import { CitedByParent, ConsoleTabs, DisplayMode, ExecCommand, LayoutConstants, LoadFile, LocalFile } from "../../assets/Constants";
+import { CitedByParent, ConsoleTabs, DisplayMode, ExecCommand, LayoutConstants, LoadFile, LocalFile, LocalFileManager } from "../../assets/Constants";
 
 // Components
 import CitedBy from "./CitedBy";
@@ -17,8 +17,7 @@ export interface Props {
   cited_by: CitedByParent;
   mode: DisplayMode;
   exec_command: ExecCommand;
-  code: string;
-  file_name: string
+  local_file_manager: LocalFileManager;
 }
 
 const saveLocalFile = (file: LocalFile) => {
@@ -26,20 +25,11 @@ const saveLocalFile = (file: LocalFile) => {
   let local_files: string | null = window.localStorage.getItem("saved_local");
   if (!local_files) {
     window.localStorage.setItem("saved_local", JSON.stringify([file]));
-    // console.log("After saving file: ");
-    // console.log(window.localStorage.getItem("saved_local"));
   } else {
-    // console.log("Console, update local storage. Local files: ");
-    // console.log(local_files);
     const new_files: LocalFile[] = JSON.parse(local_files);
     window.localStorage.removeItem("saved_local");
-    // console.log("Type of files: ", typeof new_files);
-    // console.log(new_files);
     new_files.push(file);
-    // console.log("New files after push: ", new_files);
     window.localStorage.setItem("saved_local", JSON.stringify(new_files));
-    // console.log("After saving SECOND file: ");
-    // console.log(window.localStorage.getItem("saved_local"));
   }
 }
 
@@ -64,10 +54,10 @@ class Console extends Component<Props> {
   constructor(props: Props) {
     super(props);
     // localStorage.clear();
-    const file: LocalFile = {code: code_example, file_name: "File from Console"};
-    saveLocalFile(file);
-    const file2: LocalFile = {code: "this is my second code", file_name: "Second file"};
-    saveLocalFile(file2);
+    // const file: LocalFile = {code: code_example, file_name: "File from Console"};
+    // saveLocalFile(file);
+    // const file2: LocalFile = {code: "this is my second code", file_name: "Second file"};
+    // saveLocalFile(file2);
   }
 
   public render() {
@@ -89,9 +79,6 @@ class Console extends Component<Props> {
       }
     ];
 
-    // console.log("[console] file_name: "+this.props.file_name);
-    const current_file: LocalFile = {code: this.props.code, file_name: this.props.file_name};
-
     return h("div", {
       style: {
         "height": "180px",
@@ -107,8 +94,7 @@ class Console extends Component<Props> {
         load_file: this.props.load_file,
         parents: this.props.cited_by,
         exec_command: this.props.exec_command,
-        saveLocalFile,
-        file: current_file
+        local_file_manager: this.props.local_file_manager
       })
     ])
   }

@@ -3,8 +3,6 @@
 import {Component, render} from "inferno"
 import {h} from "inferno-hyperscript"
 
-// TODO: how to improve this?
-declare var require: any
 import fm from "formality-lang";
 
 // Components
@@ -15,10 +13,17 @@ import {Console} from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
-import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens, LocalFileManager } from "../assets/Constants";
 
-const loader = async (file: string) => {
+const loader = async (file: string, isLocal: boolean = false) => {
+  if(isLocal){
+    console.log("[moonad] load a local file");
+  } 
   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
+}
+
+const load_file = async (file: string, isLocal: boolean = false) => {
+  return await loader(file, isLocal);
 }
 
 interface LoadedFileResponse {code: string}
@@ -28,10 +33,6 @@ interface CheckTerm {
   opts: any
 }
 type Check_norm = (term: CheckTerm) => fm.core.Term
-
-const load_file = async (file: string) => {
-  return await loader(file);
-}
 
 const type_check_term = async ({mode, term_name, opts}: CheckTerm) => {
   let type;
@@ -122,6 +123,10 @@ class Moonad extends Component {
     this.parse();
     this.cited_by = await fm.forall.load_file_parents(file);
     this.forceUpdate();
+  }
+
+  public async load_local_file(file: string) {
+    return await load_file(file, true);
   }
 
   public async exec_command( cmd: string, code?: string ) {
@@ -233,6 +238,15 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
+  public getLocalFileManager() {
+    const mng: LocalFileManager = {
+      file: {code: this.code, file_name: this.file},
+      saveLocalFile: () => { console.log("[moonad] save local file"); },
+      loadLocalFile: this.load_local_file
+    }
+    return mng;
+  }
+
   // async on_click_save() {
     // var file = prompt("File name:");
     // try {
@@ -257,6 +271,7 @@ class Moonad extends Component {
     const code = this.code;
     const tokens = this.tokens;
     const cited_by = this.cited_by;
+    const local_file_manager = this.getLocalFileManager();
     const load_file = (file: string, push_history?: boolean) => this.load_file(file, push_history);
     const on_click_view = () => this.on_click_view();
     const on_click_edit = () => this.on_click_edit();
@@ -266,16 +281,14 @@ class Moonad extends Component {
     const on_click_ref = (path: string) => this.on_click_ref(path);
     const on_input_code = (code: string) => this.on_input_code(code);
     const exec_command = (cmd: string) => this.exec_command(cmd);
+
     // Renders the site
     return h("div", {
       style: {
-        // "min-width": "400px",
         "font-family": "Gotham Book",
         "display": "flex",
         "flex-flow": "column nowrap",
-        // "align-items": "center",
         "height": "100%",
-        // "background": "rgb(253,253,254)"
     }}, [
       // Top of the site
       TopMenu({mode, file, on_click_view, on_click_edit, on_click_play, load_file}),
@@ -287,7 +300,7 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      h(Console, {load_file, cited_by, mode, exec_command, code, file_name: file})
+      h(Console, {load_file, cited_by, mode, exec_command, local_file_manager})
     ]);
   }
 }

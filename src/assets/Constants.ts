@@ -43,6 +43,12 @@ export interface ConsoleTabs {
   onClick: () => void;
 }
 
+export interface LocalFileManager {
+  file: LocalFile;
+  saveLocalFile: (file: LocalFile) => void;
+  loadLocalFile: any; // TODO: update this type
+}
+
 export { 
   LayoutConstants, 
   ElementsId, 
