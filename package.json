@@ -23,7 +23,7 @@
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
     "file-loader": "^4.2.0",
-    "formality-lang": "^0.1.200",
+    "formality-lang": "^0.1.201",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
     "jest": "^24.9.0",
