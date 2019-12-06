@@ -31,7 +31,7 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, loc
         case "terminal":
           return h(Terminal, {res_cmd: [], exec_command});
         case "tools":
-          return h(Tools, {local_file_manager});
+          return h("div", {style}, Tools(local_file_manager));
       }
 
     case "PLAY": 

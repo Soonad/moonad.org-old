@@ -8,10 +8,7 @@ export interface Props {
 }
 
 const CitedBy = ({parents, load_file }: Props) => {
-  const style = {
-    "padding": "0px"
-  }
-  return ClickableList(parents, load_file, style, "Cited by component");
+  return ClickableList(parents, load_file, "Cited by component");
 }
 
 export default CitedBy;

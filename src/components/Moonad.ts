@@ -18,6 +18,7 @@ import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens, LocalFileM
 const loader = async (file: string, isLocal: boolean = false) => {
   if(isLocal){
     console.log("[moonad] load a local file");
+    return;
   } 
   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
 }
@@ -79,7 +80,6 @@ class Moonad extends Component {
     super(props);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
     let local_files: string | null = window.localStorage.getItem("saved_local");
-    console.log("[moonad] local files: ", local_files);
   }
 
   public componentDidMount() {

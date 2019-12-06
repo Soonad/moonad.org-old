@@ -1,10 +1,10 @@
 import { h } from "inferno-hyperscript";
 import { LoadFile } from "../assets/Constants"
 
-const ClickableList = (content: string[], onClick: LoadFile, style: any, desc: string = "list") => {
+const ClickableList = (content: string[], onClick: LoadFile, desc: string = "list") => {
   if(content.length > 0) {
     return h(
-      "ul", {desc: desc, style: style},
+      "ul", {desc: desc, style: {"padding": "0px"}},
         content.map( (element: string) =>
           h("li", { 
             style: {
@@ -12,8 +12,9 @@ const ClickableList = (content: string[], onClick: LoadFile, style: any, desc: s
               "text-decoration": "underline",
               "cursor": "pointer",
               "padding-top": "5px",
+              "font-size": "10px"
             }, 
-            onClick: () => onClick}, element
+            onClick: () => onClick(element)}, element
           )
         )
     );
