@@ -73,6 +73,24 @@ const load_local_file = (file_name: string) => {
   }
 }
 
+const save_local_file = (file: LocalFile) => {
+  console.log("Save local file. File name: "+file.file_name);
+  if(file !== null){
+    let local_files: string | null = window.localStorage.getItem("saved_local");
+    if (!local_files) {
+      window.localStorage.setItem("saved_local", JSON.stringify([file]));
+    } else {
+      const new_files: LocalFile[] = JSON.parse(local_files);
+      window.localStorage.removeItem("saved_local");
+      new_files.push(file);
+      window.localStorage.setItem("saved_local", JSON.stringify(new_files));
+    }
+    // After saving a file, confirms if it exists
+    return load_local_file(file.file_name) !== null ? true : false;
+  }
+  return false;
+}
+
 const BaseAppPath = "App#A_HX";
 
 class Moonad extends Component {
@@ -134,16 +152,6 @@ class Moonad extends Component {
     this.parse();
     this.cited_by = await fm.forall.load_file_parents(file);
     this.forceUpdate();
-  }
-
-  public async load_local_file(file: string) {
-    const found_file: LocalFile | null = load_local_file(file);
-    if(found_file !== null){
-      this.code = found_file.code;
-      this.file = file;
-      this.mode = "EDIT";
-      this.forceUpdate();
-    }
   }
 
   public async exec_command( cmd: string, code?: string ) {
@@ -255,16 +263,6 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  public getLocalFileManager() {
-    const load_local_file = (file: string) => this.load_local_file(file);
-    const mng: LocalFileManager = {
-      file: {code: this.code, file_name: this.file},
-      saveLocalFile: () => { console.log("[moonad] save local file"); },
-      loadLocalFile: load_local_file
-    }
-    return mng;
-  }
-
   // async on_click_save() {
     // var file = prompt("File name:");
     // try {
@@ -279,6 +277,42 @@ class Moonad extends Component {
       // alert("Couldn't save file.");
     // }
   // }
+
+  // :::::::::
+  // : LOCAL :
+  // :::::::::
+  public getLocalFileManager() {
+    const load_local_file = (file: string) => this.load_local_file(file);
+    const save_local_file = (file: LocalFile) => this.save_local_file(file);
+    const mng: LocalFileManager = {
+      file: {code: this.code, file_name: this.file},
+      save_local_file,
+      load_local_file
+    }
+    return mng;
+  }
+
+  public async load_local_file(file: string) {
+    const found_file: LocalFile | null = load_local_file(file);
+    if(found_file !== null){
+      this.code = found_file.code;
+      this.file = file;
+      this.mode = "EDIT";
+      this.forceUpdate();
+    }
+  }
+
+  public save_local_file(file: LocalFile) {
+    console.log("[moonad] save file. "+file.file_name);
+    // Only saves a file in editing mode
+    if(this.mode === "EDIT"){
+      if(save_local_file(file)) {
+        console.log("File saved with success");
+      } else {
+        console.log("Not able to save file");
+      }
+    }
+  }
 
   // Renders the interface
   public render() {

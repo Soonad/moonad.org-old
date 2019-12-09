@@ -20,18 +20,18 @@ export interface Props {
   local_file_manager: LocalFileManager;
 }
 
-const saveLocalFile = (file: LocalFile) => {
-  // window.localStorage.clear();
-  let local_files: string | null = window.localStorage.getItem("saved_local");
-  if (!local_files) {
-    window.localStorage.setItem("saved_local", JSON.stringify([file]));
-  } else {
-    const new_files: LocalFile[] = JSON.parse(local_files);
-    window.localStorage.removeItem("saved_local");
-    new_files.push(file);
-    window.localStorage.setItem("saved_local", JSON.stringify(new_files));
-  }
-}
+// const saveLocalFile = (file: LocalFile) => {
+//   // window.localStorage.clear();
+//   let local_files: string | null = window.localStorage.getItem("saved_local");
+//   if (!local_files) {
+//     window.localStorage.setItem("saved_local", JSON.stringify([file]));
+//   } else {
+//     const new_files: LocalFile[] = JSON.parse(local_files);
+//     window.localStorage.removeItem("saved_local");
+//     new_files.push(file);
+//     window.localStorage.setItem("saved_local", JSON.stringify(new_files));
+//   }
+// }
 
 // TEST
 const code_example = `
@@ -101,4 +101,4 @@ class Console extends Component<Props> {
   }
 }
 
-export {Console, saveLocalFile}
+export {Console}
