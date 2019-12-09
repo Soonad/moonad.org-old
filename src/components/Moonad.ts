@@ -13,18 +13,14 @@ import {Console} from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
-import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens, LocalFileManager } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens, LocalFileManager, LocalFile, LoadFile } from "../assets/Constants";
 
-const loader = async (file: string, isLocal: boolean = false) => {
-  if(isLocal){
-    console.log("[moonad] load a local file");
-    return;
-  } 
+const loader = async (file: string) => {
   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
 }
 
-const load_file = async (file: string, isLocal: boolean = false) => {
-  return await loader(file, isLocal);
+const load_file = async (file: string) => {
+  return await loader(file);
 }
 
 interface LoadedFileResponse {code: string}
@@ -60,6 +56,21 @@ const reduce = (term_name: string, defs: Defs, opts: any) => {
     reduced = "<unable_to_normalize>";
   }
   return reduced;
+}
+
+const load_local_file = (file_name: string) => {
+  const files_string = window.localStorage.getItem("saved_local");
+  if(files_string) {
+    const files_parsed: LocalFile[] = JSON.parse(files_string);
+    for (let i = 0; i < files_parsed.length; i++){
+      if(files_parsed[i].file_name === file_name){
+        return files_parsed[i];
+      }
+    }
+    return null; // File name not found
+  } else { // There are no files
+    return null;
+  }
 }
 
 const BaseAppPath = "App#A_HX";
@@ -126,7 +137,13 @@ class Moonad extends Component {
   }
 
   public async load_local_file(file: string) {
-    return await load_file(file, true);
+    const found_file: LocalFile | null = load_local_file(file);
+    if(found_file !== null){
+      this.code = found_file.code;
+      this.file = file;
+      this.mode = "EDIT";
+      this.forceUpdate();
+    }
   }
 
   public async exec_command( cmd: string, code?: string ) {
@@ -239,10 +256,11 @@ class Moonad extends Component {
   }
 
   public getLocalFileManager() {
+    const load_local_file = (file: string) => this.load_local_file(file);
     const mng: LocalFileManager = {
       file: {code: this.code, file_name: this.file},
       saveLocalFile: () => { console.log("[moonad] save local file"); },
-      loadLocalFile: this.load_local_file
+      loadLocalFile: load_local_file
     }
     return mng;
   }
