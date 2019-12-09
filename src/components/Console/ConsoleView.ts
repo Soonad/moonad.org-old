@@ -68,7 +68,6 @@ const cited_by_view = (parents: string[], load_file: LoadFile) => {
   const qtd = parents.length || 0;
   const cited_by_msg = format_console_msg(qtd > 1? qtd + " results" : qtd + " result");
   const cited_by = h(CitedBy, {parents, load_file});
-  console.log("[consolve view] Cited by: ", cited_by);
   return h("div", {}, [
       result_aux, cited_by_msg,
       cited_by

@@ -33,6 +33,7 @@ const saveLocalFile = (file: LocalFile) => {
   }
 }
 
+// TEST
 const code_example = `
 import App#A_HX
 
@@ -63,17 +64,17 @@ class Console extends Component<Props> {
   public render() {
     const tabs: ConsoleTabs[] = [
       {
-        is_on_focus: this.view_on_focus === "cited_by",
+        is_on_focus: this.view_on_focus === "cited_by" && this.props.mode !== "EDIT",
         title: "Cited By",
         onClick: () => { this.view_on_focus = "cited_by"; this.forceUpdate();}
       },
       {
-        is_on_focus: this.view_on_focus === "terminal",
+        is_on_focus: this.view_on_focus === "terminal" && this.props.mode !== "EDIT",
         title: "Console",
         onClick: () => { this.view_on_focus = "terminal"; this.forceUpdate(); }
       },
       {
-        is_on_focus: this.view_on_focus === "tools",
+        is_on_focus: this.view_on_focus === "tools" || this.props.mode === "EDIT",
         title: "Tools",
         onClick: () => { this.view_on_focus = "tools"; this.forceUpdate(); }
       }
@@ -88,7 +89,7 @@ class Console extends Component<Props> {
         "overflow": "scroll",
       }
     }, [
-      h(ConsoleTopBar, { tabs }),
+      h(ConsoleTopBar, { tabs, mode: this.props.mode }),
       ConsoleView({view_on_focus: this.view_on_focus, 
         mode: this.props.mode, 
         load_file: this.props.load_file,
