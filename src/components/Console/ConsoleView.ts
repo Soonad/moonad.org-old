@@ -18,11 +18,12 @@ interface Props {
   local_file_manager: LocalFileManager;
 }
 
+// TODO: 
+// > cited by is not receiving data from FPM
 const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, local_file_manager}: Props) => {
-  // console.log("[consoleView] local mng: ", local_file_manager);
   switch(mode) {
     case "EDIT": // can save file 
-      return h("div", {style});
+      return h("div", {style}, Tools(local_file_manager));
     case "VIEW":
 
       switch(view_on_focus) {
@@ -67,7 +68,7 @@ const cited_by_view = (parents: string[], load_file: LoadFile) => {
   const qtd = parents.length || 0;
   const cited_by_msg = format_console_msg(qtd > 1? qtd + " results" : qtd + " result");
   const cited_by = h(CitedBy, {parents, load_file});
-  
+  console.log("[consolve view] Cited by: ", cited_by);
   return h("div", {}, [
       result_aux, cited_by_msg,
       cited_by

@@ -19,8 +19,11 @@ const Tools = ({file, saveLocalFile, loadLocalFile}: LocalFileManager) => {
       
       return h("div", {descr: "code name"}, clickable_list );
 
-    } else { // There is no local files
-      return h("div", {desc: "empty local file"}, "No local files. Try editing a code and then click the 'save' button.");
+    } else { // There are no local files
+      return h("div", {desc: "empty local file"}, [ 
+        h("span", "There are no local files."),
+        h("p", "Try editing a code and then click the 'save' button.")
+      ]);
     }
   }
 

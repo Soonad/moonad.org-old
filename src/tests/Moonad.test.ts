@@ -16,7 +16,7 @@ describe("Moonad", () => {
 
   test("App name didn't change", () => {
     expect(BaseAppPath).toEqual("App#A_HX");
-  })
+  }, 5000);
 
   test("Can load Base file v0.1.200", async () => {
     // This test does not accept white spaces
@@ -41,7 +41,7 @@ import Unit#ZcZV
 `;
 
     expect(code).toContain(expectedResult);
-  });
+  }, 5000);
 
   test("Can parse a file ", async () => {
     const parsed = await fm.lang.parse(code, {file, loader, tokenify: true});
@@ -53,7 +53,7 @@ import Unit#ZcZV
     const parents = await fm.forall.load_file_parents(file);
 
     expect(parents).toContain("Base#13R0");
-  });
+  }, 5000);
 
 });
 
