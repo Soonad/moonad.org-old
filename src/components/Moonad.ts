@@ -74,7 +74,6 @@ const load_local_file = (file_name: string) => {
 }
 
 const save_local_file = (file: LocalFile) => {
-  console.log("Save local file. File name: "+file.file_name);
   if(file !== null){
     let local_files: string | null = window.localStorage.getItem("saved_local");
     if (!local_files) {
@@ -89,6 +88,22 @@ const save_local_file = (file: LocalFile) => {
     return load_local_file(file.file_name) !== null ? true : false;
   }
   return false;
+}
+
+const delete_local_file = (file_name: string) => {
+  const files_string = window.localStorage.getItem("saved_local");
+  if(files_string) {
+    let files_parsed: LocalFile[] = JSON.parse(files_string);
+    const old_lenght = files_parsed.length;
+    files_parsed = files_parsed.filter((item: LocalFile) => item.file_name !== file_name);
+    // Update local files
+    window.localStorage.removeItem("saved_local");
+    window.localStorage.setItem("saved_local", JSON.stringify(files_parsed));
+    // if false, file name was not found
+    return (old_lenght - files_parsed.length) !== 0 ? true : false; 
+  } else { // There are no files saved locally
+    return false;
+  }
 }
 
 const BaseAppPath = "App#A_HX";
@@ -284,10 +299,12 @@ class Moonad extends Component {
   public getLocalFileManager() {
     const load_local_file = (file: string) => this.load_local_file(file);
     const save_local_file = (file: LocalFile) => this.save_local_file(file);
+    const delete_local_file = (file_name: string) => this.delete_local_file(file_name);
     const mng: LocalFileManager = {
       file: {code: this.code, file_name: this.file},
       save_local_file,
-      load_local_file
+      load_local_file,
+      delete_local_file
     }
     return mng;
   }
@@ -302,15 +319,30 @@ class Moonad extends Component {
     }
   }
 
+  // TODO: update return
   public save_local_file(file: LocalFile) {
-    console.log("[moonad] save file. "+file.file_name);
     // Only saves a file in editing mode
     if(this.mode === "EDIT"){
       if(save_local_file(file)) {
-        console.log("File saved with success");
+        this.forceUpdate();
+        // alert("File saved with success");
+        console.log("File saved with success!");
       } else {
         console.log("Not able to save file");
       }
+    } else {
+      console.log("It's only able to save a file on EDIT mode");
+    }
+  }
+
+  // TODO: update return
+  public delete_local_file(file_name: string) {
+    const resp = delete_local_file(file_name);
+    if(resp) {
+      console.log("[moonad] deleted");
+      this.forceUpdate();
+    } else {
+      console.log("[moonad] file not found to delete it");
     }
   }
 

@@ -1,6 +1,6 @@
 import { h } from "inferno-hyperscript"
 import { CitedByParent, LoadFile } from "../../assets/Constants";
-import ClickableList from "../ClickableList";
+import { ClickableList } from "../ClickableList";
 
 export interface Props {
   parents: CitedByParent;

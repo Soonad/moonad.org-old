@@ -46,7 +46,8 @@ export interface ConsoleTabs {
 export interface LocalFileManager {
   file: LocalFile;
   save_local_file: any;
-  load_local_file: any; // TODO: update this type
+  load_local_file: any;
+  delete_local_file: any;
 }
 
 export { 
