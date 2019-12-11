@@ -296,12 +296,15 @@ class Moonad extends Component {
 
   public async on_click_play() {
     const app_files = await fm.forall.load_file_parents(BaseAppPath);
-    if (app_files.includes(this.file)) {
+
+    // TODO: If an app import a "App" it can run?
+    console.log(app_files);
+    // if (app_files.includes(this.file)) {
       this.mode = "PLAY";
       this.forceUpdate();
-    } else {
-      window.alert("This file is not an app, so it can't be played");
-    } 
+    // } else {
+      // window.alert("This file is not an app, so it can't be played");
+    // } 
   }
 
   public on_input_code(code: string) {
