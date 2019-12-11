@@ -83,7 +83,7 @@ class ConsoleTab extends Component<ConsoleTabs> {
 
 const console_tab_style = {
   "align-self": "center",
-  "text-align": "baseline",
+  "text-align": "center",
   "cursor": "pointer",
   "padding-right": "20px",
   "padding-left": "20px",

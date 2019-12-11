@@ -29,14 +29,14 @@ class ToolsButton extends Component<Props> {
         //   src: this.props.icon,
         //   style: {
         //     "margin-top": "4px",
-        //     "width": "24px",
-        //     "height": "24px",
+        //     "width": "20px",
+        //     "height": "20px",
         //   }
         // }),
         h("p", {
           style: {
             "color": LayoutConstants.dark_gray_color,
-            "font-size": "12px",
+            "font-size": "10px",
             "font-family": "monospace",
             "margin": "0px"
           }
@@ -56,7 +56,8 @@ const button_style = {
   "justify-content": "center",
   "text-align": "center",
   "cursor": "pointer",
-  "background-color": "#FFFFFF"
+  "background-color": "#FFFFFF",
+  "border-radius": "5px"
 }
 
 const button_hover_style = {

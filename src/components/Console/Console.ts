@@ -20,45 +20,13 @@ export interface Props {
   local_file_manager: LocalFileManager;
 }
 
-// const saveLocalFile = (file: LocalFile) => {
-//   // window.localStorage.clear();
-//   let local_files: string | null = window.localStorage.getItem("saved_local");
-//   if (!local_files) {
-//     window.localStorage.setItem("saved_local", JSON.stringify([file]));
-//   } else {
-//     const new_files: LocalFile[] = JSON.parse(local_files);
-//     window.localStorage.removeItem("saved_local");
-//     new_files.push(file);
-//     window.localStorage.setItem("saved_local", JSON.stringify(new_files));
-//   }
-// }
-
-// TEST
-const code_example = `
-import App#A_HX
-
-// A demo App that displays screen coordinates
-T DemoAppState
-| demoappstate(
-  mousex  : Number,
-  mousey  : Number,
-  clicks  : Number,
-  lastkey : Number
-)
-`
-
 // The div which displays the Bottom element of the screen
 class Console extends Component<Props> {
   
-  public view_on_focus: TabViewType = "tools";
+  public view_on_focus: TabViewType = "cited_by";
 
   constructor(props: Props) {
     super(props);
-    // localStorage.clear();
-    // const file: LocalFile = {code: code_example, file_name: "File from Console"};
-    // saveLocalFile(file);
-    // const file2: LocalFile = {code: "this is my second code", file_name: "Second file"};
-    // saveLocalFile(file2);
   }
 
   public render() {

@@ -58,8 +58,11 @@ const reduce = (term_name: string, defs: Defs, opts: any) => {
   return reduced;
 }
 
+type LoadResError = "file_name_not_found" | "no_files";
+
 const load_local_file = (file_name: string) => {
-  const files_string = window.localStorage.getItem("saved_local");
+  const files_string: string | null = window.localStorage.getItem("saved_local");
+  let response: LoadResError;
   if(files_string) {
     const files_parsed: LocalFile[] = JSON.parse(files_string);
     for (let i = 0; i < files_parsed.length; i++){
@@ -67,21 +70,49 @@ const load_local_file = (file_name: string) => {
         return files_parsed[i];
       }
     }
-    return null; // File name not found
-  } else { // There are no files
-    return null;
   }
+  return null;
+}
+
+const get_local_files = () => {
+  return window.localStorage.getItem("saved_local");
 }
 
 const save_local_file = (file: LocalFile) => {
+
   if(file !== null){
-    let local_files: string | null = window.localStorage.getItem("saved_local");
-    if (!local_files) {
-      window.localStorage.setItem("saved_local", JSON.stringify([file]));
-    } else {
+    const local_files = get_local_files();
+    var load_result: LocalFile | null = load_local_file(file.file_name);
+    
+    if (local_files === null) {
+      var name = prompt("Please enter the file name", "Example");
+      if (name !== null || name !== "") {
+        window.localStorage.setItem("saved_local", JSON.stringify([file]));
+      }
+    } else { 
       const new_files: LocalFile[] = JSON.parse(local_files);
       window.localStorage.removeItem("saved_local");
-      new_files.push(file);
+
+      if (load_result === null ){ // There's not file with this name
+        var name = prompt("Please enter the file name", "");
+        if (name === null || name === "") {
+          console.log("A file cannot be saved with an empty name.");
+          return false;
+        } 
+        file.file_name = name;
+        new_files.push(file);
+      } else { // File exists
+        // Update file
+        if(file.code !== load_result.code) {
+          // file.code = load_result.code;
+          for(let i = 0; i <= new_files.length; i++){
+            if(new_files[i].file_name == file.file_name){
+              new_files[i].code = file.code;
+              break;
+            }
+          }
+        } else { console.log("codes are not different")}
+      } 
       window.localStorage.setItem("saved_local", JSON.stringify(new_files));
     }
     // After saving a file, confirms if it exists
@@ -298,7 +329,7 @@ class Moonad extends Component {
   // :::::::::
   public getLocalFileManager() {
     const load_local_file = (file: string) => this.load_local_file(file);
-    const save_local_file = (file: LocalFile) => this.save_local_file(file);
+    const save_local_file = (file_name: string) => this.save_local_file(file_name);
     const delete_local_file = (file_name: string) => this.delete_local_file(file_name);
     const mng: LocalFileManager = {
       file: {code: this.code, file_name: this.file},
@@ -320,10 +351,11 @@ class Moonad extends Component {
   }
 
   // TODO: update return
-  public save_local_file(file: LocalFile) {
+  public save_local_file(file: string) {
     // Only saves a file in editing mode
     if(this.mode === "EDIT"){
-      if(save_local_file(file)) {
+      const save: LocalFile = {code: this.code, file_name: file};
+      if(save_local_file(save)) {
         this.forceUpdate();
         // alert("File saved with success");
         console.log("File saved with success!");
@@ -340,10 +372,10 @@ class Moonad extends Component {
     const resp = delete_local_file(file_name);
     if(resp) {
       console.log("[moonad] deleted");
-      this.forceUpdate();
     } else {
       console.log("[moonad] file not found to delete it");
     }
+    this.forceUpdate();
   }
 
   // Renders the interface
