@@ -1,6 +1,6 @@
 import { Component } from "inferno";
-import { LocalFile, LoadFile, LocalFileManager, LayoutConstants, DisplayMode } from "../../assets/Constants"; 
 import { h } from "inferno-hyperscript";
+import { DisplayMode, LayoutConstants, LoadFile, LocalFile, LocalFileManager } from "../../assets/Constants"; 
 import { ClickableList, ClickableListDeletion} from "../ClickableList";
 import ToolsButton from "./ToolsButton";
 
@@ -16,15 +16,14 @@ const Tools = ({file, save_local_file, load_local_file, delete_local_file}: Loca
     const files = window.localStorage.getItem("saved_local");
     if(files && files !== "[]") {
       const obj_files = JSON.parse(files);
-      const file_names = obj_files.map( ({code, file_name}: LocalFile) => {return file_name;} );
+      const file_names = obj_files.map( ({code, file_name}: LocalFile) => file_name );
       const clickable_list = ClickableListDeletion(file_names, load_local_file, "Local file", delete_local_file);
       return h("div", {descr: "code name"}, clickable_list );
-    } else { // There are no local files
-      return h("div", {desc: "empty local file"}, [ 
+    }  // There are no local files
+    return h("div", {desc: "empty local file"}, [ 
         h("span", "There are no local files."),
         h("p", "Try editing a code and then click the 'save' button.")
-      ]);
-    }
+    ]);
   }
 
   return h("div", {

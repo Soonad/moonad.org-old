@@ -1,7 +1,7 @@
 
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
-import { LayoutConstants, DisplayMode } from "../../assets/Constants";
+import { DisplayMode, LayoutConstants } from "../../assets/Constants";
 
 interface Props {
   tabs: [ConsoleTabs];
@@ -40,7 +40,7 @@ const ConsoleTopBar = ({tabs, mode}: Props) => {
           is_on_focus: tab.is_on_focus,
           title: tab.title,
           onClick: tab.onClick,
-          mode: mode
+          mode
         }) 
       )
     ])
@@ -65,7 +65,7 @@ class ConsoleTab extends Component<ConsoleTabs> {
     super(props);
   }
 
-  canClick = () => {
+  public canClick = () => {
     return this.props.mode !== "EDIT";
   }
 

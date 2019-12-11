@@ -6,7 +6,7 @@ const delete_icon = "../assets/icons/icon_delete.png";
 const ClickableList = (content: string[], onClick: LoadFile, desc: string = "list") => {
   if(content.length > 0) {
     return h(
-      "ul", {desc: desc, style: {"padding": "0px"}},
+      "ul", {desc, style: {"padding": "0px"}},
         content.map( (element: string) =>
           h("li", { 
             style: {
@@ -20,9 +20,9 @@ const ClickableList = (content: string[], onClick: LoadFile, desc: string = "lis
           )
         )
     );
-  } else {
-    return h("div");
-  }
+  } 
+  return h("div");
+  
 }
 
 const ClickableListDeletion = (content: string[], onClick: LoadFile, desc: string = "list", onDelete: (file_name: string) => any) => {
@@ -46,7 +46,7 @@ const ClickableListDeletion = (content: string[], onClick: LoadFile, desc: strin
 
   if(content.length > 0) {
     return h(
-      "ul", {desc: desc, style: {"padding": "0px"}},
+      "ul", {desc, style: {"padding": "0px"}},
         content.map( (element: string) =>
           h("li", { 
             style: {
@@ -68,9 +68,8 @@ const ClickableListDeletion = (content: string[], onClick: LoadFile, desc: strin
           )
         )
     );
-  } else {
-    return h("div");
-  }
+  } 
+  return h("div");
 }
 
 export { ClickableList, ClickableListDeletion };

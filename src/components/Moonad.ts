@@ -13,7 +13,7 @@ import {Console} from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
-import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens, LocalFileManager, LocalFile, LoadFile } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, LoadFile, LocalFile, LocalFileManager, Tokens } from "../assets/Constants";
 
 const loader = async (file: string) => {
   return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
@@ -62,12 +62,11 @@ type LoadResError = "file_name_not_found" | "no_files";
 
 const load_local_file = (file_name: string) => {
   const files_string: string | null = window.localStorage.getItem("saved_local");
-  let response: LoadResError;
   if(files_string) {
     const files_parsed: LocalFile[] = JSON.parse(files_string);
-    for (let i = 0; i < files_parsed.length; i++){
-      if(files_parsed[i].file_name === file_name){
-        return files_parsed[i];
+    for (const element of files_parsed){
+      if(element.file_name === file_name){
+        return element;
       }
     }
   }
@@ -80,12 +79,12 @@ const get_local_files = () => {
 
 const save_local_file = (file: LocalFile) => {
 
-  if(file !== null){
+  if(file){
     const local_files = get_local_files();
-    var load_result: LocalFile | null = load_local_file(file.file_name);
+    const load_result: LocalFile | null = load_local_file(file.file_name);
     
     if (local_files === null) {
-      var name = prompt("Please enter the file name", "Example");
+      const name = prompt("Please enter the file name", "");
       if (name !== null || name !== "") {
         window.localStorage.setItem("saved_local", JSON.stringify([file]));
       }
@@ -94,7 +93,7 @@ const save_local_file = (file: LocalFile) => {
       window.localStorage.removeItem("saved_local");
 
       if (load_result === null ){ // There's not file with this name
-        var name = prompt("Please enter the file name", "");
+        const name = prompt("Please enter the file name", "");
         if (name === null || name === "") {
           console.log("A file cannot be saved with an empty name.");
           return false;
@@ -106,7 +105,7 @@ const save_local_file = (file: LocalFile) => {
         if(file.code !== load_result.code) {
           // file.code = load_result.code;
           for(let i = 0; i <= new_files.length; i++){
-            if(new_files[i].file_name == file.file_name){
+            if(new_files[i].file_name === file.file_name){
               new_files[i].code = file.code;
               break;
             }
@@ -116,7 +115,7 @@ const save_local_file = (file: LocalFile) => {
       window.localStorage.setItem("saved_local", JSON.stringify(new_files));
     }
     // After saving a file, confirms if it exists
-    return load_local_file(file.file_name) !== null ? true : false;
+    return load_local_file(file.file_name) ? true : false;
   }
   return false;
 }
@@ -132,9 +131,9 @@ const delete_local_file = (file_name: string) => {
     window.localStorage.setItem("saved_local", JSON.stringify(files_parsed));
     // if false, file name was not found
     return (old_lenght - files_parsed.length) !== 0 ? true : false; 
-  } else { // There are no files saved locally
-    return false;
-  }
+  } 
+  // There are no files saved locally
+  return false;
 }
 
 const BaseAppPath = "App#A_HX";
@@ -154,7 +153,6 @@ class Moonad extends Component {
   constructor(props: any) {
     super(props);
     this.load_file((window.location.pathname.slice(1) + window.location.hash) || "Base#");
-    let local_files: string | null = window.localStorage.getItem("saved_local");
   }
 
   public componentDidMount() {
@@ -345,7 +343,7 @@ class Moonad extends Component {
 
   public async load_local_file(file: string) {
     const found_file: LocalFile | null = load_local_file(file);
-    if(found_file !== null){
+    if(found_file){
       this.code = found_file.code;
       this.file = file;
       this.mode = "EDIT";
