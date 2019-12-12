@@ -3,7 +3,9 @@
 import {Component, render} from "inferno"
 import {h} from "inferno-hyperscript"
 
-import fm from "formality-lang";
+// import fm from "formality-lang"; // using .d.ts
+declare var require: any
+const fm = require("formality-lang");
 
 // Components
 import CodeEditor from "./CodeEditor"
@@ -15,27 +17,38 @@ import TopMenu from "./TopMenu"
 
 import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, LoadFile, LocalFile, LocalFileManager, Tokens } from "../assets/Constants";
 
-const loader = async (file: string) => {
-  return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
+const load_file = async (file_name: string) => {
+  return await fm.loader.with_local_storage_cache(fm.loader.load_file)(file_name);
 }
 
-const load_file = async (file: string) => {
-  return await loader(file);
+const parse_file = async (code: string, file_name: string, tokenify: boolean) => {
+  const parsed = await fm.lang.parse(code, {file: file_name, tokenify: true})
+  return {defs: parsed.defs, tokens: parsed.tokens};
+}
+
+const load_file_parents = async (file_name: string) => {
+  const response: string[] = await fm.loader.load_file_parents(file_name);
+  return response;
 }
 
 interface LoadedFileResponse {code: string}
 interface CheckTerm {
-  mode: fm.lang.TypecheckMode,
-  term_name: string, 
-  opts: any
+  // mode: fm.lang.TypecheckMode,
+  term_name: string;
+  expect: any;
+  defs?: {};
+  opts?: {};
 }
-type Check_norm = (term: CheckTerm) => fm.core.Term
+// type Check_norm = (term: CheckTerm) => fm.core.Term
 
-const type_check_term = async ({mode, term_name, opts}: CheckTerm) => {
+const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm) => {
   let type;
+  let show_type;
   let is_success;
   try {
-    type = fm.lang.run(mode, term_name, opts);
+    // type = fm.lang.run(mode, term_name, opts);
+    type = fm.core.typecheck(term_name, expect, defs, opts);
+    show_type = fm.lang.show(type);
     is_success = true;
   } catch (e) {
     type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
@@ -45,20 +58,19 @@ const type_check_term = async ({mode, term_name, opts}: CheckTerm) => {
 }
 
 // Normalizes a definition
-// TODO: not working. Check what Victor wants to do here
+// TODO: reduce not working
 const reduce = (term_name: string, defs: Defs, opts: any) => {
   let reduced : any;
   try {
-    // norm = fm.lang.show(fm.lang.norm(defs[term_name], defs, {}));
-    // reduced = fm.lang.show(fm.lang.reduce(term, opts))
-    reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
+    reduced = fm.fast.reduce(term_name, defs);
+    console.log("Reduce term: ", reduced);
+    // reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
   } catch (e) {
+    console.log("[moonad - reduce] Cannot reduce term: ", e);
     reduced = "<unable_to_normalize>";
   }
   return reduced;
 }
-
-type LoadResError = "file_name_not_found" | "no_files";
 
 const load_local_file = (file_name: string) => {
   const files_string: string | null = window.localStorage.getItem("saved_local");
@@ -136,7 +148,7 @@ const delete_local_file = (file_name: string) => {
   return false;
 }
 
-const BaseAppPath = "App#A_HX";
+const BaseAppPath = "App#U2k7";
 
 class Moonad extends Component {
 
@@ -172,7 +184,9 @@ class Moonad extends Component {
   // Re-parses the code to build defs and tokens
   public async parse() {
     // old: const parsed = await fm.lang.parse(this.file, this.code, true, this.loader);
-    const parsed = await fm.lang.parse(this.code, {file: this.file, loader, tokenify: true});
+    const parsed = await parse_file(this.code, this.file, true);
+    // console.log("Date: "+new Date());
+    // console.log("[parse] ", parsed);
     this.defs = parsed.defs;
     this.tokens = parsed.tokens;
     this.forceUpdate();
@@ -191,10 +205,11 @@ class Moonad extends Component {
     try {
       this.code = await load_file(file);
     } catch (e) {
-      this.code = "";
+      console.log("An error ocurred while loading the file: ", e);
+      this.code = "An error ocurred while loading this file.";
     }
     this.parse();
-    this.cited_by = await fm.forall.load_file_parents(file);
+    this.cited_by = await load_file_parents(file);
     this.forceUpdate();
   }
 
@@ -228,25 +243,26 @@ class Moonad extends Component {
   public async save_code(code: string) {
     this.code = code;
     this.parse();
-    this.file = await fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code);
+    // this.file = await fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code);
     this.parse();
   }
 
   // Type-checks a definition 
   public async typecheck(name: string) {
-    const res = await type_check_term({mode: "TYPECHECK", term_name: name, opts: {defs: this.defs} });
+    const res = await type_check_term({term_name: name, expect: null, defs: this.defs});
     let text = ":: Type ::\n";
     if (res.is_success) {
       text += "✓ " + fm.lang.show(res.type);
     } else {
       text += "✗ " + res.type;
     }
-    try {
-      const norm = await type_check_term({mode: "REDUCE_DEBUG", term_name: name, opts: {defs: this.defs, erased: true, unbox: true, logging: true}});
-      text += "\n\n:: Output ::\n";
-      text += fm.lang.show(norm.type, [], {full_refs: false});
+    try { // OBS: Not working
+      // const norm = await fm.optimal.norm(name, this.defs);
+      // text += "\n\n:: Output ::\n";
+      // console.log("Norm: ", norm);
+      // text += fm.lang.show(norm.type, [], {full_refs: false});
     } catch (e) {
-      alert("Problems while normalizing the term.");
+      console.log("Problems while normalizing the term: ", e);
     }
     alert(text);
   }
@@ -293,7 +309,7 @@ class Moonad extends Component {
   }
 
   public async on_click_play() {
-    const app_files = await fm.forall.load_file_parents(BaseAppPath);
+    const app_files = await load_file_parents(BaseAppPath);
 
     // TODO: If an app import a "App" it can run?
     console.log(app_files);
@@ -422,4 +438,5 @@ class Moonad extends Component {
   }
 }
 
-export {Moonad, loader, load_file, type_check_term, reduce, BaseAppPath }
+export {Moonad, load_file, parse_file, load_file_parents, type_check_term, 
+  reduce, BaseAppPath }
