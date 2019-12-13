@@ -1,5 +1,6 @@
 import { h } from "inferno-hyperscript"
 import { CitedByParent, LoadFile } from "../../assets/Constants";
+import { ClickableList } from "../ClickableList";
 
 export interface Props {
   parents: CitedByParent;
@@ -7,29 +8,7 @@ export interface Props {
 }
 
 const CitedBy = ({parents, load_file }: Props) => {
-  // console.log("Cited by!! Parents: "+parents.toString);
-  if (parents.length > 0) {
-    return h(
-      "ul",
-      { 
-        desc: "Cited by component",
-        style: {
-          "padding": "0px"
-        } },
-        parents.map( (parent: string) =>
-          h("li", { 
-            style: {
-              "list-style": "none",
-              "text-decoration": "underline",
-              "cursor": "pointer",
-              "padding-top": "5px",
-            }, 
-            onClick: () => load_file(parent) }, parent)
-      )
-    );
-  } 
-    return h("div")
-  
+  return ClickableList(parents, load_file, "Cited by component");
 }
 
 export default CitedBy;

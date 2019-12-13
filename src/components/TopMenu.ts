@@ -61,10 +61,15 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
         "align-items": "flex-end",
         "flex-grow": 1,
       }
-    }, [
-      h(Pathbar, {load_file, path: file})
-    ]),
-    h("div", {className: "Buttons div", 
+    }, 
+      h("div", {style: {
+        "flex-direction": "column",
+      }}, [
+        is_editing_mode(mode),
+        h(Pathbar, {load_file, path: file})
+      ])
+    ),
+    h("div", {desc: "Buttons div", 
       style: {
         // "width": "230px",
         "height": menu_height + "px", 
@@ -89,5 +94,15 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
     )
   ]);
 };
+
+const is_editing_mode = (mode: string) => {
+  if(mode === "EDIT"){
+    return h("span", {style: {
+      "padding-left": "8px",
+      "font-size": "12px",
+      "color": "#FFFFFF"
+    }}, "Editing");
+  }
+}
 
 export default TopMenu

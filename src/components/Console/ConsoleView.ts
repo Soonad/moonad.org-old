@@ -1,11 +1,12 @@
 
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
-import { CitedByParent, DisplayMode, ExecCommand, LayoutConstants, LoadFile } from "../../assets/Constants";
+import { CitedByParent, DisplayMode, ExecCommand, LayoutConstants, LoadFile, LocalFile, LocalFileManager } from "../../assets/Constants";
 import CitedBy from "./CitedBy";
 import Terminal from "./Terminal";
+import { Tools} from "./Tools";
 
-type TabViewType = "cited_by" | "terminal";
+type TabViewType = "cited_by" | "terminal" | "tools";
 
 interface Props {
   view_on_focus: TabViewType;
@@ -14,13 +15,15 @@ interface Props {
   parents: string[];
   // res_cmd: Array<string>;
   exec_command: ExecCommand;
-  // exec_command: (cmd: string) => any;
+  local_file_manager: LocalFileManager;
 }
 
-const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command}: Props) => {
+// TODO: 
+// > cited by is not receiving data from FPM
+const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, local_file_manager}: Props) => {
   switch(mode) {
-    case "EDIT": 
-      return h("div", {style});
+    case "EDIT": // can save file 
+      return h("div", {style}, Tools(local_file_manager));
     case "VIEW":
 
       switch(view_on_focus) {
@@ -28,6 +31,8 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command}: Pr
           return h("div", {style}, cited_by_view(parents, load_file) );
         case "terminal":
           return h(Terminal, {res_cmd: [], exec_command});
+        case "tools":
+          return h("div", {style}, Tools(local_file_manager));
       }
 
     case "PLAY": 
@@ -63,7 +68,6 @@ const cited_by_view = (parents: string[], load_file: LoadFile) => {
   const qtd = parents.length || 0;
   const cited_by_msg = format_console_msg(qtd > 1? qtd + " results" : qtd + " result");
   const cited_by = h(CitedBy, {parents, load_file});
-  
   return h("div", {}, [
       result_aux, cited_by_msg,
       cited_by

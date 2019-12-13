@@ -1,15 +1,16 @@
 
 import { Component } from "inferno";
 import { h } from "inferno-hyperscript";
-import { LayoutConstants } from "../../assets/Constants";
+import { DisplayMode, LayoutConstants } from "../../assets/Constants";
 
 interface Props {
   tabs: [ConsoleTabs];
+  mode: DisplayMode;
 }
 
-type TabViewType = "cited_by" | "console";
+type TabViewType = "cited_by" | "console" | "tools";
 
-const ConsoleTopBar = ({tabs}: Props) => {
+const ConsoleTopBar = ({tabs, mode}: Props) => {
   return h("div", {
     desc: "Console TopBar div",
     style: {
@@ -38,7 +39,8 @@ const ConsoleTopBar = ({tabs}: Props) => {
         (tab: ConsoleTabs) => h(ConsoleTab, {
           is_on_focus: tab.is_on_focus,
           title: tab.title,
-          onClick: tab.onClick
+          onClick: tab.onClick,
+          mode
         }) 
       )
     ])
@@ -52,6 +54,7 @@ export interface ConsoleTabs {
   is_on_focus: boolean;
   title: string;
   onClick: () => void;
+  mode: DisplayMode;
 }
 
 class ConsoleTab extends Component<ConsoleTabs> {
@@ -62,21 +65,25 @@ class ConsoleTab extends Component<ConsoleTabs> {
     super(props);
   }
 
+  public canClick = () => {
+    return this.props.mode !== "EDIT";
+  }
+
   public render() {
     const style_btn = this.hover ? console_tab_style_hover : console_tab_style;
     return h("div", {
-      onClick: this.props.onClick,
+      onClick: this.canClick() ? this.props.onClick : () => {},
       style: this.props.is_on_focus ? console_tab_style_focus : style_btn,
-      onMouseEnter: () => { this.hover = true; this.forceUpdate() },
-      onMouseLeave: () => { this.hover = false; this.forceUpdate() }
-    },
-    this.props.title)
+        onMouseEnter: () => { this.hover = true; this.forceUpdate(); },
+        onMouseLeave: () => { this.hover = false; this.forceUpdate(); }
+      },
+      this.props.title)
   }
 }
 
 const console_tab_style = {
   "align-self": "center",
-  "text-align": "baseline",
+  "text-align": "center",
   "cursor": "pointer",
   "padding-right": "20px",
   "padding-left": "20px",

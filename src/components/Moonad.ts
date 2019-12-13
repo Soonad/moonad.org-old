@@ -3,41 +3,53 @@
 import {Component, render} from "inferno"
 import {h} from "inferno-hyperscript"
 
-// TODO: how to improve this?
+// import fm from "formality-lang"; // using .d.ts
 declare var require: any
-import fm from "formality-lang";
+const fm = require("formality-lang");
 
 // Components
 import CodeEditor from "./CodeEditor"
 import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
-import Console from "./Console/Console"
+import {Console} from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
-import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, Tokens } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand,
+         LoadFile, LocalFile, LocalFileManager, Tokens } from "../assets/Constants";
 
-const loader = async (file: string) => {
-  return fm.forall.with_local_storage_cache(fm.forall.load_file)(file);
+// :::::::::::::
+// : Formality :
+// :::::::::::::
+const load_file = async (file_name: string) => {
+  return await fm.loader.with_local_storage_cache(fm.loader.load_file)(file_name);
 }
 
-interface LoadedFileResponse {code: string}
+const parse_file = async (code: string, file_name: string, tokenify: boolean) => {
+  const parsed = await fm.lang.parse(code, {file: file_name, tokenify: true})
+  return {defs: parsed.defs, tokens: parsed.tokens};
+}
+
+const load_file_parents = async (file_name: string) => {
+  const response: string[] = await fm.loader.load_file_parents(file_name);
+  return response;
+}
+
 interface CheckTerm {
-  mode: fm.lang.TypecheckMode,
-  term_name: string, 
-  opts: any
+  term_name: string;
+  expect: any;
+  defs?: {};
+  opts?: {};
 }
-type Check_norm = (term: CheckTerm) => fm.core.Term
+// type Check_norm = (term: CheckTerm) => fm.core.Term
 
-const load_file = async (file: string) => {
-  return await loader(file);
-}
-
-const type_check_term = async ({mode, term_name, opts}: CheckTerm) => {
+const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm) => {
   let type;
+  let show_type;
   let is_success;
   try {
-    type = fm.lang.run(mode, term_name, opts);
+    type = fm.core.typecheck(term_name, expect, defs, opts);
+    show_type = fm.lang.show(type);
     is_success = true;
   } catch (e) {
     type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
@@ -47,25 +59,96 @@ const type_check_term = async ({mode, term_name, opts}: CheckTerm) => {
 }
 
 // Normalizes a definition
-// TODO: not working. Check what Victor wants to do here
+// TODO: reduce not working
 const reduce = (term_name: string, defs: Defs, opts: any) => {
   let reduced : any;
   try {
-    // norm = fm.lang.show(fm.lang.norm(defs[term_name], defs, {}));
-    // reduced = fm.lang.show(fm.lang.reduce(term, opts))
-    reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
+    reduced = fm.fast.reduce(term_name, defs);
+    console.log("Reduce term: ", reduced);
+    // reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
   } catch (e) {
+    console.log("[moonad - reduce] Cannot reduce term: ", e);
     reduced = "<unable_to_normalize>";
   }
   return reduced;
 }
 
-const BaseAppPath = "App#A_HX";
+// :::::::::::::::::
+// : Local Storage :
+// :::::::::::::::::
+const load_local_file = (file_name: string) => {
+  const files_string: string | null = window.localStorage.getItem("saved_local");
+  if(files_string) {
+    const files_parsed: LocalFile[] = JSON.parse(files_string);
+    for (const element of files_parsed){
+      if(element.file_name === file_name){
+        return element;
+      }
+    }
+  }
+  return null;
+}
+
+const get_local_files = () => {
+  return window.localStorage.getItem("saved_local");
+}
+
+const save_local_file = (file: LocalFile) => {
+
+  if(file){
+    const local_files = get_local_files();
+    const load_result: LocalFile | null = load_local_file(file.file_name);
+    
+    if (!local_files) {
+      const name = prompt("Please enter the file name", "");
+      name ? file.file_name = name : file.file_name = "empty_name";
+      window.localStorage.setItem("saved_local", JSON.stringify([file]));
+    } else { 
+      const new_files: LocalFile[] = JSON.parse(local_files);
+      window.localStorage.removeItem("saved_local");
+      if (!load_result){ // There's not file with this name
+        const name = prompt("Please enter the file name", "");
+        name ? file.file_name = name : file.file_name = "empty_name";
+        new_files.push(file);
+      } else { // File exists
+        // Find and update file
+        for(let i = 0; i <= new_files.length; i++){
+          if(new_files[i].file_name === file.file_name){
+            new_files[i].code = file.code;
+            break;
+          }
+        }
+      } 
+      window.localStorage.setItem("saved_local", JSON.stringify(new_files));
+    }
+    // After saving a file, confirms if it exists
+    return load_local_file(file.file_name) ? file : false;
+  }
+  return false;
+}
+
+const delete_local_file = (file_name: string) => {
+  const files_string = window.localStorage.getItem("saved_local");
+  if(files_string) {
+    let files_parsed: LocalFile[] = JSON.parse(files_string);
+    const old_lenght = files_parsed.length;
+    files_parsed = files_parsed.filter((item: LocalFile) => item.file_name !== file_name);
+    // Update local files
+    window.localStorage.removeItem("saved_local");
+    window.localStorage.setItem("saved_local", JSON.stringify(files_parsed));
+    // if false, file name was not found
+    return (old_lenght - files_parsed.length) !== 0 ? true : false; 
+  } 
+  // There are no files saved locally
+  return false;
+}
+// If a file imports App, it can run.
+const BaseAppPath = "App#U2k7";
 
 class Moonad extends Component {
 
   // Application state
-  public version  : string        = "2";    // change to clear the user's caches
+  public version  : string        = "3";    // change to clear the user's caches
   public file     : string        = "";     // name of the current file being rendered
   public code     : string        = "";     // contents of the current file
   public tokens?  : Tokens        = [];     // chunks of code with syntax highlight info
@@ -82,10 +165,10 @@ class Moonad extends Component {
   public componentDidMount() {
     const cached_fm_version = window.localStorage.getItem("cached_fm_version");
     const cached_moonad_version = window.localStorage.getItem("cached_moonad_version");
-    if (cached_fm_version !== fm.lang.version || cached_moonad_version !== this.version) {
+    if (cached_fm_version !== fm.version || cached_moonad_version !== this.version) {
       window.localStorage.clear();
       window.localStorage.setItem("cached_moonad_version", this.version);
-      window.localStorage.setItem("cached_fm_version", fm.lang.version);
+      window.localStorage.setItem("cached_fm_version", fm.version);
     }
 
     window.onpopstate = (e: any) => {
@@ -95,8 +178,7 @@ class Moonad extends Component {
 
   // Re-parses the code to build defs and tokens
   public async parse() {
-    // old: const parsed = await fm.lang.parse(this.file, this.code, true, this.loader);
-    const parsed = await fm.lang.parse(this.code, {file: this.file, loader, tokenify: true});
+    const parsed = await parse_file(this.code, this.file, true);
     this.defs = parsed.defs;
     this.tokens = parsed.tokens;
     this.forceUpdate();
@@ -115,10 +197,11 @@ class Moonad extends Component {
     try {
       this.code = await load_file(file);
     } catch (e) {
-      this.code = "";
+      console.log("An error ocurred while loading the file: ", e);
+      this.code = "An error ocurred while loading this file.";
     }
     this.parse();
-    this.cited_by = await fm.forall.load_file_parents(file);
+    this.cited_by = await load_file_parents(file);
     this.forceUpdate();
   }
 
@@ -148,29 +231,30 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  // Loads a code without a file (local)
-  public async save_code(code: string) {
+  public async save_code(file_name: string, code: string) {
     this.code = code;
     this.parse();
-    this.file = await fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code);
+    this.file = fm.loades.save_file(file_name, code);
+    // this.file = await fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code);
     this.parse();
   }
 
   // Type-checks a definition 
   public async typecheck(name: string) {
-    const res = await type_check_term({mode: "TYPECHECK", term_name: name, opts: {defs: this.defs} });
+    const res = await type_check_term({term_name: name, expect: null, defs: this.defs});
     let text = ":: Type ::\n";
     if (res.is_success) {
       text += "✓ " + fm.lang.show(res.type);
     } else {
       text += "✗ " + res.type;
     }
-    try {
-      const norm = await type_check_term({mode: "REDUCE_DEBUG", term_name: name, opts: {defs: this.defs, erased: true, unbox: true, logging: true}});
-      text += "\n\n:: Output ::\n";
-      text += fm.lang.show(norm.type, [], {full_refs: false});
+    try { // OBS: Not working
+      // const norm = await fm.optimal.norm(name, this.defs);
+      // text += "\n\n:: Output ::\n";
+      // console.log("Norm: ", norm);
+      // text += fm.lang.show(norm.type, [], {full_refs: false});
     } catch (e) {
-      alert("Problems while normalizing the term.");
+      console.log("[moonad] Problems while normalizing the term: ", e);
     }
     alert(text);
   }
@@ -207,23 +291,28 @@ class Moonad extends Component {
   
   public on_click_view() {
     this.mode = "VIEW";
-    this.save_code(this.code);
+    // this.save_code(this.code);
     this.forceUpdate();
   }
 
+  // Event when user clicks on Edit button
   public on_click_edit() {
     this.mode = "EDIT";
     this.forceUpdate();
   }
 
+  // Event when users clicks on Play button
   public async on_click_play() {
-    const app_files = await fm.forall.load_file_parents(BaseAppPath);
-    if (app_files.includes(this.file)) {
+    const app_files = await load_file_parents(BaseAppPath);
+
+    // TODO: If an app import a "App" it can run?
+    console.log(app_files);
+    // if (app_files.includes(this.file)) {
       this.mode = "PLAY";
       this.forceUpdate();
-    } else {
-      window.alert("This file is not an app, so it can't be played");
-    } 
+    // } else {
+      // window.alert("This file is not an app, so it can't be played");
+    // } 
   }
 
   public on_input_code(code: string) {
@@ -231,20 +320,90 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  // async on_click_save() {
-    // var file = prompt("File name:");
-    // try {
-      // if (file) {
-        // var unam = await fm.forall.save_file(file, this.code);
-        // this.load_file(unam);
-      // } else {
-        // throw "";
-      // }
-    // } catch (e) {
-      // console.log(e);
-      // alert("Couldn't save file.");
-    // }
-  // }
+  public async publish_file() {
+    if(this.mode === "EDIT"){
+      const file = prompt("File name: ");
+      try {
+        if (file) {
+          const file_name = await fm.loader.save_file(file, this.code);
+          this.load_file(file_name);
+          console.log("[moonad] pushish success: "+file_name);
+        } else {
+          throw new Error("");
+        }
+      } catch (e) {
+        console.log("[moonad] Error on saving file: ",e);
+        alert("There was a problem. I couldn't save the file.");
+      }
+    } else {
+      console.log("[moonad] I'm only able to publish a file on EDIT mode.");
+    }
+  }
+
+  // :::::::::
+  // : LOCAL :
+  // :::::::::
+  public getLocalFileManager() {
+    const load_local_file = (file_name: string) => this.load_local_file(file_name);
+    const delete_local_file = (file_name: string) => this.delete_local_file(file_name);
+    const save_local_file = () => this.save_local_file();
+    const publish = () => this.publish_file();
+    const mng: LocalFileManager = {
+      file: {code: this.code, file_name: this.file},
+      save_local_file,
+      load_local_file,
+      delete_local_file,
+      publish
+    }
+    return mng;
+  }
+
+  public async load_local_file(file: string) {
+    const found_file: LocalFile | null = load_local_file(file);
+    if(found_file){
+      this.code = found_file.code;
+      this.file = file;
+      this.mode = "EDIT";
+      this.forceUpdate();
+    }
+  }
+
+  // TODO: update return
+  public save_local_file() {
+    // Only saves a file in editing mode
+    if(this.mode === "EDIT"){
+      const save: LocalFile = {code: this.code, file_name: this.file};
+      const saved_file = save_local_file(save);
+      if(saved_file !== false) {
+        this.code = saved_file.code;
+        this.file = saved_file.file_name;
+        this.forceUpdate();
+        // alert("File saved with success");
+        console.log("[moonad] File saved with success!");
+      } else {
+        console.log("[moonad] I'm not able to save this file.");
+      }
+    } else {
+      console.log("[moonad] I'm only able to save a file on EDIT mode.");
+    }
+  }
+
+  // TODO: update return
+  public delete_local_file(file_name: string) {
+    const resp = delete_local_file(file_name);
+    if(resp) {
+      // If deleting the current file, loads Base
+      console.log("This.file: "+this.file+" and file name: "+file_name);
+      if(this.file === file_name){
+        console.log("load base")
+        load_file("Base#");
+      }
+      console.log("[moonad] Ok, file deleted.");
+    } else {
+      console.log("[moonad] I couldn't find the file to be deleted.");
+    }
+    this.forceUpdate();
+  }
 
   // Renders the interface
   public render() {
@@ -255,6 +414,7 @@ class Moonad extends Component {
     const code = this.code;
     const tokens = this.tokens;
     const cited_by = this.cited_by;
+    const local_file_manager = this.getLocalFileManager();
     const load_file = (file: string, push_history?: boolean) => this.load_file(file, push_history);
     const on_click_view = () => this.on_click_view();
     const on_click_edit = () => this.on_click_edit();
@@ -264,16 +424,14 @@ class Moonad extends Component {
     const on_click_ref = (path: string) => this.on_click_ref(path);
     const on_input_code = (code: string) => this.on_input_code(code);
     const exec_command = (cmd: string) => this.exec_command(cmd);
+
     // Renders the site
     return h("div", {
       style: {
-        // "min-width": "400px",
         "font-family": "Gotham Book",
         "display": "flex",
         "flex-flow": "column nowrap",
-        // "align-items": "center",
         "height": "100%",
-        // "background": "rgb(253,253,254)"
     }}, [
       // Top of the site
       TopMenu({mode, file, on_click_view, on_click_edit, on_click_play, load_file}),
@@ -285,9 +443,10 @@ class Moonad extends Component {
       : null),
 
       // Bottom of the site
-      h(Console, {load_file, cited_by, mode, exec_command})
+      h(Console, {load_file, cited_by, mode, exec_command, local_file_manager})
     ]);
   }
 }
 
-export {Moonad, loader, load_file, type_check_term, reduce, BaseAppPath }
+export {Moonad, load_file, parse_file, load_file_parents, type_check_term, 
+  reduce, BaseAppPath }

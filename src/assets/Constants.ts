@@ -24,6 +24,11 @@ type ExecCommand = (cmd: string, code?: string) => any;
 
 interface Defs {[key : string] : any} // `any` is a Formality Term
 
+export interface LocalFile {
+  code: string;
+  file_name: string;
+}
+
 export interface Module {
   path: string;
   cited_by: CitedByParent;
@@ -36,6 +41,14 @@ export interface ConsoleTabs {
   is_on_focus: boolean;
   title: string;
   onClick: () => void;
+}
+
+export interface LocalFileManager {
+  file: LocalFile;
+  save_local_file: any;
+  load_local_file: any;
+  delete_local_file: any;
+  publish: any;
 }
 
 export { 
