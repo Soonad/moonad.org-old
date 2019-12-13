@@ -69,4 +69,4 @@ class Console extends Component<Props> {
   }
 }
 
-export {Console}
+export default Console;

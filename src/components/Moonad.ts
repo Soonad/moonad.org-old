@@ -11,7 +11,7 @@ const fm = require("formality-lang");
 import CodeEditor from "./CodeEditor"
 import CodePlayer from "./CodePlayer"
 import CodeRender from "./CodeRender"
-import {Console} from "./Console/Console"
+import Console from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
@@ -393,10 +393,8 @@ class Moonad extends Component {
     const resp = delete_local_file(file_name);
     if(resp) {
       // If deleting the current file, loads Base
-      console.log("This.file: "+this.file+" and file name: "+file_name);
       if(this.file === file_name){
-        console.log("load base")
-        load_file("Base#");
+        this.load_file("Base#");
       }
       console.log("[moonad] Ok, file deleted.");
     } else {
