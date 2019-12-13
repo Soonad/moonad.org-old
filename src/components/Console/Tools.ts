@@ -14,6 +14,7 @@ const Tools = ({file, save_local_file, load_local_file, delete_local_file}: Loca
 
   const show_local_files = () => {
     const files = window.localStorage.getItem("saved_local");
+    console.log("Local files:", files);
     if(files && files !== "[]") {
       const obj_files = JSON.parse(files);
       const file_names = obj_files.map( ({code, file_name}: LocalFile) => file_name );

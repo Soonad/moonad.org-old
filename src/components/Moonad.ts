@@ -15,8 +15,12 @@ import {Console} from "./Console/Console"
 import Pathbar from "./Pathbar"
 import TopMenu from "./TopMenu"
 
-import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand, LoadFile, LocalFile, LocalFileManager, Tokens } from "../assets/Constants";
+import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand,
+         LoadFile, LocalFile, LocalFileManager, Tokens } from "../assets/Constants";
 
+// :::::::::::::
+// : Formality :
+// :::::::::::::
 const load_file = async (file_name: string) => {
   return await fm.loader.with_local_storage_cache(fm.loader.load_file)(file_name);
 }
@@ -31,9 +35,7 @@ const load_file_parents = async (file_name: string) => {
   return response;
 }
 
-interface LoadedFileResponse {code: string}
 interface CheckTerm {
-  // mode: fm.lang.TypecheckMode,
   term_name: string;
   expect: any;
   defs?: {};
@@ -46,7 +48,6 @@ const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm
   let show_type;
   let is_success;
   try {
-    // type = fm.lang.run(mode, term_name, opts);
     type = fm.core.typecheck(term_name, expect, defs, opts);
     show_type = fm.lang.show(type);
     is_success = true;
@@ -72,6 +73,9 @@ const reduce = (term_name: string, defs: Defs, opts: any) => {
   return reduced;
 }
 
+// :::::::::::::::::
+// : Local Storage :
+// :::::::::::::::::
 const load_local_file = (file_name: string) => {
   const files_string: string | null = window.localStorage.getItem("saved_local");
   if(files_string) {
@@ -95,39 +99,30 @@ const save_local_file = (file: LocalFile) => {
     const local_files = get_local_files();
     const load_result: LocalFile | null = load_local_file(file.file_name);
     
-    if (local_files === null) {
+    if (!local_files) {
       const name = prompt("Please enter the file name", "");
-      if (name !== null || name !== "") {
-        window.localStorage.setItem("saved_local", JSON.stringify([file]));
-      }
+      name ? file.file_name = name : file.file_name = "empty_name";
+      window.localStorage.setItem("saved_local", JSON.stringify([file]));
     } else { 
       const new_files: LocalFile[] = JSON.parse(local_files);
       window.localStorage.removeItem("saved_local");
-
-      if (load_result === null ){ // There's not file with this name
+      if (!load_result){ // There's not file with this name
         const name = prompt("Please enter the file name", "");
-        if (name === null || name === "") {
-          console.log("A file cannot be saved with an empty name.");
-          return false;
-        } 
-        file.file_name = name;
+        name ? file.file_name = name : file.file_name = "empty_name";
         new_files.push(file);
       } else { // File exists
-        // Update file
-        if(file.code !== load_result.code) {
-          // file.code = load_result.code;
-          for(let i = 0; i <= new_files.length; i++){
-            if(new_files[i].file_name === file.file_name){
-              new_files[i].code = file.code;
-              break;
-            }
+        // Find and update file
+        for(let i = 0; i <= new_files.length; i++){
+          if(new_files[i].file_name === file.file_name){
+            new_files[i].code = file.code;
+            break;
           }
-        } else { console.log("codes are not different")}
+        }
       } 
       window.localStorage.setItem("saved_local", JSON.stringify(new_files));
     }
     // After saving a file, confirms if it exists
-    return load_local_file(file.file_name) ? true : false;
+    return load_local_file(file.file_name) ? file : false;
   }
   return false;
 }
@@ -153,7 +148,7 @@ const BaseAppPath = "App#U2k7";
 class Moonad extends Component {
 
   // Application state
-  public version  : string        = "2";    // change to clear the user's caches
+  public version  : string        = "3";    // change to clear the user's caches
   public file     : string        = "";     // name of the current file being rendered
   public code     : string        = "";     // contents of the current file
   public tokens?  : Tokens        = [];     // chunks of code with syntax highlight info
@@ -170,10 +165,10 @@ class Moonad extends Component {
   public componentDidMount() {
     const cached_fm_version = window.localStorage.getItem("cached_fm_version");
     const cached_moonad_version = window.localStorage.getItem("cached_moonad_version");
-    if (cached_fm_version !== fm.lang.version || cached_moonad_version !== this.version) {
+    if (cached_fm_version !== fm.version || cached_moonad_version !== this.version) {
       window.localStorage.clear();
       window.localStorage.setItem("cached_moonad_version", this.version);
-      window.localStorage.setItem("cached_fm_version", fm.lang.version);
+      window.localStorage.setItem("cached_fm_version", fm.version);
     }
 
     window.onpopstate = (e: any) => {
@@ -262,7 +257,7 @@ class Moonad extends Component {
       // console.log("Norm: ", norm);
       // text += fm.lang.show(norm.type, [], {full_refs: false});
     } catch (e) {
-      console.log("Problems while normalizing the term: ", e);
+      console.log("[moonad] Problems while normalizing the term: ", e);
     }
     alert(text);
   }
@@ -372,15 +367,18 @@ class Moonad extends Component {
     // Only saves a file in editing mode
     if(this.mode === "EDIT"){
       const save: LocalFile = {code: this.code, file_name: file};
-      if(save_local_file(save)) {
+      const saved_file = save_local_file(save);
+      if(saved_file !== false) {
+        this.code = saved_file.code;
+        this.file = saved_file.file_name;
         this.forceUpdate();
         // alert("File saved with success");
-        console.log("File saved with success!");
+        console.log("[moonad] File saved with success!");
       } else {
-        console.log("Not able to save file");
+        console.log("[moonad] I'm not able to save this file.");
       }
     } else {
-      console.log("It's only able to save a file on EDIT mode");
+      console.log("[moonad] I'm only able to save a file on EDIT mode.");
     }
   }
 
@@ -388,9 +386,15 @@ class Moonad extends Component {
   public delete_local_file(file_name: string) {
     const resp = delete_local_file(file_name);
     if(resp) {
-      console.log("[moonad] deleted");
+      // If deleting the current file, loads Base
+      console.log("This.file: "+this.file+" and file name: "+file_name);
+      if(this.file === file_name){
+        console.log("load base")
+        load_file("Base#");
+      }
+      console.log("[moonad] Ok, file deleted.");
     } else {
-      console.log("[moonad] file not found to delete it");
+      console.log("[moonad] I couldn't find the file to be deleted.");
     }
     this.forceUpdate();
   }
