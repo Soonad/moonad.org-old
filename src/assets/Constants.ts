@@ -48,6 +48,7 @@ export interface LocalFileManager {
   save_local_file: any;
   load_local_file: any;
   delete_local_file: any;
+  publish: any;
 }
 
 export { 

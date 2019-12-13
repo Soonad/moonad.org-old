@@ -142,8 +142,10 @@ const delete_local_file = (file_name: string) => {
   // There are no files saved locally
   return false;
 }
-
+// If a file imports App, it can run.
 const BaseAppPath = "App#U2k7";
+
+console.log(fm);
 
 class Moonad extends Component {
 
@@ -178,10 +180,7 @@ class Moonad extends Component {
 
   // Re-parses the code to build defs and tokens
   public async parse() {
-    // old: const parsed = await fm.lang.parse(this.file, this.code, true, this.loader);
     const parsed = await parse_file(this.code, this.file, true);
-    // console.log("Date: "+new Date());
-    // console.log("[parse] ", parsed);
     this.defs = parsed.defs;
     this.tokens = parsed.tokens;
     this.forceUpdate();
@@ -234,10 +233,10 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  // Loads a code without a file (local)
-  public async save_code(code: string) {
+  public async save_code(file_name: string, code: string) {
     this.code = code;
     this.parse();
+    this.file = fm.loades.save_file(file_name, code);
     // this.file = await fm.forall.save_file(this.file.slice(0, this.file.indexOf("#")), this.code);
     this.parse();
   }
@@ -294,15 +293,17 @@ class Moonad extends Component {
   
   public on_click_view() {
     this.mode = "VIEW";
-    this.save_code(this.code);
+    // this.save_code(this.code);
     this.forceUpdate();
   }
 
+  // Event when user clicks on Edit button
   public on_click_edit() {
     this.mode = "EDIT";
     this.forceUpdate();
   }
 
+  // Event when users clicks on Play button
   public async on_click_play() {
     const app_files = await load_file_parents(BaseAppPath);
 
@@ -321,33 +322,40 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  // async on_click_save() {
-    // var file = prompt("File name:");
-    // try {
-      // if (file) {
-        // var unam = await fm.forall.save_file(file, this.code);
-        // this.load_file(unam);
-      // } else {
-        // throw "";
-      // }
-    // } catch (e) {
-      // console.log(e);
-      // alert("Couldn't save file.");
-    // }
-  // }
+  async publish_file() {
+    if(this.mode === "EDIT"){
+      var file = prompt("File name: ");
+      try {
+        if (file) {
+          var file_name = await fm.loader.save_file(file, this.code);
+          this.load_file(file_name);
+          console.log("[moonad] pushish success: "+file_name);
+        } else {
+          throw "";
+        }
+      } catch (e) {
+        console.log("[moonad] Error on saving file: ",e);
+        alert("There was a problem. I couldn't save the file.");
+      }
+    } else {
+      console.log("[moonad] I'm only able to publish a file on EDIT mode.");
+    }
+  }
 
   // :::::::::
   // : LOCAL :
   // :::::::::
   public getLocalFileManager() {
-    const load_local_file = (file: string) => this.load_local_file(file);
-    const save_local_file = (file_name: string) => this.save_local_file(file_name);
+    const load_local_file = (file_name: string) => this.load_local_file(file_name);
     const delete_local_file = (file_name: string) => this.delete_local_file(file_name);
+    const save_local_file = () => this.save_local_file();
+    const publish = () => this.publish_file();
     const mng: LocalFileManager = {
       file: {code: this.code, file_name: this.file},
       save_local_file,
       load_local_file,
-      delete_local_file
+      delete_local_file,
+      publish
     }
     return mng;
   }
@@ -363,10 +371,10 @@ class Moonad extends Component {
   }
 
   // TODO: update return
-  public save_local_file(file: string) {
+  public save_local_file() {
     // Only saves a file in editing mode
     if(this.mode === "EDIT"){
-      const save: LocalFile = {code: this.code, file_name: file};
+      const save: LocalFile = {code: this.code, file_name: this.file};
       const saved_file = save_local_file(save);
       if(saved_file !== false) {
         this.code = saved_file.code;

@@ -10,11 +10,10 @@ interface Props{
 
 const icon_save = "../assets/icons/icon_save.png";
 
-const Tools = ({file, save_local_file, load_local_file, delete_local_file}: LocalFileManager) => {
+const Tools = ({file, save_local_file, load_local_file, delete_local_file, publish}: LocalFileManager) => {
 
   const show_local_files = () => {
     const files = window.localStorage.getItem("saved_local");
-    console.log("Local files:", files);
     if(files && files !== "[]") {
       const obj_files = JSON.parse(files);
       const file_names = obj_files.map( ({code, file_name}: LocalFile) => file_name );
@@ -31,7 +30,6 @@ const Tools = ({file, save_local_file, load_local_file, delete_local_file}: Loca
     style: {
       "display": "flex",
       "flex-direction": "row",
-      "height": "180px",
       "overflow": "hidden"
     }
   }, [
@@ -48,7 +46,8 @@ const Tools = ({file, save_local_file, load_local_file, delete_local_file}: Loca
         "overflow": "hidden"
       }
     }, h("div", {style: {"margin-top": "20px"}}, [
-      h(ToolsButton, {icon: icon_save, title: "Save local", onClick: () => save_local_file(file.file_name)})
+      h(ToolsButton, {icon: icon_save, title: "Save local", onClick: () => save_local_file(file.file_name)}),
+      h(ToolsButton, {icon: icon_save, title: "Publish", onClick: () => publish()})
     ]) ),
     h("div", {
       desc: "Tools display view",
