@@ -322,16 +322,16 @@ class Moonad extends Component {
     this.forceUpdate();
   }
 
-  async publish_file() {
+  public async publish_file() {
     if(this.mode === "EDIT"){
-      var file = prompt("File name: ");
+      const file = prompt("File name: ");
       try {
         if (file) {
-          var file_name = await fm.loader.save_file(file, this.code);
+          const file_name = await fm.loader.save_file(file, this.code);
           this.load_file(file_name);
           console.log("[moonad] pushish success: "+file_name);
         } else {
-          throw "";
+          throw new Error("");
         }
       } catch (e) {
         console.log("[moonad] Error on saving file: ",e);
