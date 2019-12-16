@@ -50,8 +50,8 @@ class Console extends Component<Props> {
 
     return h("div", {
       style: {
-        "height": "180px",
-        "min-height": "120px",
+        "height": "130px",
+        "min-height": "130px",
         "width": "100%",
         "background-color": LayoutConstants.light_gray_color,
         "overflow": "scroll",
@@ -69,4 +69,4 @@ class Console extends Component<Props> {
   }
 }
 
-export {Console}
+export default Console;

@@ -31,7 +31,8 @@ const Editor = ({code, on_input_code}: Props) => {
       "width": "800px",
       "height": "100%",
       "spellcheck": "false",
-      "data-gramm": "false"
+      "data-gramm": "false",
+      "resize": "none",
     },
   }, [])
 };

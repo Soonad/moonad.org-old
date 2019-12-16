@@ -57,7 +57,8 @@ const button_style = {
   "text-align": "center",
   "cursor": "pointer",
   "background-color": "#FFFFFF",
-  "border-radius": "5px"
+  "border-radius": "5px",
+  "margin-bottom": "5px"
 }
 
 const button_hover_style = {

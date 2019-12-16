@@ -23,7 +23,7 @@
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
     "file-loader": "^4.2.0",
-    "formality-lang": "^0.1.201",
+    "formality-lang": "^0.1.209",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
     "jest": "^24.9.0",
@@ -62,7 +62,7 @@
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },
-    "verbose": true,
+    "verbose": false,
     "testURL": "http://localhost:8080",
     "moduleFileExtensions": [
       "js",
@@ -81,6 +81,9 @@
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/src/tests/__mocks__/fileMock.js",
       "\\.(css|less|scss)$": "identity-obj-proxy",
       "^./style$": "identity-obj-proxy"
-    }
+    },
+    "setupFiles": [
+      "./src/tests/browserMocks.ts"
+    ]
   }
 }
