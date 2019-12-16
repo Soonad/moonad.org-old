@@ -63,12 +63,15 @@ const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm
 // TODO: reduce not working
 const reduce = (term_name: string, defs: Defs, opts: any) => {
   let reduced : any;
+  let show_reduced;
   try {
-    reduced = fm.fast.reduce(term_name, defs);
-    console.log("Reduce term: ", reduced);
+    reduced = fm.core.reduce(term_name, defs);
+    console.log("[func reduce] term_name: ", term_name);
+    console.log("[func reduce] defs", defs);
+    console.log("[func reduce] fm.core.reduce: ", reduced);
     // reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
   } catch (e) {
-    console.log("[moonad - reduce] Cannot reduce term: ", e);
+    console.log("[func reduce] Cannot reduce. Error: ", e);
     reduced = "<unable_to_normalize>";
   }
   return reduced;
@@ -268,16 +271,20 @@ class Moonad extends Component {
 
   // Normalizes a definition
   public reduce(term_name: string) {
-    const norm = reduce(this.defs[term_name], this.defs, {});
-    alert(norm);
+    console.log("[moonad - reduce] term_name: ", term_name);
+    const norm = reduce(term_name, this.defs, {});
+    console.log("[moonad - norm]: ", fm.stringify(norm));
+    alert(fm.stringify(norm));
   }
 
   // Event when user clicks a definition 
   public on_click_def(path: string) {
     return (e: any) => {
       if (!e.shiftKey) {
+        console.log("path type check: ", path);
         return this.typecheck(path);
       } 
+        console.log("path reduce: ", path);
         return this.reduce(path);
     }
   }
