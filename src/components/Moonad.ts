@@ -375,7 +375,8 @@ class Moonad extends Component {
     }
   }
 
-  // TODO: update return
+  // TODO: instead of an alert, I wish to present a small
+  // message inside Tools. Future plans.
   public save_local_file() {
     // Only saves a file in editing mode
     if(this.mode === "EDIT"){
@@ -396,9 +397,11 @@ class Moonad extends Component {
         // alert("File saved with success");
         console.log("[moonad] File saved with success!");
       } else {
+        alert("I'm not able to save this file.");
         console.log("[moonad] I'm not able to save this file.");
       }
     } else {
+      alert("I'm only able to save a file on EDIT mode.");
       console.log("[moonad] I'm only able to save a file on EDIT mode.");
     }
   }
@@ -413,6 +416,7 @@ class Moonad extends Component {
       }
       console.log("[moonad] Ok, file deleted.");
     } else {
+      alert("I couldn't find the file to be deleted.");
       console.log("[moonad] I couldn't find the file to be deleted.");
     }
     this.forceUpdate();
@@ -420,7 +424,7 @@ class Moonad extends Component {
 
   // Renders the interface
   public render() {
-    // Creates bound variables for states and local methods
+    // Creates bound vagit riables for states and local methods
     const mode = this.mode;
     const file = this.file;
     const defs = this.defs;
