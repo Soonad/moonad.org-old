@@ -27,7 +27,7 @@ const load_file = async (file_name: string) => {
 }
 
 const parse_file = async (code: string, file_name: string, tokenify: boolean) => {
-  const parsed = await fm.parse(code, {file: file_name, tokenify: true})
+  const parsed = await fm.parse(code, {file: file_name, tokenify: true, loader: load_file})
   return {defs: parsed.defs, tokens: parsed.tokens};
 }
 
