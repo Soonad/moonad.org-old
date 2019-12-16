@@ -81,14 +81,17 @@ const TopMenu = ({mode, file, load_file, on_click_view, on_click_edit, on_click_
         h(TopMenuButton, {icon: icon_edit,
           title: "EDIT",
           onClick: () => on_click_edit(),
+          is_on_focus: mode === "EDIT" ? true : false
         }), 
         h(TopMenuButton, {icon: icon_console,
           title: "INSPECT",
           onClick: () => on_click_view(),
+          is_on_focus: mode === "VIEW" ? true : false
         }), 
         h(TopMenuButton, {icon: icon_play,
           title: "PLAY",
           onClick: () => on_click_play(),
+          is_on_focus: mode === "PLAY" ? true : false
         }), 
       ]
     )

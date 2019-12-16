@@ -4,8 +4,9 @@ import { LayoutConstants } from "../assets/Constants";
 
 export interface Props {
   icon: string;
-  title: string,
+  title: string;
   onClick: () => any;
+  is_on_focus: boolean;
 }
 
 class TopMenuButton extends Component<Props> {
@@ -18,7 +19,8 @@ class TopMenuButton extends Component<Props> {
 
   public render() {
     const style_btn = this.hover ? button_hover_style : button_style;
-
+    const style_title = this.props.is_on_focus ? font_focus_style : font_style;
+    
     return h("div", {
       style: style_btn, 
       onClick: this.props.onClick,
@@ -34,12 +36,7 @@ class TopMenuButton extends Component<Props> {
           }
         }),
         h("p", {
-          style: {
-            "color": "#FFFFFF",
-            "font-size": "12px",
-            "font-family": "monospace",
-            "margin": "0px"
-          }
+          style: style_title
         }, this.props.title)
       ]
     );
@@ -56,11 +53,22 @@ const button_style = {
   "text-align": "center",
   "cursor": "pointer"
 }
-
 const button_hover_style = {
   ...button_style,
-  // "background-color": "#000000"
   "font-weight": "bold"
 }
+
+const font_style = {
+  "color": "#FFFFFF",
+  "font-size": "12px",
+  "font-family": "monospace",
+  "margin": "0px"
+}
+const font_focus_style = {
+  ...font_style,
+  "font-weight": "bold"
+}
+
+
 
 export default TopMenuButton;
