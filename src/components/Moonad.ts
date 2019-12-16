@@ -21,12 +21,13 @@ import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand,
 // :::::::::::::
 // : Formality :
 // :::::::::::::
+
 const load_file = async (file_name: string) => {
   return await fm.loader.with_local_storage_cache(fm.loader.load_file)(file_name);
 }
 
 const parse_file = async (code: string, file_name: string, tokenify: boolean) => {
-  const parsed = await fm.lang.parse(code, {file: file_name, tokenify: true})
+  const parsed = await fm.parse(code, {file: file_name, tokenify: true})
   return {defs: parsed.defs, tokens: parsed.tokens};
 }
 
@@ -49,7 +50,7 @@ const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm
   let is_success;
   try {
     type = fm.core.typecheck(term_name, expect, defs, opts);
-    show_type = fm.lang.show(type);
+    show_type = fm.stringify(type);
     is_success = true;
   } catch (e) {
     type = e.toString().replace(/\[[0-9]m/g, "").replace(/\[[0-9][0-9]m/g, "");
@@ -244,7 +245,7 @@ class Moonad extends Component {
     const res = await type_check_term({term_name: name, expect: null, defs: this.defs});
     let text = ":: Type ::\n";
     if (res.is_success) {
-      text += "✓ " + fm.lang.show(res.type);
+      text += "✓ " + fm.stringify(res.type);
     } else {
       text += "✗ " + res.type;
     }
