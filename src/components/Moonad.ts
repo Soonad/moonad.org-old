@@ -93,22 +93,23 @@ const get_local_files = () => {
   return window.localStorage.getItem("saved_local");
 }
 
-const save_local_file = (file: LocalFile) => {
+const save_local_file = (file: LocalFile, input_name?: () => string) => {
 
   if(file){
     const local_files = get_local_files();
     const load_result: LocalFile | null = load_local_file(file.file_name);
-    
     if (!local_files) {
-      const name = prompt("Please enter the file name", "");
-      name ? file.file_name = name : file.file_name = "empty_name";
+      if(input_name){
+        file.file_name = input_name();
+      }
       window.localStorage.setItem("saved_local", JSON.stringify([file]));
     } else { 
       const new_files: LocalFile[] = JSON.parse(local_files);
       window.localStorage.removeItem("saved_local");
       if (!load_result){ // There's not file with this name
-        const name = prompt("Please enter the file name", "");
-        name ? file.file_name = name : file.file_name = "empty_name";
+        if(input_name){
+          file.file_name = input_name();
+        }
         new_files.push(file);
       } else { // File exists
         // Find and update file
@@ -373,7 +374,15 @@ class Moonad extends Component {
     // Only saves a file in editing mode
     if(this.mode === "EDIT"){
       const save: LocalFile = {code: this.code, file_name: this.file};
-      const saved_file = save_local_file(save);
+      const get_name = () => {
+        const name = prompt("Please enter the file name", "");
+        if(name) {
+          return name;
+        } else {
+          return "empty_string";
+        }
+      }
+      const saved_file = save_local_file(save, get_name);
       if(saved_file !== false) {
         this.code = saved_file.code;
         this.file = saved_file.file_name;
@@ -447,4 +456,5 @@ class Moonad extends Component {
 }
 
 export {Moonad, load_file, parse_file, load_file_parents, type_check_term, 
-  reduce, BaseAppPath }
+  reduce, BaseAppPath,
+  save_local_file, load_local_file, get_local_files, delete_local_file }
