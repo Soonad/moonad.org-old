@@ -197,13 +197,20 @@ class Moonad extends Component {
     this.cited_by = [];
 
     try {
-      this.code = await load_file(file);
+      if(window.location.pathname === "/Base"){
+        this.file = "Base#";
+        this.code = await load_file("Base#");
+      } else {
+        this.code = await load_file(file);
+      }
     } catch (e) {
       console.log("An error ocurred while loading the file: ", e);
       this.code = "An error ocurred while loading this file.";
     }
     this.parse();
-    this.cited_by = await load_file_parents(file);
+    console.log("Loading parents of: "+this.file);
+    this.cited_by = await load_file_parents(this.file);
+    console.log("Cited_by", this.cited_by);
     this.forceUpdate();
   }
 
