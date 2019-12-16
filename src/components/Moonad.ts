@@ -208,9 +208,7 @@ class Moonad extends Component {
       this.code = "An error ocurred while loading this file.";
     }
     this.parse();
-    console.log("Loading parents of: "+this.file);
     this.cited_by = await load_file_parents(this.file);
-    console.log("Cited_by", this.cited_by);
     this.forceUpdate();
   }
 
