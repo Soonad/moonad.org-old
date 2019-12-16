@@ -145,7 +145,7 @@ const delete_local_file = (file_name: string) => {
   return false;
 }
 // If a file imports App, it can run.
-const BaseAppPath = "App#U2k7";
+const BaseAppPath = "App#VjZN";
 
 class Moonad extends Component {
 
