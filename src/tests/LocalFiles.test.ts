@@ -1,6 +1,6 @@
 
-import {delete_local_file, get_local_files, load_local_file, save_local_file } from "../components/Moonad"
 import {LocalFile} from "../assets/Constants";
+import {delete_local_file, get_local_files, load_local_file, save_local_file } from "../components/Moonad"
 
 
 
@@ -31,9 +31,9 @@ describe("Local files", () => {
   });
 
   test("Can get all local files", () => {
-    let res = get_local_files();
+    const res = get_local_files();
     if (res) {
-      let aux = JSON.parse(res);
+      const aux = JSON.parse(res);
       expect(aux).toEqual([{code: "import Base# main 'Hello, World!'", file_name: "item0"},
       {code: "import Base# main 'Hello, World!'", file_name: "item1"}]);
     }
@@ -41,18 +41,18 @@ describe("Local files", () => {
   });
 
   test("Can delete a local file", () => {
-    let res = delete_local_file("item0");
+    const res = delete_local_file("item0");
     expect(res).toBeTruthy();
   });
 
   test("Cannot delete a local file that don't exist", () => {
-    let res = delete_local_file("itemmm");
+    const res = delete_local_file("itemmm");
     expect(res).toBeFalsy();
   });
 
   test("Can save local file", () => {
     const item2: LocalFile = {code: "import Base# main 'Hello, World!'", file_name: "item2"};
-    const input = () => {return "item2"}; // simulate an input function
+    const input = () =>"item2"; // simulate an input function
     const res = save_local_file(item2, input);
 
     expect(res).toEqual(item2);

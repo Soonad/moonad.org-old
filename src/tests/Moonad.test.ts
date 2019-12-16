@@ -61,8 +61,8 @@ import Unit#ZcZV
 });
 
 describe("Type check term", () => {
-  const file = "List#shzw"
-  const term_name = "List#shzw/head";
+  const file = "Bool#2GZZ"
+  const term_name = "Bool#2GZZ/copy_bool";
   // let parsed: fm.lang.Parsed;  // allows to get "def" and "tokens"
   let parsed: any;
   let code: string;
@@ -74,7 +74,7 @@ describe("Type check term", () => {
   
   test("Can typecheck a term", async () => {
     const res = await type_check_term({term_name, expect: null, defs: parsed.defs});
-    expect(fm.lang.show(res.type)).toEqual("(A : Type; x : A, xs : List(A)) -> A")
+    expect(fm.lang.show(res.type)).toEqual("(b : Bool) -> Pair(Bool, Bool)");
   });
 
   // test("Can normalize a term", async () => {

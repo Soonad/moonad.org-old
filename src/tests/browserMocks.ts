@@ -1,20 +1,19 @@
-var localStorageMock = (() => {
-  var store: any = {};
+let localStorageMock = (() => {
+  let store: any = {};
   return {
-    getItem: function(key: string) {
+    getItem: (key: string) => {
       return store[key];
     },
-    setItem: function(key: string, value: any) {
+    setItem: (key: string, value: any) => {
       store[key] = value.toString();
     },
-    clear: function() {
+    clear: () => {
       store = {};
     },
-    removeItem: function(key: string) {
+    removeItem: (key: string) => {
       delete store[key];
     }
   };
 })();
 
 Object.defineProperty(window, 'localStorage', { value: localStorageMock });
-Object.defineProperty(window, 'prompt', {value: "teste"});

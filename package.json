@@ -82,6 +82,8 @@
       "\\.(css|less|scss)$": "identity-obj-proxy",
       "^./style$": "identity-obj-proxy"
     },
-    "setupFiles":["./src/tests/browserMocks.ts"]
+    "setupFiles": [
+      "./src/tests/browserMocks.ts"
+    ]
   }
 }

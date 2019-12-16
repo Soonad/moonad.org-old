@@ -378,9 +378,9 @@ class Moonad extends Component {
         const name = prompt("Please enter the file name", "");
         if(name) {
           return name;
-        } else {
+        } 
           return "empty_string";
-        }
+        
       }
       const saved_file = save_local_file(save, get_name);
       if(saved_file !== false) {
