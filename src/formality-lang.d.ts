@@ -1,3 +1,10 @@
+declare module "formality-lang/esm/ls-cache" {
+
+  function with_local_storage_cache(loader: any, prefix?: string): any;
+
+  export default with_local_storage_cache ;
+}
+
 // declare module "formality-lang" {
 //   import core, { Defs, Term } from "formality-lang/fm-core";
 //   import lang from "formality-lang/fm-lang";

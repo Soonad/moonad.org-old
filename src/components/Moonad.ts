@@ -6,6 +6,8 @@ import {h} from "inferno-hyperscript"
 // import fm from "formality-lang"; // using .d.ts
 declare var require: any
 const fm = require("formality-lang");
+// const with_local_storage_cache = require("formality-lang/esm/ls-cache");
+import with_local_storage_cache from "formality-lang/esm/ls-cache";
 
 // Components
 import CodeEditor from "./CodeEditor"
@@ -23,7 +25,9 @@ import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand,
 // :::::::::::::
 
 const load_file = async (file_name: string) => {
-  return await fm.loader.with_local_storage_cache(fm.loader.load_file)(file_name);
+  //return await fm.loader.with_local_storage_cache(fm.loader.load_file)(file_name);
+  // OBS: this is a temporary solution until fix fm.loader.with_local_storage_cache
+  return with_local_storage_cache(fm.loader.load_file)(file_name); 
 }
 
 const parse_file = async (code: string, file_name: string, tokenify: boolean) => {
