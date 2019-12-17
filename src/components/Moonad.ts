@@ -61,14 +61,12 @@ const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm
 
 // Normalizes a definition
 // TODO: reduce not working
-const reduce = (term_name: string, defs: Defs, opts: any) => {
+const reduce = (term: any, defs: Defs, opts: any) => {
   let reduced : any;
   try {
-    reduced = fm.fast.reduce(term_name, defs);
-    console.log("Reduce term: ", reduced);
-    // reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
+    const erased_term = fm.core.erase(term);
+    reduced = fm.core.reduce(erased_term, defs);
   } catch (e) {
-    console.log("[moonad - reduce] Cannot reduce term: ", e);
     reduced = "<unable_to_normalize>";
   }
   return reduced;
@@ -255,11 +253,10 @@ class Moonad extends Component {
     } else {
       text += "✗ " + res.type;
     }
-    try { // OBS: Not working
-      // const norm = await fm.optimal.norm(name, this.defs);
-      // text += "\n\n:: Output ::\n";
-      // console.log("Norm: ", norm);
-      // text += fm.lang.show(norm.type, [], {full_refs: false});
+    try {
+      const reduced = reduce(this.defs[name], this.defs, {});
+      text += "\n\n:: Normal form ::\n";
+      text += fm.stringify(reduced);
     } catch (e) {
       console.log("[moonad] Problems while normalizing the term: ", e);
     }
@@ -269,7 +266,7 @@ class Moonad extends Component {
   // Normalizes a definition
   public reduce(term_name: string) {
     const norm = reduce(this.defs[term_name], this.defs, {});
-    alert(norm);
+    alert(fm.stringify(norm));
   }
 
   // Event when user clicks a definition 
