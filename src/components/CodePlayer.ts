@@ -49,14 +49,15 @@ class CodePlayer extends Component<Props> {
     const app_lib = this.find_app_prefix();
 
     if (defs && main && app_lib) {
-      const get_state = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_state`]), {defs});
-      const get_render = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_render`]), {defs});
-      const get_update = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/get_update`]), {defs});
-      const mouseclick = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mouseclick`]), {defs});
-      const mousemove = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/mousemove`]), {defs});
-      const keypress = fm.to_js.compile(fm.lang.erase(defs[`${app_lib}/keypress`]), {defs});
+      const get_state = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_state`]), defs);
+      const get_render = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_render`]), defs);
+      const get_update = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_update`]), defs);
+      const mouseclick = fm.js.compile(fm.core.erase(defs[`${app_lib}/mouseclick`]), defs);
+      const mousemove = fm.js.compile(fm.core.erase(defs[`${app_lib}/mousemove`]), defs);
+      const keypress = fm.js.compile(fm.core.erase(defs[`${app_lib}/keypress`]), defs);
 
-      const app = fm.to_js.compile(fm.lang.erase(main), {defs});
+      const erased_term = fm.core.erase(main);
+      const app = fm.js.compile(erased_term, defs);
       const app_state = get_state(app);
       const app_render = get_render(app);
       const app_update = get_update(app);
