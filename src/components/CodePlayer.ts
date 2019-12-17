@@ -14,6 +14,48 @@ interface Props {
 
 /* tslint:disable */
 
+const compile = ({defs, file}: Props) => {
+
+  const main = defs[`${file}/main`] || defs[`${file}/app`] || defs[`${file}/demo_app`];
+  const app_lib = find_app_prefix(defs);
+
+  if (defs && main && app_lib) {
+    const get_state = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_state`]), defs);
+    const get_render = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_render`]), defs);
+    const get_update = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_update`]), defs);
+    const mouseclick = fm.js.compile(fm.core.erase(defs[`${app_lib}/mouseclick`]), defs);
+    const mousemove = fm.js.compile(fm.core.erase(defs[`${app_lib}/mousemove`]), defs);
+    const keypress = fm.js.compile(fm.core.erase(defs[`${app_lib}/keypress`]), defs);
+
+    const erased_term = fm.core.erase(main);
+    const app = fm.js.compile(erased_term, defs);
+    const app_state = get_state(app);
+    const app_render = get_render(app);
+    const app_update = get_update(app);
+
+    return {
+      mouseclick,
+      mousemove,
+      keypress,
+      state: app_state,
+      render: app_render,
+      update: app_update,
+    };
+
+  } else {
+    return null;
+  }
+}
+
+const find_app_prefix = (defs: Defs) => {
+  for (const key in defs) {
+    if (key.slice(0,4) === "App#") {
+      return key.slice(0, key.indexOf("/"));
+    }
+  }
+  return null;
+}
+
 // Plays an application
 class CodePlayer extends Component<Props> {
   public app_error: string = "";
@@ -32,46 +74,11 @@ class CodePlayer extends Component<Props> {
     this.compile();
   }
 
-  public find_app_prefix() {
-    for (const key in this.defs) {
-      if (key.slice(0,4) === "App#") {
-        return key.slice(0, key.indexOf("/"));
-      }
-    }
-    return null;
-  }
-
-  public compile() {
-    const defs = this.defs;
-    const file = this.file;
-
-    const main = defs[`${file}/main`] || defs[`${file}/app`] || defs[`${file}/demo_app`];
-    const app_lib = this.find_app_prefix();
-
-    if (defs && main && app_lib) {
-      const get_state = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_state`]), defs);
-      const get_render = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_render`]), defs);
-      const get_update = fm.js.compile(fm.core.erase(defs[`${app_lib}/get_update`]), defs);
-      const mouseclick = fm.js.compile(fm.core.erase(defs[`${app_lib}/mouseclick`]), defs);
-      const mousemove = fm.js.compile(fm.core.erase(defs[`${app_lib}/mousemove`]), defs);
-      const keypress = fm.js.compile(fm.core.erase(defs[`${app_lib}/keypress`]), defs);
-
-      const erased_term = fm.core.erase(main);
-      const app = fm.js.compile(erased_term, defs);
-      const app_state = get_state(app);
-      const app_render = get_render(app);
-      const app_update = get_update(app);
-
-      this.app_funcs = {
-        mouseclick,
-        mousemove,
-        keypress,
-        state: app_state,
-        render: app_render,
-        update: app_update,
-      };
-
-      this.app_state = app_state;
+  public compile(){
+    const res = compile(this.props);
+    if(res){
+      this.app_state = res.state;
+      this.app_funcs = res;
     } else {
       this.app_error = "Error compiling App.";
     }
@@ -139,4 +146,4 @@ class CodePlayer extends Component<Props> {
   }
 }
 
-export default CodePlayer;
+export {CodePlayer, compile};

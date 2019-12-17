@@ -9,7 +9,7 @@ const fm = require("formality-lang");
 
 // Components
 import CodeEditor from "./CodeEditor"
-import CodePlayer from "./CodePlayer"
+import {CodePlayer} from "./CodePlayer"
 import CodeRender from "./CodeRender"
 import Console from "./Console/Console"
 import Pathbar from "./Pathbar"
@@ -42,7 +42,6 @@ interface CheckTerm {
   defs?: {};
   opts?: {};
 }
-// type Check_norm = (term: CheckTerm) => fm.core.Term
 
 const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm) => {
   let type;
@@ -70,6 +69,18 @@ const reduce = (term: any, defs: Defs, opts: any) => {
     reduced = "<unable_to_normalize>";
   }
   return reduced;
+}
+
+const can_run_app = (defs: Defs, file_name: string) => {
+  let import_app = false;
+  for(let def in defs){
+    const temp = def.split("#")[0];
+    if(temp === "App"){
+      import_app = true;
+      break;
+    }
+  }
+  return import_app && file_name !== "Base#" && file_name !== "Base";
 }
 
 // :::::::::::::::::
@@ -307,15 +318,8 @@ class Moonad extends Component {
 
   // Event when users clicks on Play button
   public async on_click_play() {
-    let import_app = false;
-    for(let def in this.defs){
-      const temp = def.split("#")[0];
-      if(temp === "App"){
-        import_app = true;
-        break;
-      }
-    }
-    if(import_app && this.file !== "Base#" && this.file !== "Base") {
+    if(can_run_app(this.defs, this.file)) {
+      console.log("[moonad] Can run app");
       this.mode = "PLAY";
       this.forceUpdate();
     } else {
@@ -468,4 +472,5 @@ class Moonad extends Component {
 
 export {Moonad, load_file, parse_file, load_file_parents, type_check_term, 
   reduce, BaseAppPath,
-  save_local_file, load_local_file, get_local_files, delete_local_file }
+  save_local_file, load_local_file, get_local_files, delete_local_file,
+  can_run_app }
