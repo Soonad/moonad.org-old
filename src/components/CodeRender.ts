@@ -16,7 +16,7 @@ interface Props {
 }
 
 const CodeRender = ({code, tokens, on_click_def, on_click_imp, on_click_ref}: Props) => {
-  if (!tokens) {
+  if (tokens.length === 0) {
     return h("div", {
       style: {
         "padding": "8px",

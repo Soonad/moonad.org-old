@@ -169,6 +169,7 @@ class Moonad extends Component {
       window.localStorage.clear();
       window.localStorage.setItem("cached_moonad_version", this.version);
       window.localStorage.setItem("cached_fm_version", fm.version);
+      this.code = "Loading code from FPM. This could take a while."
     }
 
     window.onpopstate = (e: any) => {
@@ -193,7 +194,6 @@ class Moonad extends Component {
     this.mode = "VIEW";
     this.file = file;
     this.cited_by = [];
-
     try {
       if(window.location.pathname === "/Base"){
         this.file = "Base#";
@@ -307,16 +307,20 @@ class Moonad extends Component {
 
   // Event when users clicks on Play button
   public async on_click_play() {
-    const app_files = await load_file_parents(BaseAppPath);
-
-    // TODO: If an app import a "App" it can run?
-    console.log(app_files);
-    // if (app_files.includes(this.file)) {
+    let import_app = false;
+    for(let def in this.defs){
+      const temp = def.split("#")[0];
+      if(temp === "App"){
+        import_app = true;
+        break;
+      }
+    }
+    if(import_app && this.file !== "Base#" && this.file !== "Base") {
       this.mode = "PLAY";
       this.forceUpdate();
-    // } else {
-      // window.alert("This file is not an app, so it can't be played");
-    // } 
+    } else {
+      alert("This file is not an app, so it can't be played");
+    }
   }
 
   public on_input_code(code: string) {
