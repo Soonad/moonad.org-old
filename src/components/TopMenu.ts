@@ -106,6 +106,7 @@ const is_editing_mode = (mode: string) => {
       "color": "#FFFFFF"
     }}, "Editing");
   }
+  return h("");
 }
 
 export default TopMenu
