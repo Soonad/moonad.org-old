@@ -339,9 +339,10 @@ class Moonad extends Component {
         console.log("[moonad] Error on saving file: ",e);
         alert("There was a problem. I couldn't save the file.");
       }
-    } else {
-      console.log("[moonad] I'm only able to publish a file on EDIT mode.");
-    }
+      return;
+    } 
+    console.log("[moonad] I'm only able to publish a file on EDIT mode.");
+    alert("[moonad] I'm only able to publish a file on EDIT mode.");
   }
 
   // :::::::::
@@ -368,8 +369,8 @@ class Moonad extends Component {
       this.code = found_file.code;
       this.file = file;
       this.mode = "EDIT";
-      this.forceUpdate();
     }
+    this.forceUpdate();
   }
 
   // TODO: instead of an alert, I wish to present a small

@@ -38,7 +38,7 @@
       "early-exit": { "severity": "warning" },
       "no-shadowed-variable": false,
       "no-collapsible-if": { "severity": "warning" },
-      "no-unnecessary-else": { "severity": "warning" },
+      "no-unnecessary-else": false,
       "no-accessor-recursion": { "severity": "warning" },
       "no-else-after-return": {
           "severity": "warning",
@@ -46,10 +46,7 @@
       },
       "no-return-undefined": { "severity": "warning" },
       "no-static-this": { "severity": "warning" },
-      "no-var-before-return": {
-          "severity": "warning",
-          "options": "allow-destructuring"
-      },
+      "no-var-before-return": false,
       "prefer-const-enum": { "severity": "warning" },
       "variable-name": {
           "options": [
