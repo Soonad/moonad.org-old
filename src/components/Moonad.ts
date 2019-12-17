@@ -254,7 +254,7 @@ class Moonad extends Component {
       text += "✗ " + res.type;
     }
     try {
-      const reduced = reduce(this.defs[name], this.defs, {});;
+      const reduced = reduce(this.defs[name], this.defs, {});
       text += "\n\n:: Normal form ::\n";
       text += fm.stringify(reduced);
     } catch (e) {
