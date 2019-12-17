@@ -73,7 +73,7 @@ const reduce = (term: any, defs: Defs, opts: any) => {
 
 const can_run_app = (defs: Defs, file_name: string) => {
   let import_app = false;
-  for(let def in defs){
+  for(const def of Object.keys(defs)){
     const temp = def.split("#")[0];
     if(temp === "App"){
       import_app = true;

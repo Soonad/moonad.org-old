@@ -1,9 +1,9 @@
 declare var require: any
 const fm = require("formality-lang");
 
-import {can_run_app, load_file, parse_file} from "../components/Moonad";
 import { Defs } from "../assets/Constants";
 import {compile} from "../components/CodePlayer";
+import {can_run_app, load_file, parse_file} from "../components/Moonad";
 
 // Obs: in package.json, change "jest" -> "verbose": false to be able to
 // console.log on the tests.
