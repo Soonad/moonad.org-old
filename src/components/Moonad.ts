@@ -61,17 +61,12 @@ const type_check_term = async ({term_name, expect = null, defs, opts}: CheckTerm
 
 // Normalizes a definition
 // TODO: reduce not working
-const reduce = (term_name: string, defs: Defs, opts: any) => {
+const reduce = (term: any, defs: Defs, opts: any) => {
   let reduced : any;
-  let show_reduced;
   try {
-    reduced = fm.core.reduce(term_name, defs);
-    console.log("[func reduce] term_name: ", term_name);
-    console.log("[func reduce] defs", defs);
-    console.log("[func reduce] fm.core.reduce: ", reduced);
-    // reduced = fm.lang.show(fm.lang.run("REDUCE_OPTIMAL", term_name, {}));
+    const erased_term = fm.core.erase(term);
+    reduced = fm.core.reduce(erased_term, defs);
   } catch (e) {
-    console.log("[func reduce] Cannot reduce. Error: ", e);
     reduced = "<unable_to_normalize>";
   }
   return reduced;
@@ -258,11 +253,10 @@ class Moonad extends Component {
     } else {
       text += "✗ " + res.type;
     }
-    try { // OBS: Not working
-      // const norm = await fm.optimal.norm(name, this.defs);
-      // text += "\n\n:: Output ::\n";
-      // console.log("Norm: ", norm);
-      // text += fm.lang.show(norm.type, [], {full_refs: false});
+    try {
+      const reduced = reduce(this.defs[name], this.defs, {});;
+      text += "\n\n:: Normal form ::\n";
+      text += fm.stringify(reduced);
     } catch (e) {
       console.log("[moonad] Problems while normalizing the term: ", e);
     }
@@ -271,9 +265,7 @@ class Moonad extends Component {
 
   // Normalizes a definition
   public reduce(term_name: string) {
-    console.log("[moonad - reduce] term_name: ", term_name);
-    const norm = reduce(term_name, this.defs, {});
-    console.log("[moonad - norm]: ", fm.stringify(norm));
+    const norm = reduce(this.defs[term_name], this.defs, {});
     alert(fm.stringify(norm));
   }
 
@@ -281,10 +273,8 @@ class Moonad extends Component {
   public on_click_def(path: string) {
     return (e: any) => {
       if (!e.shiftKey) {
-        console.log("path type check: ", path);
         return this.typecheck(path);
       } 
-        console.log("path reduce: ", path);
         return this.reduce(path);
     }
   }
@@ -382,7 +372,8 @@ class Moonad extends Component {
     }
   }
 
-  // TODO: update return
+  // TODO: instead of an alert, I wish to present a small
+  // message inside Tools. Future plans.
   public save_local_file() {
     // Only saves a file in editing mode
     if(this.mode === "EDIT"){
@@ -403,9 +394,11 @@ class Moonad extends Component {
         // alert("File saved with success");
         console.log("[moonad] File saved with success!");
       } else {
+        alert("I'm not able to save this file.");
         console.log("[moonad] I'm not able to save this file.");
       }
     } else {
+      alert("I'm only able to save a file on EDIT mode.");
       console.log("[moonad] I'm only able to save a file on EDIT mode.");
     }
   }
@@ -420,6 +413,7 @@ class Moonad extends Component {
       }
       console.log("[moonad] Ok, file deleted.");
     } else {
+      alert("I couldn't find the file to be deleted.");
       console.log("[moonad] I couldn't find the file to be deleted.");
     }
     this.forceUpdate();
@@ -427,7 +421,7 @@ class Moonad extends Component {
 
   // Renders the interface
   public render() {
-    // Creates bound variables for states and local methods
+    // Creates bound vagit riables for states and local methods
     const mode = this.mode;
     const file = this.file;
     const defs = this.defs;
