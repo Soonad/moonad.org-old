@@ -323,7 +323,6 @@ class Moonad extends Component {
   // Event when users clicks on Play button
   public async on_click_play() {
     if(can_run_app(this.defs, this.file)) {
-      console.log("[moonad] Can run app");
       this.mode = "PLAY";
       this.forceUpdate();
     } else {

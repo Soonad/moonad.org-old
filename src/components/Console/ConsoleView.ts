@@ -25,7 +25,7 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, loc
     case "EDIT": // can save file 
       return h("div", {style}, Tools(local_file_manager));
     case "VIEW":
-
+    case "PLAY": 
       switch(view_on_focus) {
         case "cited_by": 
           return h("div", {style}, cited_by_view(parents, load_file) );
@@ -34,9 +34,6 @@ const ConsoleView = ({view_on_focus, mode, load_file, parents, exec_command, loc
         case "tools":
           return h("div", {style}, Tools(local_file_manager));
       }
-
-    case "PLAY": 
-      return h("div", {style});
   }
 }
 
