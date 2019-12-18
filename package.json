@@ -65,14 +65,14 @@
     },
     "verbose": false,
     "testURL": "http://localhost:8080",
+    "transformIgnorePatterns": [
+      "<rootDir>/node_modules/formality-lang"
+    ],
     "moduleFileExtensions": [
       "js",
       "jsx",
       "ts",
       "tsx"
-    ],
-    "moduleDirectories": [
-      "node_modules"
     ],
     "testMatch": [
       "**/__tests__/**/*.[jt]s?(x)",
@@ -85,6 +85,13 @@
     },
     "setupFiles": [
       "./src/tests/browserMocks.ts"
+    ],
+    "roots": [
+      "./src/"
+    ],
+    "testPathIgnorePatterns": [
+      "./node_modules/formality-lang"
     ]
+    
   }
 }

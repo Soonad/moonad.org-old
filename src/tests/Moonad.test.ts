@@ -1,6 +1,6 @@
 // import fm from "formality-lang";
 import { Defs } from "../assets/Constants";
-import {BaseAppPath, load_file, load_file_parents, parse_file, reduce, type_check_term} from "../components/Moonad"
+import {BaseAppPath, load_file_test, load_file_parents, parse_file_test, reduce, type_check_term} from "../components/Moonad"
 
 declare var require: any
 const fm = require("formality-lang");
@@ -14,7 +14,7 @@ describe("Moonad", () => {
 
   beforeAll(async () => {
     file = "Base#"
-    code = await load_file(file);
+    code = await load_file_test(file);
   });
 
   test("App name didn't change", () => {
@@ -71,12 +71,12 @@ describe("Type check term", () => {
   let code: string;
 
   beforeAll(async () => {
-    code = await load_file(file);
-    parsed = await parse_file(code, file, true);
+    code = await load_file_test(file);
+    parsed = await parse_file_test(code, file, true);
   });
   
   test("Can typecheck a term", async () => {
-    parsed = await parse_file(code, file, true);
+    parsed = await parse_file_test(code, file, true);
     const res = await type_check_term({term_name, expect: null, defs: parsed.defs});
     expect(fm.stringify(res.type)).toEqual("(b : Bool) -> Pair(Bool, Bool)");
   });
