@@ -30,17 +30,8 @@ const load_file = async (file_name: string) => {
   return with_local_storage_cache(fm.loader.load_file)(file_name);
 }
 
-const load_file_test = async (file_name: string) => {
-  return fm.loader.load_file(file_name);
-}
-
 const parse_file = async (code: string, file_name: string, tokenify: boolean) => {
   const parsed = await fm.parse(code, {file: file_name, tokenify: true, loader: load_file})
-  return {defs: parsed.defs, tokens: parsed.tokens};
-}
-
-const parse_file_test =  async (code: string, file_name: string, tokenify: boolean) => {
-  const parsed = await fm.parse(code, {file: file_name, tokenify: true, loader: load_file_test})
   return {defs: parsed.defs, tokens: parsed.tokens};
 }
 
@@ -486,4 +477,4 @@ class Moonad extends Component {
 export {Moonad, load_file, parse_file, load_file_parents, type_check_term,
   reduce, BaseAppPath,
   save_local_file, load_local_file, get_local_files, delete_local_file,
-  can_run_app, load_file_test, parse_file_test }
+  can_run_app }
