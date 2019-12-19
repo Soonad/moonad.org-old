@@ -1,6 +1,6 @@
 // import fm from "formality-lang";
 import { Defs } from "../assets/Constants";
-import {BaseAppPath, load_file_parents, load_file, parse_file, reduce, type_check_term} from "../components/Moonad"
+import {BaseAppPath, load_file, load_file_parents, parse_file, reduce, type_check_term} from "../components/Moonad"
 
 declare var require: any
 const fm = require("formality-lang");
