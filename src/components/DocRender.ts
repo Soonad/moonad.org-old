@@ -1,4 +1,5 @@
 // Converts a `Doc` value from Formality to an Inferno element
+
 /* tslint:disable */
 import {h} from "inferno-hyperscript"
 import Image from "./Image"
@@ -17,6 +18,14 @@ const read_string = (value: any) => {
 };
 
 const DocRender = (doc: any) => {
+  const pair = (value: any) => {
+    return [value((a: any) => (b: any) => a), value((a:any) => (b:any) => b)];
+  };
+
+  const unpair = (value: any) => {
+    return (t:any) => t(value[0])(value[1]);
+  };
+
   const case_txt = (value: any) => {
     return h("span", {}, read_string(value));
   };
@@ -26,7 +35,10 @@ const DocRender = (doc: any) => {
   };
 
   const case_img = (size: any) => (data: any) => {
-    return h(Image, {size, data}, []);
+    return h(Image, {
+      size: pair(size),
+      data: (xy: any) => data(unpair(xy))
+    }, []);
   };
 
   const case_box = (tag: any) => (props: any) => (child: any) => {
@@ -40,8 +52,8 @@ const DocRender = (doc: any) => {
     (function go(props) {
       const case_nil = null;
       const case_cons = (head: any) => (tail: any) => {
-        var key = read_string(head[0]);
-        var val = read_string(head[1]);
+        var key = read_string(head((a:any) => (b:any) => a));
+        var val = read_string(head((a:any) => (b:any) => b));
         props_obj[key] = val;
         go(tail);
       };

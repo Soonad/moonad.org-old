@@ -38,6 +38,7 @@
       "early-exit": { "severity": "warning" },
       "no-shadowed-variable": false,
       "no-collapsible-if": { "severity": "warning" },
+      "no-unnecessary-local-variable": false,
       "no-unnecessary-else": false,
       "no-accessor-recursion": { "severity": "warning" },
       "no-else-after-return": {

@@ -23,7 +23,7 @@
   "devDependencies": {
     "awesome-typescript-loader": "^5.2.1",
     "file-loader": "^4.2.0",
-    "formality-lang": "^0.1.217",
+    "formality-lang": "^0.1.227",
     "inferno": "^7.3.2",
     "inferno-hyperscript": "^7.3.2",
     "jest": "^24.9.0",
@@ -43,8 +43,7 @@
   },
   "dependencies": {
     "@types/jest": "^24.0.23",
-    "express": "^4.17.1",
-    "formality": "^1.0.1"
+    "express": "^4.17.1"
   },
   "peerDependencies": {
     "prettier": ">1.0.0",
@@ -72,9 +71,6 @@
       "ts",
       "tsx"
     ],
-    "moduleDirectories": [
-      "node_modules"
-    ],
     "testMatch": [
       "**/__tests__/**/*.[jt]s?(x)",
       "**/?(*.)(spec|test).[jt]s?(x)"
@@ -86,6 +82,12 @@
     },
     "setupFiles": [
       "./src/tests/browserMocks.ts"
+    ],
+    "roots": [
+      "./src/"
+    ],
+    "testPathIgnorePatterns": [
+      "./node_modules/formality-lang"
     ]
   }
 }
