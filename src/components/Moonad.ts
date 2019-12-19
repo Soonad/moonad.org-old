@@ -5,9 +5,9 @@ import {h} from "inferno-hyperscript"
 
 // import fm from "formality-lang"; // using .d.ts
 declare var require: any
-const fm = require("formality-lang");
+const fm: any = require("formality-lang");
 // const with_local_storage_cache = require("formality-lang/esm/ls-cache");
-import with_local_storage_cache from "formality-lang/esm/ls-cache";
+const with_local_storage_cache: any = require("formality-lang/cjs/ls-cache");
 
 // Components
 import CodeEditor from "./CodeEditor"
@@ -27,7 +27,7 @@ import { Bool, CitedByParent, Defs, DisplayMode, ExecCommand,
 const load_file = async (file_name: string) => {
   // return await fm.loader.with_local_storage_cache(fm.loader.load_file)(file_name);
   // OBS: this is a temporary solution until fix fm.loader.with_local_storage_cache
-  return with_local_storage_cache(fm.loader.load_file)(file_name); 
+  return with_local_storage_cache(fm.loader.load_file)(file_name);
 }
 
 const load_file_test = async (file_name: string) => {
@@ -126,7 +126,7 @@ const save_local_file = (file: LocalFile, input_name?: () => string) => {
         file.file_name = input_name();
       }
       window.localStorage.setItem("saved_local", JSON.stringify([file]));
-    } else { 
+    } else {
       const new_files: LocalFile[] = JSON.parse(local_files);
       window.localStorage.removeItem("saved_local");
       if (!load_result){ // There's not file with this name
@@ -142,7 +142,7 @@ const save_local_file = (file: LocalFile, input_name?: () => string) => {
             break;
           }
         }
-      } 
+      }
       window.localStorage.setItem("saved_local", JSON.stringify(new_files));
     }
     // After saving a file, confirms if it exists
@@ -161,8 +161,8 @@ const delete_local_file = (file_name: string) => {
     window.localStorage.removeItem("saved_local");
     window.localStorage.setItem("saved_local", JSON.stringify(files_parsed));
     // if false, file name was not found
-    return (old_lenght - files_parsed.length) !== 0 ? true : false; 
-  } 
+    return (old_lenght - files_parsed.length) !== 0 ? true : false;
+  }
   // There are no files saved locally
   return false;
 }
@@ -254,7 +254,7 @@ class Moonad extends Component {
     output_result.push("-t <file>/<term> performs a type check");
     output_result.push("");
     // Show fm commands
-    if (cmd === "fm") { 
+    if (cmd === "fm") {
       return output_result;
     }
     this.forceUpdate();
@@ -268,7 +268,7 @@ class Moonad extends Component {
     this.parse();
   }
 
-  // Type-checks a definition 
+  // Type-checks a definition
   public async typecheck(name: string) {
     const res = await type_check_term({term_name: name, expect: null, defs: this.defs});
     let text = ":: Type ::\n";
@@ -293,12 +293,12 @@ class Moonad extends Component {
     alert(fm.stringify(norm));
   }
 
-  // Event when user clicks a definition 
+  // Event when user clicks a definition
   public on_click_def(path: string) {
     return (e: any) => {
       if (!e.shiftKey) {
         return this.typecheck(path);
-      } 
+      }
         return this.reduce(path);
     }
   }
@@ -316,7 +316,7 @@ class Moonad extends Component {
       this.load_file(file);
     }
   }
-  
+
   public on_click_view() {
     this.mode = "VIEW";
     // this.save_code(this.code);
@@ -360,7 +360,7 @@ class Moonad extends Component {
         alert("There was a problem. I couldn't save the file.");
       }
       return;
-    } 
+    }
     console.log("[moonad] I'm only able to publish a file on EDIT mode.");
     alert("[moonad] I'm only able to publish a file on EDIT mode.");
   }
@@ -403,9 +403,9 @@ class Moonad extends Component {
         const name = prompt("Please enter the file name", "");
         if(name) {
           return name;
-        } 
+        }
           return "empty_string";
-        
+
       }
       const saved_file = save_local_file(save, get_name);
       if(saved_file !== false) {
@@ -483,7 +483,7 @@ class Moonad extends Component {
   }
 }
 
-export {Moonad, load_file, parse_file, load_file_parents, type_check_term, 
+export {Moonad, load_file, parse_file, load_file_parents, type_check_term,
   reduce, BaseAppPath,
   save_local_file, load_local_file, get_local_files, delete_local_file,
   can_run_app, load_file_test, parse_file_test }
