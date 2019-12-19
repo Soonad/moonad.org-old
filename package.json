@@ -65,9 +65,6 @@
     },
     "verbose": false,
     "testURL": "http://localhost:8080",
-    "transformIgnorePatterns": [
-      "<rootDir>/node_modules/formality-lang"
-    ],
     "moduleFileExtensions": [
       "js",
       "jsx",
@@ -92,6 +89,5 @@
     "testPathIgnorePatterns": [
       "./node_modules/formality-lang"
     ]
-    
   }
 }
